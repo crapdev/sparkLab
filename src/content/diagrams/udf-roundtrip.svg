@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320">
+  <defs>
+    <marker id="udf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <!-- Native path -->
+  <text class="d-title" x="16" y="24">Función nativa: todo ocurre dentro de la JVM</text>
+  <text class="d-code-small" x="16" y="44">F.when(F.col("Item_MRP") &lt; 100, "cheap")…</text>
+  <rect class="d-box-ghost" x="16" y="56" width="788" height="60" rx="8" />
+  <text class="d-muted" x="28" y="74">Executor · JVM</text>
+  <rect class="d-box-success" x="150" y="76" width="110" height="28" rx="4" />
+  <text class="d-text" x="205" y="95" text-anchor="middle">leer filas</text>
+  <path class="d-line-accent" d="M260 90H300" marker-end="url(#udf-arrow)" />
+  <rect class="d-box-success" x="300" y="76" width="170" height="28" rx="4" />
+  <text class="d-text" x="385" y="95" text-anchor="middle">CASE WHEN compilado</text>
+  <path class="d-line-accent" d="M470 90H510" marker-end="url(#udf-arrow)" />
+  <rect class="d-box-success" x="510" y="76" width="120" height="28" rx="4" />
+  <text class="d-text" x="570" y="95" text-anchor="middle">siguiente paso</text>
+  <text class="d-accent-text" x="650" y="95">2 M filas: 0.15 s</text>
+
+  <!-- UDF path -->
+  <text class="d-title" x="16" y="150">UDF de Python: cada lote sale de la JVM y vuelve</text>
+  <text class="d-code-small" x="16" y="170">F.udf(price_band, "string")("Item_MRP")</text>
+
+  <rect class="d-box-ghost" x="16" y="182" width="788" height="60" rx="8" />
+  <text class="d-muted" x="28" y="200">Executor · JVM</text>
+  <rect class="d-box-success" x="150" y="202" width="110" height="28" rx="4" />
+  <text class="d-text" x="205" y="221" text-anchor="middle">leer filas</text>
+  <path class="d-line-accent" d="M260 216H300" marker-end="url(#udf-arrow)" />
+  <rect class="d-box-accent" x="300" y="202" width="170" height="28" rx="4" />
+  <text class="d-text" x="385" y="221" text-anchor="middle">serializar lote (Arrow)</text>
+  <rect class="d-box-accent" x="510" y="202" width="170" height="28" rx="4" />
+  <text class="d-text" x="595" y="221" text-anchor="middle">leer resultado (Arrow)</text>
+  <path class="d-line-accent" d="M680 216H720" marker-end="url(#udf-arrow)" />
+  <rect class="d-box-success" x="720" y="202" width="76" height="28" rx="4" />
+  <text class="d-text" x="758" y="221" text-anchor="middle">siguiente</text>
+
+  <rect class="d-box-ghost" x="16" y="256" width="788" height="56" rx="8" />
+  <text class="d-muted" x="28" y="274">Proceso Python (worker), uno por core</text>
+  <rect class="d-box-accent" x="300" y="274" width="170" height="28" rx="4" />
+  <text class="d-text" x="385" y="293" text-anchor="middle">recibir lote</text>
+  <rect class="d-box-accent" x="510" y="274" width="170" height="28" rx="4" />
+  <text class="d-code-small" x="595" y="293" text-anchor="middle">price_band(x) por fila</text>
+  <path class="d-line-accent" d="M470 288H510" marker-end="url(#udf-arrow)" />
+
+  <!-- Cross-process arrows -->
+  <path class="d-line-accent" d="M385 230V274" marker-end="url(#udf-arrow)" />
+  <path class="d-line-accent" d="M595 274V230" marker-end="url(#udf-arrow)" />
+  <text class="d-accent-text" x="560" y="252">2 M filas: 0.80 s · pandas_udf 0.54 s</text>
+</svg>

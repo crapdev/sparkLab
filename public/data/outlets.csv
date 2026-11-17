@@ -1,0 +1,11 @@
+Outlet_Identifier,Outlet_Establishment_Year,Outlet_Size,Outlet_Location_Type,Outlet_Type,City,Manager,Staff
+OUT010,1998,,Tier 3,Grocery Store,Nagpur,Priya Nair,12
+OUT013,1987,High,Tier 3,Supermarket Type1,Indore,Rahul Mehta,48
+OUT017,2007,,Tier 2,Supermarket Type1,Jaipur,Anjali Rao,35
+OUT018,2009,Medium,Tier 3,Supermarket Type2,Nashik,Vikram Singh,40
+OUT027,1985,Medium,Tier 3,Supermarket Type3,Bhopal,Neha Kapoor,60
+OUT035,2004,Small,Tier 2,Supermarket Type1,Pune,Arjun Desai,30
+OUT045,2002,,Tier 2,Supermarket Type1,Lucknow,Kavita Joshi,33
+OUT046,1997,Small,Tier 1,Supermarket Type1,Mumbai,Sanjay Iyer,28
+OUT049,1999,Medium,Tier 1,Supermarket Type1,Delhi,Meera Pillai,42
+OUT099,2012,Small,Tier 2,Supermarket Type1,Chandigarh,Rohan Bhatt,25

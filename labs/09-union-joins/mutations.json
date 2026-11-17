@@ -1,0 +1,128 @@
+[
+  {
+    "name": "task 1: union by position",
+    "old": "staff = emp.unionByName(new_hires)",
+    "new": "staff = emp.union(new_hires)",
+    "expect": "Tarea 1 · Elena"
+  },
+  {
+    "name": "task 1: new_hires on the left",
+    "old": "staff = emp.unionByName(new_hires)",
+    "new": "staff = new_hires.unionByName(emp)",
+    "expect": "Tarea 1 · 8 empleados"
+  },
+  {
+    "name": "task 1: only the new hires",
+    "old": "staff = emp.unionByName(new_hires)",
+    "new": "staff = new_hires.select(\"emp_id\", \"name\", \"dept_id\")",
+    "expect": "Tarea 1 · 8 empleados"
+  },
+  {
+    "name": "task 2: left instead of inner",
+    "old": "emp_dept = emp.join(dept, emp[\"dept_id\"] == dept[\"dept_id\"], \"inner\")",
+    "new": "emp_dept = emp.join(dept, emp[\"dept_id\"] == dept[\"dept_id\"], \"left\")",
+    "expect": "Tarea 2 · 5 filas"
+  },
+  {
+    "name": "task 2: joined by column name",
+    "old": "emp_dept = emp.join(dept, emp[\"dept_id\"] == dept[\"dept_id\"], \"inner\")",
+    "new": "emp_dept = emp.join(dept, \"dept_id\", \"inner\")",
+    "expect": "Tarea 2 · las columnas"
+  },
+  {
+    "name": "task 2: dept on the left",
+    "old": "emp_dept = emp.join(dept, emp[\"dept_id\"] == dept[\"dept_id\"], \"inner\")",
+    "new": "emp_dept = dept.join(emp, emp[\"dept_id\"] == dept[\"dept_id\"], \"inner\")",
+    "expect": "Tarea 2 · las columnas"
+  },
+  {
+    "name": "task 3: inner instead of left",
+    "old": "emp_left = emp.join(dept, \"dept_id\", \"left\")",
+    "new": "emp_left = emp.join(dept, \"dept_id\", \"inner\")",
+    "expect": "Tarea 3 · 6 filas"
+  },
+  {
+    "name": "task 3: right instead of left",
+    "old": "emp_left = emp.join(dept, \"dept_id\", \"left\")",
+    "new": "emp_left = emp.join(dept, \"dept_id\", \"right\")",
+    "expect": "Tarea 3 · Jorge"
+  },
+  {
+    "name": "task 3: explicit condition duplicates the key",
+    "old": "emp_left = emp.join(dept, \"dept_id\", \"left\")",
+    "new": "emp_left = emp.join(dept, emp[\"dept_id\"] == dept[\"dept_id\"], \"left\")",
+    "expect": "Tarea 3 · 6 filas"
+  },
+  {
+    "name": "task 3: dept on the left",
+    "old": "emp_left = emp.join(dept, \"dept_id\", \"left\")",
+    "new": "emp_left = dept.join(emp, \"dept_id\", \"left\")",
+    "expect": "Tarea 3 · 6 filas"
+  },
+  {
+    "name": "task 4: semi instead of anti",
+    "old": "emp_without_dept = emp.join(dept, \"dept_id\", \"anti\")",
+    "new": "emp_without_dept = emp.join(dept, \"dept_id\", \"semi\")",
+    "expect": "Tarea 4 · solo Jorge"
+  },
+  {
+    "name": "task 4: left join plus isNull keeps dept columns",
+    "old": "emp_without_dept = emp.join(dept, \"dept_id\", \"anti\")",
+    "new": "emp_without_dept = emp.join(dept, \"dept_id\", \"left\").filter(F.col(\"dept_name\").isNull())",
+    "expect": "Tarea 4 · solo Jorge"
+  },
+  {
+    "name": "task 4: sides swapped for the empty departments",
+    "old": "dept_without_emp = dept.join(emp, \"dept_id\", \"anti\")",
+    "new": "dept_without_emp = emp.join(dept, \"dept_id\", \"anti\")",
+    "expect": "Tarea 4 · Legal"
+  },
+  {
+    "name": "task 5: whole outlets table joined",
+    "old": "sales_city = sales.join(outlet_info, \"Outlet_Identifier\", \"inner\")",
+    "new": "sales_city = sales.join(outlets, \"Outlet_Identifier\", \"inner\")",
+    "expect": "Tarea 5 · 15 columnas"
+  },
+  {
+    "name": "task 5: left instead of inner",
+    "old": "sales_city = sales.join(outlet_info, \"Outlet_Identifier\", \"inner\")",
+    "new": "sales_city = sales.join(outlet_info, \"Outlet_Identifier\", \"left\")",
+    "expect": "Tarea 5 · 7995"
+  },
+  {
+    "name": "task 5: explicit condition duplicates the key",
+    "old": "sales_city = sales.join(outlet_info, \"Outlet_Identifier\", \"inner\")",
+    "new": "sales_city = sales.join(outlet_info, sales[\"Outlet_Identifier\"] == outlet_info[\"Outlet_Identifier\"], \"inner\")",
+    "expect": "Tarea 5 · 15 columnas"
+  },
+  {
+    "name": "task 5: right instead of inner",
+    "old": "sales_city = sales.join(outlet_info, \"Outlet_Identifier\", \"inner\")",
+    "new": "sales_city = sales.join(outlet_info, \"Outlet_Identifier\", \"right\")",
+    "expect": "Tarea 5 · 7995"
+  },
+  {
+    "name": "task 6: inner instead of left",
+    "old": "sales_all = sales.join(outlet_info, \"Outlet_Identifier\", \"left\")",
+    "new": "sales_all = sales.join(outlet_info, \"Outlet_Identifier\", \"inner\")",
+    "expect": "Tarea 6 · sales_all"
+  },
+  {
+    "name": "task 6: anti from the sales side",
+    "old": "idle_outlets = outlets.join(sales, \"Outlet_Identifier\", \"anti\")",
+    "new": "idle_outlets = sales.join(outlets, \"Outlet_Identifier\", \"anti\")",
+    "expect": "Tarea 6 · OUT099"
+  },
+  {
+    "name": "task 6: semi instead of anti",
+    "old": "idle_outlets = outlets.join(sales, \"Outlet_Identifier\", \"anti\")",
+    "new": "idle_outlets = outlets.join(sales, \"Outlet_Identifier\", \"semi\")",
+    "expect": "Tarea 6 · OUT099"
+  },
+  {
+    "name": "task 6: left join plus isNull keeps sales columns",
+    "old": "idle_outlets = outlets.join(sales, \"Outlet_Identifier\", \"anti\")",
+    "new": "idle_outlets = outlets.join(sales, \"Outlet_Identifier\", \"left\").filter(F.col(\"Item_Identifier\").isNull())",
+    "expect": "Tarea 6 · OUT099"
+  }
+]

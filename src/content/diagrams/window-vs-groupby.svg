@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <defs>
+    <marker id="wg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <!-- Source -->
+  <text class="d-title" x="16" y="24">scores</text>
+  <rect class="d-box" x="16" y="34" width="60" height="22" rx="3" />
+  <rect class="d-box" x="76" y="34" width="50" height="22" rx="3" />
+  <rect class="d-box" x="126" y="34" width="54" height="22" rx="3" />
+  <text class="d-muted" x="46" y="49" text-anchor="middle">name</text>
+  <text class="d-muted" x="101" y="49" text-anchor="middle">team</text>
+  <text class="d-muted" x="153" y="49" text-anchor="middle">points</text>
+  <rect class="d-box-accent" x="16" y="56" width="60" height="20" /><rect class="d-box-accent" x="76" y="56" width="50" height="20" /><rect class="d-box-accent" x="126" y="56" width="54" height="20" />
+  <text class="d-text" x="46" y="70" text-anchor="middle">Ana</text><text class="d-text" x="101" y="70" text-anchor="middle">A</text><text class="d-text" x="153" y="70" text-anchor="middle">90</text>
+  <rect class="d-box-accent" x="16" y="76" width="60" height="20" /><rect class="d-box-accent" x="76" y="76" width="50" height="20" /><rect class="d-box-accent" x="126" y="76" width="54" height="20" />
+  <text class="d-text" x="46" y="90" text-anchor="middle">Luis</text><text class="d-text" x="101" y="90" text-anchor="middle">A</text><text class="d-text" x="153" y="90" text-anchor="middle">90</text>
+  <rect class="d-box-accent" x="16" y="96" width="60" height="20" /><rect class="d-box-accent" x="76" y="96" width="50" height="20" /><rect class="d-box-accent" x="126" y="96" width="54" height="20" />
+  <text class="d-text" x="46" y="110" text-anchor="middle">Pedro</text><text class="d-text" x="101" y="110" text-anchor="middle">A</text><text class="d-text" x="153" y="110" text-anchor="middle">85</text>
+  <rect class="d-box-info" x="16" y="116" width="60" height="20" /><rect class="d-box-info" x="76" y="116" width="50" height="20" /><rect class="d-box-info" x="126" y="116" width="54" height="20" />
+  <text class="d-text" x="46" y="130" text-anchor="middle">Marta</text><text class="d-text" x="101" y="130" text-anchor="middle">B</text><text class="d-text" x="153" y="130" text-anchor="middle">85</text>
+  <rect class="d-box-info" x="16" y="136" width="60" height="20" /><rect class="d-box-info" x="76" y="136" width="50" height="20" /><rect class="d-box-info" x="126" y="136" width="54" height="20" />
+  <text class="d-text" x="46" y="150" text-anchor="middle">Sofía</text><text class="d-text" x="101" y="150" text-anchor="middle">B</text><text class="d-text" x="153" y="150" text-anchor="middle">70</text>
+  <rect class="d-box-info" x="16" y="156" width="60" height="20" /><rect class="d-box-info" x="76" y="156" width="50" height="20" /><rect class="d-box-info" x="126" y="156" width="54" height="20" />
+  <text class="d-text" x="46" y="170" text-anchor="middle">Jorge</text><text class="d-text" x="101" y="170" text-anchor="middle">B</text><text class="d-text" x="153" y="170" text-anchor="middle">60</text>
+
+  <!-- groupBy result -->
+  <path class="d-line-accent" d="M190 70H250" marker-end="url(#wg-arrow)" />
+  <text class="d-code-small" x="262" y="26">.groupBy("team").agg(F.sum("points"))</text>
+  <text class="d-title" x="262" y="48">Colapsa: 2 filas</text>
+  <rect class="d-box" x="262" y="56" width="50" height="22" rx="3" /><rect class="d-box" x="312" y="56" width="80" height="22" rx="3" />
+  <text class="d-muted" x="287" y="71" text-anchor="middle">team</text><text class="d-muted" x="352" y="71" text-anchor="middle">sum(points)</text>
+  <rect class="d-box-accent" x="262" y="78" width="50" height="20" /><rect class="d-box-accent" x="312" y="78" width="80" height="20" />
+  <text class="d-text" x="287" y="92" text-anchor="middle">A</text><text class="d-text" x="352" y="92" text-anchor="middle">265</text>
+  <rect class="d-box-info" x="262" y="98" width="50" height="20" /><rect class="d-box-info" x="312" y="98" width="80" height="20" />
+  <text class="d-text" x="287" y="112" text-anchor="middle">B</text><text class="d-text" x="352" y="112" text-anchor="middle">215</text>
+
+  <!-- window result -->
+  <path class="d-line-accent" d="M190 150H250" marker-end="url(#wg-arrow)" />
+  <text class="d-code-small" x="150" y="216">.withColumn("team_total", F.sum("points").over(Window.partitionBy("team")))</text>
+  <text class="d-title" x="420" y="48">Conserva: 6 filas, con el total de su grupo</text>
+  <rect class="d-box" x="420" y="56" width="60" height="22" rx="3" /><rect class="d-box" x="480" y="56" width="50" height="22" rx="3" /><rect class="d-box" x="530" y="56" width="54" height="22" rx="3" /><rect class="d-box" x="584" y="56" width="80" height="22" rx="3" />
+  <text class="d-muted" x="450" y="71" text-anchor="middle">name</text><text class="d-muted" x="505" y="71" text-anchor="middle">team</text><text class="d-muted" x="557" y="71" text-anchor="middle">points</text><text class="d-muted" x="624" y="71" text-anchor="middle">team_total</text>
+  <rect class="d-box-accent" x="420" y="78" width="60" height="20" /><rect class="d-box-accent" x="480" y="78" width="50" height="20" /><rect class="d-box-accent" x="530" y="78" width="54" height="20" /><rect class="d-box-success" x="584" y="78" width="80" height="20" />
+  <text class="d-text" x="450" y="92" text-anchor="middle">Ana</text><text class="d-text" x="505" y="92" text-anchor="middle">A</text><text class="d-text" x="557" y="92" text-anchor="middle">90</text><text class="d-text" x="624" y="92" text-anchor="middle">265</text>
+  <rect class="d-box-accent" x="420" y="98" width="60" height="20" /><rect class="d-box-accent" x="480" y="98" width="50" height="20" /><rect class="d-box-accent" x="530" y="98" width="54" height="20" /><rect class="d-box-success" x="584" y="98" width="80" height="20" />
+  <text class="d-text" x="450" y="112" text-anchor="middle">Luis</text><text class="d-text" x="505" y="112" text-anchor="middle">A</text><text class="d-text" x="557" y="112" text-anchor="middle">90</text><text class="d-text" x="624" y="112" text-anchor="middle">265</text>
+  <rect class="d-box-accent" x="420" y="118" width="60" height="20" /><rect class="d-box-accent" x="480" y="118" width="50" height="20" /><rect class="d-box-accent" x="530" y="118" width="54" height="20" /><rect class="d-box-success" x="584" y="118" width="80" height="20" />
+  <text class="d-text" x="450" y="132" text-anchor="middle">Pedro</text><text class="d-text" x="505" y="132" text-anchor="middle">A</text><text class="d-text" x="557" y="132" text-anchor="middle">85</text><text class="d-text" x="624" y="132" text-anchor="middle">265</text>
+  <rect class="d-box-info" x="420" y="138" width="60" height="20" /><rect class="d-box-info" x="480" y="138" width="50" height="20" /><rect class="d-box-info" x="530" y="138" width="54" height="20" /><rect class="d-box-success" x="584" y="138" width="80" height="20" />
+  <text class="d-text" x="450" y="152" text-anchor="middle">Marta</text><text class="d-text" x="505" y="152" text-anchor="middle">B</text><text class="d-text" x="557" y="152" text-anchor="middle">85</text><text class="d-text" x="624" y="152" text-anchor="middle">215</text>
+  <rect class="d-box-info" x="420" y="158" width="60" height="20" /><rect class="d-box-info" x="480" y="158" width="50" height="20" /><rect class="d-box-info" x="530" y="158" width="54" height="20" /><rect class="d-box-success" x="584" y="158" width="80" height="20" />
+  <text class="d-text" x="450" y="172" text-anchor="middle">Sofía</text><text class="d-text" x="505" y="172" text-anchor="middle">B</text><text class="d-text" x="557" y="172" text-anchor="middle">70</text><text class="d-text" x="624" y="172" text-anchor="middle">215</text>
+  <rect class="d-box-info" x="420" y="178" width="60" height="20" /><rect class="d-box-info" x="480" y="178" width="50" height="20" /><rect class="d-box-info" x="530" y="178" width="54" height="20" /><rect class="d-box-success" x="584" y="178" width="80" height="20" />
+  <text class="d-text" x="450" y="192" text-anchor="middle">Jorge</text><text class="d-text" x="505" y="192" text-anchor="middle">B</text><text class="d-text" x="557" y="192" text-anchor="middle">60</text><text class="d-text" x="624" y="192" text-anchor="middle">215</text>
+
+  <!-- Footer -->
+  <rect class="d-box-info" x="16" y="236" width="728" height="52" rx="8" />
+  <text class="d-text" x="32" y="258">partitionBy sin orderBy agrega el grupo entero y pega el resultado en cada fila: ninguna desaparece.</text>
+  <text class="d-muted" x="32" y="278">Así se calcula el peso de cada fila en su grupo: points / team_total. Con groupBy habría que volver a hacer un join.</text>
+</svg>

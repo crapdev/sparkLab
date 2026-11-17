@@ -15,7 +15,10 @@ interactivos en el navegador y laboratorios en Google Colab con tests automátic
 | 6. Strings y fechas            | Publicado      |
 | 7. Arrays                      | Publicado      |
 | 8. Agregaciones                | Publicado      |
-| 9 a 15                         | En preparación |
+| 9. Union y joins               | Publicado      |
+| 10. Window functions           | Publicado      |
+| 11. UDFs                       | Publicado      |
+| 12 a 15                        | En preparación |
 
 El plan completo está en [docs/plan](docs/plan/README.md).
 
@@ -162,5 +165,18 @@ Tras el primer despliegue, apunta los notebooks a la URL publicada:
 | `bigmart_sales.csv`      | Reto de práctica BigMart Sales de Analytics Vidhya. Uso educativo.                                      |
 | `drivers.json`           | Pilotos de Fórmula 1, de la API [Jolpica-F1](https://github.com/jolpica/jolpica-f1), sucesora de Ergast |
 | `drivers_multiline.json` | Los 20 primeros pilotos del anterior, como array con sangría                                            |
+| `outlets.csv`            | Tabla de tiendas para los joins, construida a partir de BigMart (ver abajo)                             |
 
-`scripts/fetch-drivers.py` regenera los dos archivos de pilotos.
+`scripts/fetch-drivers.py` regenera los dos archivos de pilotos y `scripts/build-outlets.py`
+regenera `outlets.csv`.
+
+### outlets.csv
+
+Una fila por tienda, con `Outlet_Identifier` como clave. Las columnas
+`Outlet_Establishment_Year`, `Outlet_Size`, `Outlet_Location_Type` y `Outlet_Type` se copian
+de `bigmart_sales.csv`, donde son constantes para cada tienda. Las columnas `City`, `Manager`
+y `Staff` **son inventadas** para el curso y no existen en las ventas.
+
+La tabla no cuadra del todo con las ventas, a propósito, para que cada tipo de join devuelva
+algo distinto: `OUT019` vende en BigMart (528 filas) pero no está en `outlets.csv`, y
+`OUT099` está en `outlets.csv` pero no vende nada.

@@ -40,8 +40,8 @@ devuelve filas (316); y los conteos de los cuatro joins con el ejemplo
 
 | Tema                          | Las notas dicen                                  | Lo correcto                                                                                                            | Estado               |
 | ----------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| Suma con ventana sin marco    | Repite el total de cada `Item_Type` en sus filas | Da un acumulado en el que las filas empatadas comparten valor                                                          | Pendiente            |
-| UDF sin tipo de retorno       | Devuelve el cuadrado del valor                   | Lo devuelve como texto; hay que declarar el tipo                                                                       | Pendiente            |
+| Suma con ventana sin marco    | Repite el total de cada `Item_Type` en sus filas | Da un acumulado en el que las filas empatadas comparten valor                                                          | Tratado en módulo 10 |
+| UDF sin tipo de retorno       | Devuelve el cuadrado del valor                   | Lo devuelve como texto; hay que declarar el tipo                                                                       | Tratado en módulo 11 |
 | `fillna("Not Available")`     | Rellena nulos en cualquier parte                 | Solo en columnas de texto; `Item_Weight` no cambia                                                                     | Pendiente            |
 | `cast` con un valor imposible | Devuelve `NULL`                                  | En Spark 4 el modo ANSI está activado: falla al ejecutar con `CAST_INVALID_INPUT`; para `NULL` hay que usar `try_cast` | Tratado en módulo 4  |
 | Delta frente a Parquet        | En Delta la metadata sale del archivo Parquet    | Los archivos siguen siendo Parquet con su footer; el log añade metadata de tabla                                       | Pendiente            |
@@ -50,8 +50,8 @@ devuelve filas (316); y los conteos de los cuatro joins con el ejemplo
 | Hadoop                        | "Usaba memoria en disco"                         | MapReduce escribe resultados intermedios en disco; Spark los mantiene en memoria                                       | Conocimiento general |
 | Cluster manager               | "Crea los worker nodes"                          | Asigna recursos; los executors corren en los workers                                                                   | Conocimiento general |
 | Escalado                      | "Infinito"                                       | Horizontal, con límites prácticos                                                                                      | Conocimiento general |
-| Anti join                     | "No existe en SQL clásico"                       | Spark SQL tiene `LEFT ANTI JOIN`; en SQL estándar se hace con `NOT EXISTS`                                             | Pendiente            |
-| `union`                       | Apila por posición                               | Cierto, y además no elimina duplicados (equivale a `UNION ALL`)                                                        | Pendiente            |
+| Anti join                     | "No existe en SQL clásico"                       | Spark SQL tiene `LEFT ANTI JOIN`; en SQL estándar se hace con `NOT EXISTS`                                             | Tratado en módulo 9  |
+| `union`                       | Apila por posición                               | Cierto, y además no elimina duplicados (equivale a `UNION ALL`)                                                        | Tratado en módulo 9  |
 | `date_format` con `YYYY`      | Da error                                         | Plausible: Spark 3 y posteriores rechazan los patrones de año por semana                                               | Pendiente            |
 | Parquet                       | "Guardando la metadata particionada"             | Frase sin sentido; se ignora                                                                                           | —                    |
 

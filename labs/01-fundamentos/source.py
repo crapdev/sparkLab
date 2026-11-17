@@ -15,12 +15,15 @@
 # La `SparkSession` es la puerta de entrada a Spark: con ella lees datos, creas DataFrames
 # y lanzas consultas. En Databricks ya viene creada con el nombre `spark`; aquí la creas tú.
 #
+# La receta tiene cuatro piezas, explicadas en la sección "La SparkSession: tu puerta de
+# entrada" de la teoría: `SparkSession.builder` acumula opciones, `master(...)` dice dónde se
+# ejecuta, `appName(...)` le pone nombre y `getOrCreate()` es el único paso que crea algo.
+# `local[*]` significa "en esta máquina, con todos los núcleos que tenga".
+#
 # Crea una sesión que:
 #
 # - se ejecute en modo local usando todos los núcleos disponibles: `local[*]`
 # - tenga como nombre de aplicación `lab-01-fundamentos`
-#
-# La receta es `SparkSession.builder.master(...).appName(...).getOrCreate()`.
 
 # %%
 from pyspark.sql import DataFrame, SparkSession
@@ -45,10 +48,30 @@ check(
     'Usa .master("local[*]") antes de .getOrCreate().',
 )
 check(
+    "Tarea 1 · el nombre de la aplicación es lab-01-fundamentos",
+    lambda: spark.sparkContext.appName == "lab-01-fundamentos",
+    'Usa .appName("lab-01-fundamentos"). Si ya habías creado una sesión con otro nombre, getOrCreate devuelve esa: reinicia el entorno de ejecución y repite.',
+)
+check(
     "Tarea 1 · la sesión funciona",
     lambda: spark.range(5).count() == 5,
     "La sesión no pudo ejecutar un job sencillo. Vuelve a ejecutar la celda de preparación.",
 )
+
+# %% [markdown]
+# La sesión sabe contarte cómo es. `defaultParallelism` es el número de núcleos que está
+# usando (en Colab, 2), y es también el número de particiones con el que nacen los
+# `spark.range`. Y fíjate en el experimento de abajo: pedir una segunda sesión con otro
+# nombre y otro master **no crea nada**; `getOrCreate()` devuelve la que ya existe.
+
+# %%
+print("Versión:", spark.version)
+print("Master:", spark.sparkContext.master)
+print("Nombre:", spark.sparkContext.appName)
+print("Núcleos en uso:", spark.sparkContext.defaultParallelism)
+
+spark2 = SparkSession.builder.master("local[2]").appName("otra-app").getOrCreate()
+print("Segunda sesión:", spark2.sparkContext.appName, spark2.sparkContext.master, "· ¿es la misma?", spark2 is spark)
 
 # %% [markdown]
 # ### Una herramienta para mirar dentro de Spark

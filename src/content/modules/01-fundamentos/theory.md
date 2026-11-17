@@ -23,6 +23,83 @@ Una idea para no olvidar: **los datos grandes nunca deberían pasar por el drive
 > [!NOTE]
 > En Colab, y en tu portátil, Spark corre en **modo local**: el driver y los executors viven en un solo proceso y usan los núcleos de esa máquina. No hay clúster de verdad, pero el código es idéntico al que escribirías para mil máquinas.
 
+## La SparkSession: tu puerta de entrada
+
+Todo lo que acabas de leer, el driver, los executors, el cluster manager, lo manejas desde un solo objeto: la **SparkSession**. Por convención se llama `spark`, vive en el driver y representa tu aplicación dentro del clúster. Con él lees datos (`spark.read`), creas DataFrames (`spark.range`, `spark.createDataFrame`), lanzas SQL (`spark.sql`) y cambias la configuración (`spark.conf`). No hay forma de hablar con Spark sin pasar por él.
+
+![Tu código habla con el objeto spark, que vive en el driver y tiene cuatro puertas: read, createDataFrame, sql y conf; desde ahí el driver reparte el trabajo entre los executors](diagram:spark-session 'Todo lo que pides a Spark pasa por la sesión.')
+
+Se crea con una receta de cuatro piezas:
+
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.master("local[*]").appName("mi-app").getOrCreate()
+```
+
+- **`builder`** es un constructor: le vas encadenando opciones, pero por sí solo **no crea nada**.
+- **`master("local[*]")`** dice dónde se ejecuta. `local[*]` es esta máquina con todos sus núcleos; `local[2]`, dos núcleos. En un clúster real sería la dirección de YARN o Kubernetes, y normalmente no la pones tú: la pone el entorno.
+- **`appName("mi-app")`** es el nombre con el que aparece tu aplicación en la Spark UI y en los logs.
+- **`getOrCreate()`** es el único paso que crea algo. Y el nombre lo dice todo: si en el proceso ya existe una sesión, **devuelve esa** e ignora el `master` y el `appName` nuevos.
+
+Una vez creada, la sesión sabe contarte cómo es. Por debajo tiene un `SparkContext` (`spark.sparkContext`), la API antigua de Spark, que en este curso solo se usa para mirar estas cosas:
+
+```python
+print(spark.version)
+print(spark.sparkContext.master)
+print(spark.sparkContext.appName)
+print(spark.sparkContext.defaultParallelism)
+```
+
+```output
+4.2.0
+local[*]
+mi-app
+8
+```
+
+`defaultParallelism` es el número de núcleos que Spark está usando: 8 en la máquina donde se midió esto, 2 en Colab. Es también el número de particiones con el que nacen los DataFrames de `spark.range(...)`, y por eso el `splits=8` que verás más abajo en un plan de ejecución.
+
+El experimento que explica `getOrCreate`: pedir una segunda sesión con otro nombre y otro master.
+
+```python
+spark2 = SparkSession.builder.master("local[2]").appName("otra-app").getOrCreate()
+print(spark2.sparkContext.appName, spark2.sparkContext.master, spark2 is spark)
+```
+
+```output
+mi-app local[*] True
+```
+
+No hay segunda sesión: `spark2` **es** `spark`, con su nombre y su master de siempre. Spark lo hace a propósito: una aplicación tiene una sesión, y todo el código del proceso comparte la misma.
+
+> [!WARNING]
+> Una sesión por proceso. Llamar al builder dos veces no te da dos clústeres ni dos configuraciones: `getOrCreate()` devuelve la que exista. Si de verdad necesitas otra, primero `spark.stop()`.
+
+### Configuración
+
+`spark.conf` lee y cambia opciones de Spark SQL en caliente. La que más vas a tocar en este curso es el número de particiones que produce un shuffle, que por defecto es 200, demasiadas para datos pequeños:
+
+```python
+print(spark.conf.get("spark.sql.shuffle.partitions"))
+spark.conf.set("spark.sql.shuffle.partitions", 8)
+print(spark.conf.get("spark.sql.shuffle.partitions"))
+```
+
+```output
+200
+8
+```
+
+No todo se puede cambiar después. Las opciones que afectan al arranque, como la memoria del driver, solo se fijan al crear la sesión, con `.config("clave", valor)` dentro del builder; después dan `[CANNOT_MODIFY_CONFIG] Cannot modify the value of the Spark config: "spark.driver.memory"`. En los módulos de rendimiento verás por qué importan estas opciones.
+
+### El final: stop()
+
+`spark.stop()` cierra la aplicación y libera los executors. En Colab no suele hacer falta, porque la sesión muere con el notebook; en un script `.py` conviene cerrarla al terminar. Después de `stop()` cualquier DataFrame antiguo falla y `spark.range(...)` da `AttributeError: 'NoneType' object has no attribute 'sc'`; un nuevo `getOrCreate()` crea entonces una sesión **nueva**, ya con el `master` y el `appName` que le pidas.
+
+> [!NOTE]
+> En Databricks y en la consola `pyspark`, `spark` ya existe cuando llegas. En Colab, en un script `.py` o con `spark-submit`, la creas tú con la receta de arriba. Es la primera fila de la tabla "Colab frente a Databricks" de más abajo.
+
 ## Transformaciones y acciones
 
 Los DataFrames de Spark son **inmutables**: ninguna operación cambia un DataFrame, siempre devuelve uno nuevo. Las operaciones son de dos tipos.
@@ -187,3 +264,5 @@ Si sigues un tutorial que usa `import *`, donde escriba `col(...)` tú escribes 
 - **Usar `collect()` o `toPandas()` con datos grandes.** Traen todas las filas al driver y pueden dejarlo sin memoria. Para mirar, usa `show()` o `take(n)`; para traer, reduce antes.
 - **Creer que `limit(5)` trae filas a Python.** Devuelve otro DataFrame. Para una lista, `take(5)`.
 - **Escribir `true` en vez de `True`.** En Python los booleanos van con mayúscula; `true` da `NameError`.
+- **Olvidar `getOrCreate()`.** `spark` se queda siendo un `Builder`, y lo primero que le pidas falla: `AttributeError: 'Builder' object has no attribute 'read'`.
+- **Cambiar `master` o `appName` en un segundo builder y esperar que haga efecto.** `getOrCreate()` devuelve la sesión que ya existe, con su configuración de siempre. Para empezar de cero, `spark.stop()` primero.

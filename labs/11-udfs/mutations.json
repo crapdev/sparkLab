@@ -1,0 +1,110 @@
+[
+  {
+    "name": "task 1: double declared for a string function",
+    "old": "band_udf = F.udf(price_band, \"string\")",
+    "new": "band_udf = F.udf(price_band, \"double\")",
+    "expect": "Tarea 1 · band es string"
+  },
+  {
+    "name": "task 1: wrong threshold",
+    "old": "    if mrp < 200:\n        return \"mid\"",
+    "new": "    if mrp < 150:\n        return \"mid\"",
+    "expect": "Tarea 1 · price_band"
+  },
+  {
+    "name": "task 1: labels swapped",
+    "old": "    if mrp < 100:\n        return \"cheap\"",
+    "new": "    if mrp < 100:\n        return \"premium\"",
+    "expect": "Tarea 1 · price_band"
+  },
+  {
+    "name": "task 1: udf applied to the wrong column",
+    "old": "banded = sales.withColumn(\"band\", band_udf(\"Item_MRP\"))",
+    "new": "banded = sales.withColumn(\"band\", band_udf(\"Item_Outlet_Sales\"))",
+    "expect": "Tarea 1 · band es string"
+  },
+  {
+    "name": "task 2: return type not declared",
+    "old": "square_udf = F.udf(square, \"double\")",
+    "new": "square_udf = F.udf(square)",
+    "expect": "Tarea 2 · mrp_sq es double"
+  },
+  {
+    "name": "task 2: string declared",
+    "old": "square_udf = F.udf(square, \"double\")",
+    "new": "square_udf = F.udf(square, \"string\")",
+    "expect": "Tarea 2 · mrp_sq es double"
+  },
+  {
+    "name": "task 2: x + x instead of x * x",
+    "old": "square_udf = F.udf(square, \"double\")",
+    "new": "square_udf = F.udf(lambda x: x + x, \"double\")",
+    "expect": "Tarea 2 · el cuadrado"
+  },
+  {
+    "name": "task 3: None not handled",
+    "old": "    if weight is None:\n        return None\n    return int(round(weight * 1000))",
+    "new": "    return int(round(weight * 1000))",
+    "expect": "Tarea 3 · grams es int"
+  },
+  {
+    "name": "task 3: double declared",
+    "old": "grams_udf = F.udf(grams, \"int\")",
+    "new": "grams_udf = F.udf(grams, \"double\")",
+    "expect": "Tarea 3 · grams es int"
+  },
+  {
+    "name": "task 3: truncated instead of rounded",
+    "old": "    return int(round(weight * 1000))",
+    "new": "    return int(weight * 1000)",
+    "expect": "Tarea 3 · FDA15"
+  },
+  {
+    "name": "task 3: kilograms instead of grams",
+    "old": "    return int(round(weight * 1000))",
+    "new": "    return int(round(weight * 100))",
+    "expect": "Tarea 3 · FDA15"
+  },
+  {
+    "name": "task 4: otherwise forgotten",
+    "old": "    \"band_native\", F.when(F.col(\"Item_MRP\") < 100, \"cheap\").when(F.col(\"Item_MRP\") < 200, \"mid\").otherwise(\"premium\")",
+    "new": "    \"band_native\", F.when(F.col(\"Item_MRP\") < 100, \"cheap\").when(F.col(\"Item_MRP\") < 200, \"mid\")",
+    "expect": "Tarea 4 · band_native existe"
+  },
+  {
+    "name": "task 4: conditions in the wrong order",
+    "old": "    \"band_native\", F.when(F.col(\"Item_MRP\") < 100, \"cheap\").when(F.col(\"Item_MRP\") < 200, \"mid\").otherwise(\"premium\")",
+    "new": "    \"band_native\", F.when(F.col(\"Item_MRP\") < 200, \"mid\").when(F.col(\"Item_MRP\") < 100, \"cheap\").otherwise(\"premium\")",
+    "expect": "Tarea 4 · band_native existe"
+  },
+  {
+    "name": "task 4: the udf reused as native",
+    "old": "    \"band_native\", F.when(F.col(\"Item_MRP\") < 100, \"cheap\").when(F.col(\"Item_MRP\") < 200, \"mid\").otherwise(\"premium\")",
+    "new": "    \"band_native\", band_udf(\"Item_MRP\")",
+    "expect": "Tarea 4 · band_native no usa"
+  },
+  {
+    "name": "task 5: cast forgotten",
+    "old": "weighed_native = weighed.withColumn(\"grams_native\", F.round(F.col(\"Item_Weight\") * 1000).cast(\"int\"))",
+    "new": "weighed_native = weighed.withColumn(\"grams_native\", F.round(F.col(\"Item_Weight\") * 1000))",
+    "expect": "Tarea 5 · grams_native"
+  },
+  {
+    "name": "task 5: round forgotten",
+    "old": "weighed_native = weighed.withColumn(\"grams_native\", F.round(F.col(\"Item_Weight\") * 1000).cast(\"int\"))",
+    "new": "weighed_native = weighed.withColumn(\"grams_native\", (F.col(\"Item_Weight\") * 1000).cast(\"int\"))",
+    "expect": "Tarea 5 · grams_native"
+  },
+  {
+    "name": "task 6: plain udf instead of pandas_udf",
+    "old": "@pandas_udf(\"double\")\ndef square_pd(s: pd.Series) -> pd.Series:\n    return s * s",
+    "new": "@F.udf(\"double\")\ndef square_pd(s):\n    return s * s",
+    "expect": "Tarea 6 · square_pd"
+  },
+  {
+    "name": "task 6: wrong formula",
+    "old": "@pandas_udf(\"double\")\ndef square_pd(s: pd.Series) -> pd.Series:\n    return s * s",
+    "new": "@pandas_udf(\"double\")\ndef square_pd(s: pd.Series) -> pd.Series:\n    return s * 2",
+    "expect": "Tarea 6 · mrp_sq"
+  }
+]

@@ -2,8 +2,219 @@
   "id": "09-union-joins",
   "order": 9,
   "block": "resumir-combinar",
-  "status": "planned",
+  "status": "published",
   "title": "Union y joins",
   "summary": "Apilar y cruzar DataFrames sin perder ni duplicar filas por accidente.",
-  "estimatedMinutes": 60
+  "estimatedMinutes": 75,
+  "objectives": [
+    "Apilar DataFrames con `unionByName` y explicar por qué `union` por posición es peligroso.",
+    "Cruzar dos DataFrames por una clave y elegir entre `inner`, `left`, `right` y `anti` según qué filas hay que conservar.",
+    "Predecir cuántas filas devuelve cada tipo de join a partir de las claves de cada lado.",
+    "Evitar la columna de clave duplicada y el error de ambigüedad uniendo por nombre de columna.",
+    "Usar `anti` para encontrar lo que falta en uno de los dos lados.",
+    "Reconocer las dos trampas silenciosas: claves repetidas que multiplican filas y claves nulas que nunca cruzan."
+  ],
+  "lab": {
+    "path": "labs/09-union-joins",
+    "minutes": 40,
+    "datasets": ["bigmart_sales.csv", "outlets.csv"],
+    "summary": "Apilas empleados con `unionByName`, cruzas dos tablas pequeñas con inner, left y anti join, y después enriqueces las ventas de BigMart con la tabla de tiendas `outlets.csv`, descubriendo qué tienda falta y cuál no vende.",
+    "tasks": [
+      "Apilar dos DataFrames con las columnas en distinto orden con `unionByName`.",
+      "Inner join con la condición explícita y ver la clave duplicada.",
+      "Left join por nombre de columna, conservando la fila sin pareja.",
+      "Anti join en los dos sentidos: empleados sin departamento y departamentos vacíos.",
+      "Cruzar BigMart con `outlets.csv` seleccionando antes solo las columnas nuevas.",
+      "Enriquecer sin perder ventas con `left` y encontrar la tienda que no vende con `anti`."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-union-by-name",
+      "type": "fill-code",
+      "prompt": "`new_hires` tiene las mismas columnas que `emp` pero en otro orden. Apila los dos sin mezclar los datos.",
+      "code": "staff = emp.___(new_hires)",
+      "blanks": [
+        {
+          "answers": ["unionByName"],
+          "hint": "El método que empareja las columnas por nombre, no por posición."
+        }
+      ],
+      "explanation": "`unionByName` empareja cada columna por su nombre. `union` lo haría por posición y pondría los nombres bajo `dept_id` sin dar error."
+    },
+    {
+      "id": "ex-union-count",
+      "type": "predict-output",
+      "prompt": "`emp` tiene 6 filas. ¿Qué imprime?",
+      "code": "print(emp.union(emp).count())",
+      "answers": ["12"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "`union` apila; no comprueba si las filas se repiten.",
+      "explanation": "Imprime 12. `union` no quita duplicados: las 6 filas salen dos veces. Con `.distinct()` volverían a ser 6."
+    },
+    {
+      "id": "ex-inner-count",
+      "type": "predict-output",
+      "prompt": "`emp` tiene `dept_id` d01, d02, d03, d03, d05 y d06. `dept` tiene d01, d02, d03, d04 y d05. ¿Qué imprime?",
+      "code": "print(emp.join(dept, \"dept_id\", \"inner\").count())",
+      "answers": ["5"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Cuenta las filas de `emp` cuya clave existe en `dept`.",
+      "explanation": "Imprime 5: d01, d02, d03, d03 y d05. Las dos filas con d03 cruzan con el único d03 de `dept` y salen las dos. d06 no está en `dept` y d04 no está en `emp`."
+    },
+    {
+      "id": "ex-left-row",
+      "type": "choice",
+      "prompt": "Jorge tiene `dept_id` d06, que no existe en `dept`. ¿Cómo sale su fila en `emp.join(dept, \"dept_id\", \"left\")`?",
+      "options": [
+        "No sale: el join la descarta.",
+        "Sale con `dept_name` a `NULL`.",
+        "Sale con `dept_name` vacío (`\"\"`).",
+        "Da un error porque la clave no existe."
+      ],
+      "answer": 1,
+      "hint": "`left` promete no perder filas de la izquierda.",
+      "explanation": "Un left join conserva todas las filas de la izquierda. Las que no cruzan salen con `NULL` en las columnas que venían de la derecha. Con `inner` sí desaparecería."
+    },
+    {
+      "id": "ex-anti-direction",
+      "type": "fill-code",
+      "prompt": "Devuelve los departamentos de `dept` que no tienen ningún empleado en `emp`.",
+      "code": "dept.join(emp, \"dept_id\", \"___\")",
+      "blanks": [
+        {
+          "answers": ["anti", "left_anti", "leftanti"],
+          "hint": "El tipo de join que devuelve lo que no tiene pareja en la otra tabla."
+        }
+      ],
+      "explanation": "`anti` devuelve las filas de la izquierda sin pareja en la derecha, solo con las columnas de la izquierda. Como `dept` va a la izquierda, salen los departamentos vacíos: `Legal`."
+    },
+    {
+      "id": "ex-ambiguous",
+      "type": "choice",
+      "prompt": "Ejecutas este código. ¿Qué pasa?",
+      "code": "emp.join(dept, emp[\"dept_id\"] == dept[\"dept_id\"], \"inner\").select(\"dept_id\").show()",
+      "options": [
+        "Muestra la columna `dept_id` de `emp`.",
+        "Muestra las dos columnas `dept_id`.",
+        "Error `AMBIGUOUS_REFERENCE`: hay dos columnas `dept_id` y Spark no sabe cuál pedir.",
+        "Muestra una columna vacía."
+      ],
+      "answer": 2,
+      "hint": "Con la condición explícita, el resultado trae la clave de las dos tablas.",
+      "explanation": "La condición `emp[\"dept_id\"] == dept[\"dept_id\"]` deja las dos claves en el resultado. Pedir `dept_id` por nombre es ambiguo. Une por nombre de columna, `emp.join(dept, \"dept_id\")`, o pide `emp[\"dept_id\"]`."
+    },
+    {
+      "id": "ex-bigmart-left-null",
+      "type": "predict-output",
+      "prompt": "`sales` tiene 8523 filas, 528 de la tienda OUT019. `outlet_info` tiene todas las tiendas menos OUT019. ¿Qué imprime?",
+      "code": "print(sales.join(outlet_info, \"Outlet_Identifier\", \"left\").filter(F.col(\"City\").isNull()).count())",
+      "answers": ["528"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Un left join conserva las 8523; ¿cuáles quedan sin `City`?",
+      "explanation": "Imprime 528. El left join conserva todas las ventas, y las de OUT019, que no está en `outlet_info`, quedan con `City` a `NULL`. Con `inner` esas 528 habrían desaparecido."
+    },
+    {
+      "id": "ex-dup-keys",
+      "type": "predict-output",
+      "prompt": "`dept_dup` es `dept` con una segunda fila para d03. `emp` tiene dos empleados en d03. ¿Qué imprime?",
+      "code": "print(emp.join(dept_dup, \"dept_id\", \"inner\").count())",
+      "optionsFormat": "code",
+      "options": ["5", "6", "7", "Error: clave duplicada"],
+      "answer": 2,
+      "hint": "Cada fila de un lado se empareja con cada fila del otro que tenga su clave.",
+      "explanation": "Imprime 7. Marta y Pedro cruzan con las dos filas d03: 2 × 2 = 4 filas, más las de d01, d02 y d05. Las claves repetidas multiplican, y Spark no avisa."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-union-position",
+      "question": "¿Cómo decide `union` qué columna va debajo de cuál?",
+      "options": [
+        "Por el nombre de la columna.",
+        "Por la posición: la primera bajo la primera, la segunda bajo la segunda.",
+        "Por el tipo de dato.",
+        "Pide confirmación si los nombres no coinciden."
+      ],
+      "answer": 1,
+      "explanation": "`union` empareja por posición y no mira los nombres. Si el orden difiere, mezcla los datos sin error. `unionByName` empareja por nombre."
+    },
+    {
+      "id": "q-union-distinct",
+      "question": "En SQL, `UNION` elimina las filas repetidas. ¿Y `union` en PySpark?",
+      "options": [
+        "También las elimina.",
+        "No las elimina; `union` y `unionAll` hacen lo mismo. Para quitarlas, `distinct()`.",
+        "Las elimina solo si las tablas tienen clave.",
+        "Da error si hay repetidas."
+      ],
+      "answer": 1,
+      "explanation": "`emp.union(emp)` tiene 12 filas. En Spark, `union` conserva todo; si quieres sin repetidos, añade `distinct()`."
+    },
+    {
+      "id": "q-default-join",
+      "question": "¿Qué tipo de join hace `emp.join(dept, \"dept_id\")` sin tercer argumento?",
+      "options": ["`left`", "`inner`", "`full`", "`cross`"],
+      "answer": 1,
+      "explanation": "El tipo por defecto es `inner`: solo las claves que están en los dos lados. Conviene escribirlo siempre para que se lea."
+    },
+    {
+      "id": "q-no-rows-added",
+      "question": "¿Qué dos tipos de join nunca devuelven más filas que el DataFrame de la izquierda ni añaden columnas de la derecha?",
+      "options": ["`inner` y `left`", "`left` y `right`", "`anti` y `semi`", "`full` y `cross`"],
+      "answer": 2,
+      "explanation": "`anti` y `semi` solo filtran la izquierda: uno devuelve las filas sin pareja, el otro las filas con pareja. Ninguno trae columnas de la derecha ni multiplica filas."
+    },
+    {
+      "id": "q-right-equals-left",
+      "question": "¿Qué devuelve las mismas filas que `emp.join(dept, \"dept_id\", \"right\")`?",
+      "options": [
+        "`dept.join(emp, \"dept_id\", \"left\")`, con las columnas en otro orden.",
+        "`emp.join(dept, \"dept_id\", \"left\")`.",
+        "`dept.join(emp, \"dept_id\", \"anti\")`.",
+        "`emp.join(dept, \"dept_id\", \"full\")`."
+      ],
+      "answer": 0,
+      "explanation": "`right` conserva todo lo de la derecha; poner esa tabla a la izquierda y usar `left` da las mismas filas. Por eso muchos equipos escriben siempre `left`."
+    },
+    {
+      "id": "q-null-keys",
+      "question": "`emp_null` tiene un empleado con `dept_id` nulo y `dept_null` un departamento con clave nula. ¿Cruzan en un inner join?",
+      "options": [
+        "Sí: `NULL` es igual a `NULL`.",
+        "No: un `NULL` no es igual a nada. El inner los ignora y el anti los devuelve.",
+        "Sí, pero solo si las dos columnas son de texto.",
+        "Da error."
+      ],
+      "answer": 1,
+      "explanation": "Las claves nulas nunca cruzan: la comparación `NULL == NULL` no es verdadera. Si lo necesitas, la condición explícita admite `eqNullSafe`."
+    },
+    {
+      "id": "q-join-wide",
+      "question": "¿Por qué un `join` suele añadir un shuffle, y cuándo se lo ahorra Spark?",
+      "options": [
+        "Porque devuelve más columnas; nunca se lo ahorra.",
+        "Porque las filas con la misma clave tienen que juntarse en la misma partición; con una tabla pequeña, la copia entera a cada executor (broadcast) y evita el shuffle de la grande.",
+        "Porque ordena el resultado; se lo ahorra con `orderBy`.",
+        "Porque es una acción."
+      ],
+      "answer": 1,
+      "explanation": "Emparejar claves exige que las filas iguales estén juntas: shuffle. Si una tabla cabe en memoria, Spark la difunde (`BroadcastHashJoin`) y la grande no se mueve."
+    },
+    {
+      "id": "q-select-before-join",
+      "question": "`sales` y `outlets` comparten cinco columnas. Si cruzas `sales` con `outlets` entera por `Outlet_Identifier`, ¿qué pasa con `Outlet_Type`?",
+      "options": [
+        "Spark la combina en una sola columna.",
+        "Sale dos veces y pedirla por nombre da `AMBIGUOUS_REFERENCE`.",
+        "Se queda la de `sales` y se descarta la de `outlets`.",
+        "Da error el join."
+      ],
+      "answer": 1,
+      "explanation": "Solo la clave del join se junta en una columna; las demás columnas con el mismo nombre salen duplicadas. Por eso conviene seleccionar antes de la tabla pequeña solo la clave y lo que aporta."
+    }
+  ]
 }

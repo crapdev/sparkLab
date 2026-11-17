@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <text class="d-code" x="16" y="26">.over(Window.orderBy(F.desc("points")))</text>
+
+  <!-- Header -->
+  <rect class="d-box" x="16" y="48" width="70" height="24" rx="3" />
+  <rect class="d-box" x="86" y="48" width="70" height="24" rx="3" />
+  <rect class="d-box" x="186" y="48" width="110" height="24" rx="3" />
+  <rect class="d-box" x="326" y="48" width="110" height="24" rx="3" />
+  <rect class="d-box" x="466" y="48" width="110" height="24" rx="3" />
+  <text class="d-muted" x="51" y="64" text-anchor="middle">name</text>
+  <text class="d-muted" x="121" y="64" text-anchor="middle">points</text>
+  <text class="d-code-small" x="241" y="64" text-anchor="middle">row_number</text>
+  <text class="d-code-small" x="381" y="64" text-anchor="middle">rank</text>
+  <text class="d-code-small" x="521" y="64" text-anchor="middle">dense_rank</text>
+
+  <!-- Row 1: Ana 90 (tie) -->
+  <rect class="d-box-accent" x="16" y="72" width="70" height="24" />
+  <rect class="d-box-accent" x="86" y="72" width="70" height="24" />
+  <rect class="d-box" x="186" y="72" width="110" height="24" />
+  <rect class="d-box-success" x="326" y="72" width="110" height="24" />
+  <rect class="d-box-success" x="466" y="72" width="110" height="24" />
+  <text class="d-text" x="51" y="89" text-anchor="middle">Ana</text>
+  <text class="d-text" x="121" y="89" text-anchor="middle">90</text>
+  <text class="d-text" x="241" y="89" text-anchor="middle">1</text>
+  <text class="d-text" x="381" y="89" text-anchor="middle">1</text>
+  <text class="d-text" x="521" y="89" text-anchor="middle">1</text>
+
+  <!-- Row 2: Luis 90 (tie) -->
+  <rect class="d-box-accent" x="16" y="96" width="70" height="24" />
+  <rect class="d-box-accent" x="86" y="96" width="70" height="24" />
+  <rect class="d-box" x="186" y="96" width="110" height="24" />
+  <rect class="d-box-success" x="326" y="96" width="110" height="24" />
+  <rect class="d-box-success" x="466" y="96" width="110" height="24" />
+  <text class="d-text" x="51" y="113" text-anchor="middle">Luis</text>
+  <text class="d-text" x="121" y="113" text-anchor="middle">90</text>
+  <text class="d-text" x="241" y="113" text-anchor="middle">2</text>
+  <text class="d-text" x="381" y="113" text-anchor="middle">1</text>
+  <text class="d-text" x="521" y="113" text-anchor="middle">1</text>
+
+  <!-- Row 3: Marta 85 (tie) -->
+  <rect class="d-box-accent" x="16" y="120" width="70" height="24" />
+  <rect class="d-box-accent" x="86" y="120" width="70" height="24" />
+  <rect class="d-box" x="186" y="120" width="110" height="24" />
+  <rect class="d-box-success" x="326" y="120" width="110" height="24" />
+  <rect class="d-box-success" x="466" y="120" width="110" height="24" />
+  <text class="d-text" x="51" y="137" text-anchor="middle">Marta</text>
+  <text class="d-text" x="121" y="137" text-anchor="middle">85</text>
+  <text class="d-text" x="241" y="137" text-anchor="middle">3</text>
+  <text class="d-text" x="381" y="137" text-anchor="middle">3</text>
+  <text class="d-text" x="521" y="137" text-anchor="middle">2</text>
+
+  <!-- Row 4: Pedro 85 (tie) -->
+  <rect class="d-box-accent" x="16" y="144" width="70" height="24" />
+  <rect class="d-box-accent" x="86" y="144" width="70" height="24" />
+  <rect class="d-box" x="186" y="144" width="110" height="24" />
+  <rect class="d-box-success" x="326" y="144" width="110" height="24" />
+  <rect class="d-box-success" x="466" y="144" width="110" height="24" />
+  <text class="d-text" x="51" y="161" text-anchor="middle">Pedro</text>
+  <text class="d-text" x="121" y="161" text-anchor="middle">85</text>
+  <text class="d-text" x="241" y="161" text-anchor="middle">4</text>
+  <text class="d-text" x="381" y="161" text-anchor="middle">3</text>
+  <text class="d-text" x="521" y="161" text-anchor="middle">2</text>
+
+  <!-- Row 5: Sofía 70 -->
+  <rect class="d-box" x="16" y="168" width="70" height="24" />
+  <rect class="d-box" x="86" y="168" width="70" height="24" />
+  <rect class="d-box" x="186" y="168" width="110" height="24" />
+  <rect class="d-box" x="326" y="168" width="110" height="24" />
+  <rect class="d-box" x="466" y="168" width="110" height="24" />
+  <text class="d-text" x="51" y="185" text-anchor="middle">Sofía</text>
+  <text class="d-text" x="121" y="185" text-anchor="middle">70</text>
+  <text class="d-text" x="241" y="185" text-anchor="middle">5</text>
+  <text class="d-text" x="381" y="185" text-anchor="middle">5</text>
+  <text class="d-text" x="521" y="185" text-anchor="middle">3</text>
+
+  <!-- Row 6: Jorge 60 -->
+  <rect class="d-box" x="16" y="192" width="70" height="24" />
+  <rect class="d-box" x="86" y="192" width="70" height="24" />
+  <rect class="d-box" x="186" y="192" width="110" height="24" />
+  <rect class="d-box" x="326" y="192" width="110" height="24" />
+  <rect class="d-box" x="466" y="192" width="110" height="24" />
+  <text class="d-text" x="51" y="209" text-anchor="middle">Jorge</text>
+  <text class="d-text" x="121" y="209" text-anchor="middle">60</text>
+  <text class="d-text" x="241" y="209" text-anchor="middle">6</text>
+  <text class="d-text" x="381" y="209" text-anchor="middle">6</text>
+  <text class="d-text" x="521" y="209" text-anchor="middle">4</text>
+
+  <!-- Side notes -->
+  <text class="d-accent-text" x="596" y="89">empate: 90 y 90</text>
+  <text class="d-accent-text" x="596" y="137">empate: 85 y 85</text>
+  <text class="d-muted" x="596" y="185">sin empate</text>
+
+  <!-- Footer -->
+  <rect class="d-box-info" x="16" y="232" width="728" height="56" rx="8" />
+  <text class="d-text" x="32" y="254">row_number: siempre 1, 2, 3… aunque haya empate (¿quién es el 1? depende del orden de llegada).</text>
+  <text class="d-text" x="32" y="276">rank: los empatados comparten número y luego salta (1, 1, 3). dense_rank: no salta (1, 1, 2).</text>
+</svg>

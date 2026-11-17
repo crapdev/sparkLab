@@ -3,3 +3,5 @@
 pyspark==4.2.0
 # pandas is needed by toPandas() in lab 1. Colab already ships it.
 pandas>=2.2
+# pyarrow is needed by pandas_udf in lab 11. Colab already ships it.
+pyarrow>=15

@@ -3,9 +3,9 @@
     "name": "SparkSession.builder",
     "category": "Sesión",
     "signature": "SparkSession.builder.master(url).appName(name).getOrCreate()",
-    "description": "Crea la sesión de Spark, o devuelve la que ya existe. Es el punto de entrada a todo lo demás.",
+    "description": "Crea la sesión de Spark, o devuelve la que ya existe. Es el punto de entrada a todo lo demás: `spark.read`, `spark.range`, `spark.createDataFrame`, `spark.sql` y `spark.conf`.",
     "example": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.master(\"local[*]\").appName(\"mi-app\").getOrCreate()",
-    "gotcha": "Si ya hay una sesión, `getOrCreate()` la reutiliza e ignora el nombre y el master nuevos. En Databricks `spark` ya viene creada.",
+    "gotcha": "Sin `getOrCreate()` solo tienes un `Builder`, y lo primero que le pidas da `AttributeError: 'Builder' object has no attribute 'read'`. Si ya hay una sesión, `getOrCreate()` la reutiliza e ignora el `master` y el `appName` nuevos. En Databricks `spark` ya viene creada.",
     "module": "01-fundamentos",
     "keywords": ["sesion", "session", "crear", "iniciar", "local", "master", "appName"]
   },
@@ -23,12 +23,60 @@
   {
     "name": "spark.conf.set",
     "category": "Sesión",
-    "signature": "spark.conf.set(key, value)",
-    "description": "Cambia una opción de configuración de Spark SQL en la sesión actual.",
-    "example": "spark.conf.set(\"spark.sql.shuffle.partitions\", \"4\")",
-    "gotcha": "Por defecto un shuffle produce 200 particiones, demasiadas para datos pequeños.",
+    "signature": "spark.conf.set(key, value)   spark.conf.get(key)",
+    "description": "Cambia o lee una opción de configuración de Spark SQL en la sesión actual.",
+    "example": "spark.conf.get(\"spark.sql.shuffle.partitions\")  # '200'\nspark.conf.set(\"spark.sql.shuffle.partitions\", \"4\")",
+    "gotcha": "Por defecto un shuffle produce 200 particiones, demasiadas para datos pequeños. Las opciones de arranque, como `spark.driver.memory`, no se pueden cambiar aquí (`CANNOT_MODIFY_CONFIG`): van en `builder.config(...)`.",
     "module": "01-fundamentos",
     "keywords": ["configuracion", "config", "opciones", "shuffle", "particiones", "aqe"]
+  },
+  {
+    "name": "builder.config",
+    "category": "Sesión",
+    "signature": "SparkSession.builder.config(key, value)",
+    "description": "Fija una opción de configuración al crear la sesión. Es el único sitio para las opciones de arranque, como la memoria del driver.",
+    "example": "spark = (\n    SparkSession.builder.master(\"local[*]\")\n    .appName(\"mi-app\")\n    .config(\"spark.driver.memory\", \"2g\")\n    .getOrCreate()\n)",
+    "gotcha": "Si la sesión ya existe, `getOrCreate()` aplica a esa sesión solo las opciones de Spark SQL del builder (como `spark.sql.shuffle.partitions`); el `master`, el `appName` y las opciones de arranque se ignoran.",
+    "module": "01-fundamentos",
+    "keywords": ["config", "configuracion", "memoria", "driver", "arranque", "opciones"]
+  },
+  {
+    "name": "spark.sparkContext",
+    "category": "Sesión",
+    "signature": "spark.sparkContext.master   .appName   .defaultParallelism",
+    "description": "El `SparkContext` que vive debajo de la sesión. En el curso se usa para mirar dónde corre Spark, cómo se llama la aplicación y cuántos núcleos usa.",
+    "example": "print(spark.sparkContext.master)              # local[*]\nprint(spark.sparkContext.appName)             # mi-app\nprint(spark.sparkContext.defaultParallelism)  # 8 en local[*] con 8 núcleos; 2 en Colab",
+    "gotcha": "`defaultParallelism` es el número de particiones con el que nacen los `spark.range`. `setLogLevel(\"ERROR\")` también vive aquí.",
+    "module": "01-fundamentos",
+    "keywords": [
+      "sparkContext",
+      "master",
+      "appName",
+      "nucleos",
+      "paralelismo",
+      "defaultParallelism",
+      "setLogLevel"
+    ]
+  },
+  {
+    "name": "spark.version",
+    "category": "Sesión",
+    "signature": "spark.version",
+    "description": "La versión de Spark con la que corre la sesión, como texto.",
+    "example": "print(spark.version)  # 4.2.0",
+    "gotcha": "Es la versión del motor, no la del paquete `pyspark` de pip (aunque en Colab coinciden si instalas `pyspark==4.2.0`).",
+    "module": "01-fundamentos",
+    "keywords": ["version", "spark", "cual"]
+  },
+  {
+    "name": "spark.stop",
+    "category": "Sesión",
+    "signature": "spark.stop()",
+    "description": "Cierra la aplicación y libera los executors. En un script conviene llamarlo al final; en Colab la sesión muere con el notebook.",
+    "example": "spark.stop()\nspark = SparkSession.builder.master(\"local[2]\").appName(\"otra-app\").getOrCreate()  # ahora sí es nueva",
+    "gotcha": "Después de `stop()` los DataFrames antiguos fallan y `spark.range(...)` da `AttributeError: 'NoneType' object has no attribute 'sc'`. Un `getOrCreate()` posterior crea una sesión nueva, ya con el master y el nombre que le pidas.",
+    "module": "01-fundamentos",
+    "keywords": ["stop", "cerrar", "parar", "terminar", "liberar", "reiniciar"]
   },
   {
     "name": "filter",
@@ -783,5 +831,168 @@
     "gotcha": "Funciona porque el `when` sin `otherwise` deja nulo lo que no cumple y las agregaciones ignoran los nulos. Con `count`, no pongas `otherwise(0)`: los ceros también cuentan.",
     "module": "08-agregaciones",
     "keywords": ["condicional", "contar si", "sumar si", "when", "case", "filtrar grupo"]
+  },
+  {
+    "name": "union / unionAll",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.union(other)",
+    "description": "Apila las filas de `other` debajo de las de `df`, emparejando las columnas **por posición**. Las dos son lo mismo.",
+    "example": "jan.union(feb)",
+    "gotcha": "No mira los nombres: con las columnas en otro orden mezcla los datos sin error (y si cae texto bajo un número, falla al ejecutar con `CAST_INVALID_INPUT`). No quita duplicados: añade `distinct()`. Distinto número de columnas: `NUM_COLUMNS_MISMATCH`.",
+    "module": "09-union-joins",
+    "keywords": ["apilar", "concatenar", "juntar filas", "union all", "append"]
+  },
+  {
+    "name": "unionByName",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.unionByName(other, allowMissingColumns=False)",
+    "description": "Apila las filas de `other` emparejando las columnas **por nombre**, en el orden de `df`. La forma segura de apilar.",
+    "example": "emp.unionByName(new_hires)",
+    "gotcha": "Si a un lado le falta una columna, falla con `UNRESOLVED_COLUMN_AMONG_FIELD_NAMES`; con `allowMissingColumns=True` la rellena con `NULL`. Tampoco quita duplicados.",
+    "module": "09-union-joins",
+    "keywords": ["apilar", "por nombre", "concatenar", "juntar filas", "columnas desordenadas"]
+  },
+  {
+    "name": "join",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.join(other, on, how=\"inner\")",
+    "description": "Cruza dos DataFrames por una clave. `on` es el nombre de la columna (o una lista) o una condición `df[\"k\"] == other[\"k\"]`. `how`: `inner`, `left`, `right`, `full`, `anti`, `semi`.",
+    "example": "sales.join(outlet_info, \"Outlet_Identifier\", \"left\")",
+    "gotcha": "`inner` pierde en silencio las filas sin pareja; para enriquecer sin perder nada, `left`. Con la condición explícita la clave sale dos veces y pedirla por nombre da `AMBIGUOUS_REFERENCE`: une por nombre de columna. Las claves repetidas multiplican filas y las nulas nunca cruzan. Es wide: shuffle, salvo broadcast de la tabla pequeña.",
+    "module": "09-union-joins",
+    "keywords": [
+      "cruzar",
+      "unir tablas",
+      "inner",
+      "left",
+      "right",
+      "full",
+      "outer",
+      "clave",
+      "merge"
+    ]
+  },
+  {
+    "name": "anti / semi join",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.join(other, on, \"anti\")   df.join(other, on, \"semi\")",
+    "description": "`anti` devuelve las filas de `df` que **no** tienen pareja en `other`; `semi`, las que **sí**. Ninguno añade columnas de `other` ni multiplica filas.",
+    "example": "outlets.join(sales, \"Outlet_Identifier\", \"anti\")",
+    "gotcha": "El lado importa: `a.join(b, k, \"anti\")` es lo que falta en `b`; `b.join(a, k, \"anti\")`, lo que falta en `a`. Un left join más `isNull()` da el mismo resultado pero arrastra las columnas de la derecha.",
+    "module": "09-union-joins",
+    "keywords": [
+      "qué falta",
+      "no está",
+      "existe",
+      "filtrar con otra tabla",
+      "not in",
+      "exists",
+      "left_anti",
+      "left_semi"
+    ]
+  },
+  {
+    "name": "eqNullSafe",
+    "category": "Columnas",
+    "signature": "col.eqNullSafe(other)",
+    "description": "Igualdad que considera dos `NULL` iguales. Sirve como condición de join cuando las claves nulas tienen que cruzar.",
+    "example": "emp.join(dept, emp[\"dept_id\"].eqNullSafe(dept[\"dept_id\"]), \"inner\")",
+    "gotcha": "Con `==` normal, `NULL == NULL` no es verdadero y las claves nulas nunca cruzan. Úsalo solo si de verdad quieres emparejar nulos entre sí.",
+    "module": "09-union-joins",
+    "keywords": ["null", "nulos", "igualdad", "null safe", "<=>"]
+  },
+  {
+    "name": "broadcast",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.join(F.broadcast(small), on, how)",
+    "description": "Pide a Spark que copie entera la tabla pequeña a cada executor para el join, en vez de mover la grande con un shuffle.",
+    "example": "sales.join(F.broadcast(outlet_info), \"Outlet_Identifier\", \"inner\")",
+    "gotcha": "Spark ya lo hace solo con tablas por debajo de `spark.sql.autoBroadcastJoinThreshold` (10 MB). Se ve en `explain()` como `BroadcastHashJoin`. No lo fuerces con tablas grandes: no caben en memoria.",
+    "module": "09-union-joins",
+    "keywords": ["broadcast", "join pequeño", "shuffle", "rendimiento", "hint"]
+  },
+  {
+    "name": "Window + over",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "F.func(...).over(Window.partitionBy(*cols).orderBy(*cols))",
+    "description": "Calcula un valor por fila mirando a las filas de su ventana, sin colapsarlas. `partitionBy` parte la ventana en grupos; `orderBy` fija el orden dentro de cada uno. Se importa con `from pyspark.sql.window import Window`.",
+    "example": "from pyspark.sql.window import Window\n\nby_outlet = Window.partitionBy(\"Outlet_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Item_Identifier\")\nsales.withColumn(\"rank_in_outlet\", F.row_number().over(by_outlet))",
+    "gotcha": "No se puede usar dentro de `filter` (`WINDOW_FUNCTION_NOT_ALLOWED_IN_CLAUSE`): calcula la columna y filtra después. Sin `partitionBy`, todas las filas van a una sola partición. Con `orderBy` y empates, desempata añadiendo columnas.",
+    "module": "10-window-functions",
+    "keywords": ["ventana", "window", "over", "partitionBy", "orderBy", "por grupo", "top n"]
+  },
+  {
+    "name": "row_number / rank / dense_rank",
+    "category": "Columnas",
+    "signature": "F.row_number().over(w)   F.rank().over(w)   F.dense_rank().over(w)",
+    "description": "Numeran las filas de la ventana según su `orderBy`. `row_number` nunca repite (1, 2, 3); `rank` da el mismo número a los empatados y salta después (1, 1, 3); `dense_rank` empata sin saltar (1, 1, 2).",
+    "example": "w = Window.orderBy(F.desc(\"Item_Identifier\"))\nsales.withColumn(\"rank\", F.rank().over(w)).withColumn(\"dense_rank\", F.dense_rank().over(w))",
+    "gotcha": "Exigen `orderBy` (`WINDOW_FUNCTION_FRAME_NOT_ORDERED`). Con empates, quién recibe cada `row_number` depende del orden de llegada. Top N por grupo: `row_number` sobre `partitionBy` + `filter(rn <= N)`; una fila por clave: `filter(rn == 1)` y `drop`.",
+    "module": "10-window-functions",
+    "keywords": ["numerar", "ranking", "clasificar", "puesto", "empates", "deduplicar", "top 3"]
+  },
+  {
+    "name": "rowsBetween",
+    "category": "Columnas",
+    "signature": "w.rowsBetween(start, end)   Window.unboundedPreceding   Window.currentRow   Window.unboundedFollowing",
+    "description": "Define el marco: qué filas de la ventana entran en el cálculo de cada fila. Suma acumulada: desde `unboundedPreceding` hasta `currentRow`. Media móvil: `rowsBetween(-2, 0)`.",
+    "example": "w = Window.orderBy(\"Item_Type\", \"Item_Identifier\", \"Outlet_Identifier\")\nsales.withColumn(\"cum_mrp\", F.sum(\"Item_MRP\").over(w.rowsBetween(Window.unboundedPreceding, Window.currentRow)))",
+    "gotcha": "Con `orderBy` y sin marco, el marco por defecto acumula hasta la fila actual **y sus empates**: las filas con el mismo valor de orden comparten resultado. `unboundedFollowing` al final da el total en cada fila. `rangeBetween` va por valor, no por filas, y exige orden numérico o de fecha.",
+    "module": "10-window-functions",
+    "keywords": [
+      "marco",
+      "frame",
+      "acumulado",
+      "acumulativo",
+      "running total",
+      "media movil",
+      "cumulative"
+    ]
+  },
+  {
+    "name": "Agregación con ventana",
+    "category": "Columnas",
+    "signature": "F.sum(col).over(Window.partitionBy(*cols))",
+    "description": "Cualquier agregación (`sum`, `avg`, `max`, `count`…) con `over` pega el resultado del grupo en cada fila en vez de colapsarlas. Sin `orderBy`, la ventana es el grupo entero.",
+    "example": "by_outlet = Window.partitionBy(\"Outlet_Identifier\")\nsales.withColumn(\"outlet_total\", F.sum(\"Item_Outlet_Sales\").over(by_outlet)).withColumn(\n    \"share_pct\", F.round(F.col(\"Item_Outlet_Sales\") / F.col(\"outlet_total\") * 100, 2)\n)",
+    "gotcha": "Es la forma de calcular porcentajes o diferencias sobre el total del grupo sin `groupBy` más `join`. Si añades `orderBy`, deja de ser el total del grupo y pasa a ser un acumulado.",
+    "module": "10-window-functions",
+    "keywords": ["total del grupo", "porcentaje", "peso", "sin colapsar", "sum over"]
+  },
+  {
+    "name": "lag / lead",
+    "category": "Columnas",
+    "signature": "F.lag(col, offset=1, default=None).over(w)   F.lead(col, offset=1, default=None).over(w)",
+    "description": "El valor de la fila anterior (`lag`) o siguiente (`lead`) dentro de la ventana ordenada. Sirve para diferencias entre filas consecutivas.",
+    "example": "by_day = Window.orderBy(\"day\")\ndaily.withColumn(\"diff\", F.col(\"amount\") - F.lag(\"amount\", 1, 0).over(by_day))",
+    "gotcha": "La primera fila de cada partición no tiene anterior: `NULL`, salvo que pases un valor por defecto. Exigen `orderBy`.",
+    "module": "10-window-functions",
+    "keywords": ["anterior", "siguiente", "diferencia", "fila previa", "desplazar", "shift"]
+  },
+  {
+    "name": "udf",
+    "category": "Columnas",
+    "signature": "F.udf(func, returnType=\"string\")   @F.udf(\"double\")",
+    "description": "Convierte una función de Python en una función aplicable a columnas. La función recibe un valor por fila y devuelve un valor. El tipo de retorno se da como texto (`\"double\"`, `\"int\"`, `\"string\"`) o como `DoubleType()`.",
+    "example": "def price_band(mrp):\n    if mrp < 100:\n        return \"cheap\"\n    return \"mid\" if mrp < 200 else \"premium\"\n\nband_udf = F.udf(price_band, \"string\")\nsales.withColumn(\"band\", band_udf(\"Item_MRP\"))",
+    "gotcha": "Sin tipo de retorno la columna sale como `string`. Los nulos llegan como `None`: compruébalo o el worker lanza `TypeError`. Es lenta: los datos viajan a un proceso de Python y vuelven, y el optimizador no puede mirar dentro. Busca primero la función nativa.",
+    "module": "11-udfs",
+    "keywords": ["udf", "funcion propia", "user defined", "python", "personalizada", "custom"]
+  },
+  {
+    "name": "pandas_udf",
+    "category": "Columnas",
+    "signature": "@pandas_udf(\"double\")\ndef f(s: pd.Series) -> pd.Series: ...",
+    "description": "UDF vectorizada: recibe lotes enteros como `pandas.Series` y devuelve otra `Series` del mismo tamaño. Más rápida que `F.udf` cuando de verdad hace falta Python.",
+    "example": "import pandas as pd\nfrom pyspark.sql.functions import pandas_udf\n\n@pandas_udf(\"double\")\ndef square_pd(s: pd.Series) -> pd.Series:\n    return s * s\n\nsales.withColumn(\"mrp_sq\", square_pd(\"Item_MRP\"))",
+    "gotcha": "Se escribe como decorador con el tipo de retorno y las anotaciones `pd.Series` en la firma. Los nulos llegan como `NaN` y salen como `NULL`. Necesita `pyarrow` (Colab lo trae). Sigue siendo más lenta que la función nativa.",
+    "module": "11-udfs",
+    "keywords": ["pandas", "vectorizada", "lotes", "arrow", "series", "rapida"]
   }
 ]

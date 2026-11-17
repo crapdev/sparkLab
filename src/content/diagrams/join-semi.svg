@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 300">
+  <defs>
+    <marker id="j-semi-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <text class="d-code" x="16" y="26">emp.join(dept, "dept_id", "semi")</text>
+
+  <text class="d-title" x="16" y="56">emp (izquierda)</text>
+  <rect class="d-box" x="16" y="68" width="54" height="22" rx="3" />
+  <text class="d-muted" x="43" y="83" text-anchor="middle">emp_id</text>
+  <rect class="d-box" x="70" y="68" width="62" height="22" rx="3" />
+  <text class="d-muted" x="101" y="83" text-anchor="middle">name</text>
+  <rect class="d-box" x="132" y="68" width="62" height="22" rx="3" />
+  <text class="d-muted" x="163" y="83" text-anchor="middle">dept_id</text>
+  <rect class="d-box-success" x="16" y="90" width="54" height="20" />
+  <text class="d-text" x="43" y="104" text-anchor="middle">1</text>
+  <rect class="d-box-success" x="70" y="90" width="62" height="20" />
+  <text class="d-text" x="101" y="104" text-anchor="middle">Ana</text>
+  <rect class="d-box-success" x="132" y="90" width="62" height="20" />
+  <text class="d-text" x="163" y="104" text-anchor="middle">d01</text>
+  <rect class="d-box-success" x="16" y="110" width="54" height="20" />
+  <text class="d-text" x="43" y="124" text-anchor="middle">2</text>
+  <rect class="d-box-success" x="70" y="110" width="62" height="20" />
+  <text class="d-text" x="101" y="124" text-anchor="middle">Luis</text>
+  <rect class="d-box-success" x="132" y="110" width="62" height="20" />
+  <text class="d-text" x="163" y="124" text-anchor="middle">d02</text>
+  <rect class="d-box-success" x="16" y="130" width="54" height="20" />
+  <text class="d-text" x="43" y="144" text-anchor="middle">3</text>
+  <rect class="d-box-success" x="70" y="130" width="62" height="20" />
+  <text class="d-text" x="101" y="144" text-anchor="middle">Marta</text>
+  <rect class="d-box-success" x="132" y="130" width="62" height="20" />
+  <text class="d-text" x="163" y="144" text-anchor="middle">d03</text>
+  <rect class="d-box-success" x="16" y="150" width="54" height="20" />
+  <text class="d-text" x="43" y="164" text-anchor="middle">4</text>
+  <rect class="d-box-success" x="70" y="150" width="62" height="20" />
+  <text class="d-text" x="101" y="164" text-anchor="middle">Pedro</text>
+  <rect class="d-box-success" x="132" y="150" width="62" height="20" />
+  <text class="d-text" x="163" y="164" text-anchor="middle">d03</text>
+  <rect class="d-box-success" x="16" y="170" width="54" height="20" />
+  <text class="d-text" x="43" y="184" text-anchor="middle">5</text>
+  <rect class="d-box-success" x="70" y="170" width="62" height="20" />
+  <text class="d-text" x="101" y="184" text-anchor="middle">Sofía</text>
+  <rect class="d-box-success" x="132" y="170" width="62" height="20" />
+  <text class="d-text" x="163" y="184" text-anchor="middle">d05</text>
+  <rect class="d-box" x="16" y="190" width="54" height="20" />
+  <text class="d-muted" x="43" y="204" text-anchor="middle">6</text>
+  <rect class="d-box" x="70" y="190" width="62" height="20" />
+  <text class="d-muted" x="101" y="204" text-anchor="middle">Jorge</text>
+  <rect class="d-box" x="132" y="190" width="62" height="20" />
+  <text class="d-muted" x="163" y="204" text-anchor="middle">d06</text>
+
+  <text class="d-title" x="222" y="56">dept (solo se consulta)</text>
+  <rect class="d-box" x="222" y="68" width="62" height="22" rx="3" />
+  <text class="d-muted" x="253" y="83" text-anchor="middle">dept_id</text>
+  <rect class="d-box" x="284" y="68" width="86" height="22" rx="3" />
+  <text class="d-muted" x="327" y="83" text-anchor="middle">dept_name</text>
+  <rect class="d-box-info" x="222" y="90" width="62" height="20" />
+  <text class="d-text" x="253" y="104" text-anchor="middle">d01</text>
+  <rect class="d-box-info" x="284" y="90" width="86" height="20" />
+  <text class="d-text" x="327" y="104" text-anchor="middle">Ventas</text>
+  <rect class="d-box-info" x="222" y="110" width="62" height="20" />
+  <text class="d-text" x="253" y="124" text-anchor="middle">d02</text>
+  <rect class="d-box-info" x="284" y="110" width="86" height="20" />
+  <text class="d-text" x="327" y="124" text-anchor="middle">Marketing</text>
+  <rect class="d-box-info" x="222" y="130" width="62" height="20" />
+  <text class="d-text" x="253" y="144" text-anchor="middle">d03</text>
+  <rect class="d-box-info" x="284" y="130" width="86" height="20" />
+  <text class="d-text" x="327" y="144" text-anchor="middle">Datos</text>
+  <rect class="d-box-info" x="222" y="150" width="62" height="20" />
+  <text class="d-text" x="253" y="164" text-anchor="middle">d04</text>
+  <rect class="d-box-info" x="284" y="150" width="86" height="20" />
+  <text class="d-text" x="327" y="164" text-anchor="middle">Legal</text>
+  <rect class="d-box-info" x="222" y="170" width="62" height="20" />
+  <text class="d-text" x="253" y="184" text-anchor="middle">d05</text>
+  <rect class="d-box-info" x="284" y="170" width="86" height="20" />
+  <text class="d-text" x="327" y="184" text-anchor="middle">Soporte</text>
+
+  <path class="d-line-accent" d="M382 150H428" marker-end="url(#j-semi-arrow)" />
+  <text class="d-title" x="440" y="56">Resultado: 5 filas</text>
+  <rect class="d-box" x="440" y="68" width="62" height="22" rx="3" />
+  <text class="d-muted" x="471" y="83" text-anchor="middle">dept_id</text>
+  <rect class="d-box" x="502" y="68" width="54" height="22" rx="3" />
+  <text class="d-muted" x="529" y="83" text-anchor="middle">emp_id</text>
+  <rect class="d-box" x="556" y="68" width="62" height="22" rx="3" />
+  <text class="d-muted" x="587" y="83" text-anchor="middle">name</text>
+  <rect class="d-box-success" x="440" y="90" width="62" height="20" />
+  <text class="d-text" x="471" y="104" text-anchor="middle">d01</text>
+  <rect class="d-box-success" x="502" y="90" width="54" height="20" />
+  <text class="d-text" x="529" y="104" text-anchor="middle">1</text>
+  <rect class="d-box-success" x="556" y="90" width="62" height="20" />
+  <text class="d-text" x="587" y="104" text-anchor="middle">Ana</text>
+  <rect class="d-box-success" x="440" y="110" width="62" height="20" />
+  <text class="d-text" x="471" y="124" text-anchor="middle">d02</text>
+  <rect class="d-box-success" x="502" y="110" width="54" height="20" />
+  <text class="d-text" x="529" y="124" text-anchor="middle">2</text>
+  <rect class="d-box-success" x="556" y="110" width="62" height="20" />
+  <text class="d-text" x="587" y="124" text-anchor="middle">Luis</text>
+  <rect class="d-box-success" x="440" y="130" width="62" height="20" />
+  <text class="d-text" x="471" y="144" text-anchor="middle">d03</text>
+  <rect class="d-box-success" x="502" y="130" width="54" height="20" />
+  <text class="d-text" x="529" y="144" text-anchor="middle">3</text>
+  <rect class="d-box-success" x="556" y="130" width="62" height="20" />
+  <text class="d-text" x="587" y="144" text-anchor="middle">Marta</text>
+  <rect class="d-box-success" x="440" y="150" width="62" height="20" />
+  <text class="d-text" x="471" y="164" text-anchor="middle">d03</text>
+  <rect class="d-box-success" x="502" y="150" width="54" height="20" />
+  <text class="d-text" x="529" y="164" text-anchor="middle">4</text>
+  <rect class="d-box-success" x="556" y="150" width="62" height="20" />
+  <text class="d-text" x="587" y="164" text-anchor="middle">Pedro</text>
+  <rect class="d-box-success" x="440" y="170" width="62" height="20" />
+  <text class="d-text" x="471" y="184" text-anchor="middle">d05</text>
+  <rect class="d-box-success" x="502" y="170" width="54" height="20" />
+  <text class="d-text" x="529" y="184" text-anchor="middle">5</text>
+  <rect class="d-box-success" x="556" y="170" width="62" height="20" />
+  <text class="d-text" x="587" y="184" text-anchor="middle">Sofía</text>
+
+  <rect class="d-box-info" x="16" y="236" width="708" height="52" rx="8" />
+  <text class="d-text" x="32" y="257">Las filas de emp cuya clave SÍ está en dept, sin añadir columnas de dept.</text>
+  <text class="d-muted" x="32" y="277">Es un filtro con otra tabla: como inner, pero sin dept_name y sin multiplicar filas. Gris: se descartan.</text>
+</svg>

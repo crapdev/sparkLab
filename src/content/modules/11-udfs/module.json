@@ -2,8 +2,228 @@
   "id": "11-udfs",
   "order": 11,
   "block": "extender-persistir",
-  "status": "planned",
+  "status": "published",
   "title": "UDFs",
   "summary": "Escribir funciones propias en Python y saber cuándo no conviene.",
-  "estimatedMinutes": 30
+  "estimatedMinutes": 60,
+  "objectives": [
+    "Escribir una función de Python, envolverla con `F.udf` y aplicarla a una columna.",
+    "Declarar el tipo de retorno y explicar qué pasa cuando falta o no coincide.",
+    "Proteger una UDF de los nulos, que llegan como `None`.",
+    "Explicar por qué una UDF es lenta: los datos viajan de la JVM a un proceso de Python y vuelven.",
+    "Reescribir una UDF con funciones nativas y comprobar que da lo mismo.",
+    "Usar `pandas_udf` cuando de verdad hace falta Python."
+  ],
+  "lab": {
+    "path": "labs/11-udfs",
+    "minutes": 35,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Escribes dos UDF sobre BigMart (bandas de precio y gramos), ves qué pasa sin tipo de retorno y con nulos, las reescribes con funciones nativas comprobando que dan lo mismo, y mides las tres formas de calcular (nativa, `udf` y `pandas_udf`) sobre 2 millones de filas.",
+    "tasks": [
+      "Una función de Python envuelta con `F.udf` y tipo `\"string\"`.",
+      "El tipo de retorno: un cuadrado sin tipo es texto.",
+      "Proteger la UDF de los nulos con `None`.",
+      "La misma lógica con `F.when`, comprobada fila a fila.",
+      "Los gramos con `F.round` y `cast`, sin UDF.",
+      "Una `pandas_udf` escalar y la medición de los tres caminos."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-udf-wrap",
+      "type": "fill-code",
+      "prompt": "Envuelve `price_band` como UDF que devuelve texto y aplícala a `Item_MRP`.",
+      "code": "band_udf = F.___(price_band, \"___\")\nsales.withColumn(\"band\", band_udf(\"Item_MRP\"))",
+      "blanks": [
+        {
+          "answers": ["udf"],
+          "hint": "La función de `F` que convierte una función de Python en algo aplicable a columnas."
+        },
+        {
+          "answers": ["string", "str"],
+          "hint": "El tipo que devuelve `price_band`: `\"cheap\"`, `\"mid\"`, `\"premium\"`."
+        }
+      ],
+      "explanation": "`F.udf(función, tipo)` crea la UDF. El tipo de retorno tiene que coincidir con lo que devuelve la función; aquí, texto."
+    },
+    {
+      "id": "ex-untyped",
+      "type": "predict-output",
+      "prompt": "`square` devuelve `x * x`. ¿Qué imprime?",
+      "code": "squared = sales.withColumn(\"sq\", F.udf(square)(\"Item_MRP\"))\nprint(dict(squared.dtypes)[\"sq\"])",
+      "optionsFormat": "code",
+      "options": ["double", "string", "int", "Error: falta el tipo"],
+      "answer": 1,
+      "hint": "¿Qué asume Spark cuando no le dices el tipo?",
+      "explanation": "Sin tipo de retorno, Spark asume `string` y convierte el resultado a texto. No hay error, pero ordenar o comparar esa columna da resultados raros."
+    },
+    {
+      "id": "ex-untyped-max",
+      "type": "choice",
+      "prompt": "Con esa columna `sq` de tipo `string`, ¿qué devuelve `squared.orderBy(F.desc(\"sq\")).first()[\"Item_MRP\"]`?",
+      "options": [
+        "266.8884, el precio más alto.",
+        "99.9384: su cuadrado, `9987.68…`, es el texto que va último alfabéticamente.",
+        "Error: no se puede ordenar texto.",
+        "`NULL`."
+      ],
+      "answer": 1,
+      "hint": "Alfabéticamente, `9987` va después de `7122`.",
+      "explanation": "Spark ordena cadenas, no números. El `9` inicial de `9987.68` gana al `7` de `71229.41`. Con `F.udf(square, \"double\")` el orden es numérico."
+    },
+    {
+      "id": "ex-null-guard",
+      "type": "fill-code",
+      "prompt": "Completa la UDF para que no reviente con los 1463 nulos de `Item_Weight`.",
+      "code": "def grams(weight):\n    if weight is ___:\n        return None\n    return int(round(weight * 1000))\n\ngrams_udf = F.udf(grams, \"___\")",
+      "blanks": [
+        { "answers": ["None"], "hint": "Así llega un nulo a una función de Python." },
+        { "answers": ["int", "integer"], "hint": "`int(round(...))` devuelve un entero." }
+      ],
+      "explanation": "Los nulos llegan como `None`; sin la comprobación, `None * 1000` lanza `TypeError` dentro del worker. El tipo declarado es `\"int\"` porque la función devuelve un entero."
+    },
+    {
+      "id": "ex-why-slow",
+      "type": "choice",
+      "prompt": "¿Por qué una UDF de Python es más lenta que la función nativa equivalente?",
+      "options": [
+        "Porque Python es un lenguaje interpretado y Spark lo penaliza a propósito.",
+        "Porque cada executor manda los datos a un proceso de Python aparte, espera el resultado y lo vuelve a leer; además, el optimizador no puede mirar dentro de la función.",
+        "Porque la UDF se ejecuta en el driver.",
+        "Porque las UDF no se pueden paralelizar."
+      ],
+      "answer": 1,
+      "hint": "Piensa en dónde corre la JVM y dónde corre tu función.",
+      "explanation": "Los executors son JVM. Para ejecutar Python, cada uno arranca un worker aparte y cruza los datos por lotes en los dos sentidos. Y como Spark no entiende el código Python, no puede optimizarlo ni empujar filtros."
+    },
+    {
+      "id": "ex-plan",
+      "type": "predict-output",
+      "prompt": "`banded` tiene una columna `band` calculada con una UDF. ¿Qué nodo aparece en su plan que no aparece en la versión con `F.when`?",
+      "code": "banded.select(\"band\").explain()",
+      "optionsFormat": "code",
+      "options": ["ArrowEvalPython", "Exchange", "BroadcastHashJoin", "WindowExec"],
+      "answer": 0,
+      "hint": "Es el paso en el que los datos salen a Python.",
+      "explanation": "La UDF aparece como un paso `ArrowEvalPython` aparte. La versión nativa es un `CASE WHEN` dentro del `Project`, sin salir de la JVM."
+    },
+    {
+      "id": "ex-native-rewrite",
+      "type": "fill-code",
+      "prompt": "Reescribe `grams` sin UDF: el peso en gramos, redondeado, como entero.",
+      "code": "sales.withColumn(\"grams\", F.___(F.col(\"Item_Weight\") * 1000).___(\"int\"))",
+      "blanks": [
+        { "answers": ["round"], "hint": "La función nativa que redondea." },
+        { "answers": ["cast"], "hint": "El método que cambia el tipo de una columna." }
+      ],
+      "explanation": "`F.round(...)` redondea y `.cast(\"int\")` convierte a entero. Los nulos pasan solos: `NULL * 1000` es `NULL`, sin ninguna comprobación."
+    },
+    {
+      "id": "ex-pandas-udf",
+      "type": "choice",
+      "prompt": "¿Qué recibe la función decorada con `@pandas_udf(\"double\")` en cada llamada?",
+      "options": [
+        "Un valor de una fila, como `F.udf`.",
+        "Una `pandas.Series` con un lote entero de valores, y devuelve otra `Series` del mismo tamaño.",
+        "El DataFrame completo como `pandas.DataFrame`.",
+        "Una lista de Python."
+      ],
+      "answer": 1,
+      "hint": "Es lo que la hace más rápida que `F.udf`.",
+      "explanation": "`pandas_udf` trabaja por lotes: una `Series` entra y una `Series` sale. El cruce entre procesos se hace una vez por lote y el cálculo es vectorizado."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-three-steps",
+      "question": "¿Cuáles son los tres pasos para aplicar una UDF?",
+      "options": [
+        "Importar `udf`, registrarla en SQL y hacer `select`.",
+        "Escribir una función de Python, envolverla con `F.udf(función, tipo)` y aplicarla con `withColumn`.",
+        "Escribir la función, convertir el DataFrame a pandas y usar `apply`.",
+        "Escribir la función, hacer `collect` y aplicarla en el driver."
+      ],
+      "answer": 1,
+      "explanation": "La función recibe un valor por fila; el envoltorio le enseña a Spark a llamarla; `withColumn` (o `select`, o `filter`) la aplica a una columna."
+    },
+    {
+      "id": "q-default-type",
+      "question": "¿Qué tipo tiene la columna que devuelve `F.udf(square)(\"Item_MRP\")` si `square` devuelve `x * x` y no se declara el tipo?",
+      "options": ["`double`, como `Item_MRP`", "`string`", "`int`", "Da error al construirse"],
+      "answer": 1,
+      "explanation": "Sin tipo declarado, Spark asume `string`. Es el error más común con UDF, y no produce ningún aviso."
+    },
+    {
+      "id": "q-null-input",
+      "question": "¿Cómo llega un `NULL` de la columna a la función de Python de una UDF?",
+      "options": [
+        "Como `0`",
+        "Como `None`",
+        "Como la cadena `\"NULL\"`",
+        "No llega: Spark salta las filas nulas"
+      ],
+      "answer": 1,
+      "explanation": "Llega como `None`, y si la función hace aritmética con él, el worker lanza `TypeError`. Hay que comprobarlo a mano: `if x is None: return None`."
+    },
+    {
+      "id": "q-wrong-type",
+      "question": "Declaras `F.udf(f, \"int\")` pero `f` devuelve un `float`. ¿Qué pasa?",
+      "options": [
+        "Error al ejecutar.",
+        "Spark trunca el valor a entero sin avisar.",
+        "La columna sale como `double`.",
+        "La columna sale vacía."
+      ],
+      "answer": 1,
+      "explanation": "Spark convierte al tipo declarado como puede: un `float` declarado como `int` se trunca, un número declarado como `string` se convierte en texto. Declara el tipo que de verdad devuelve la función."
+    },
+    {
+      "id": "q-pushdown",
+      "question": "¿Por qué `sales.filter(band_udf(\"Item_MRP\") == \"premium\")` es peor que `sales.filter(F.col(\"Item_MRP\") >= 200)`?",
+      "options": [
+        "Porque devuelve filas distintas.",
+        "Porque el optimizador no puede mirar dentro de la UDF: no empuja el filtro a la lectura y pasa todas las filas por Python antes de descartar.",
+        "Porque las UDF no se pueden usar en `filter`.",
+        "Porque `==` no funciona con texto."
+      ],
+      "answer": 1,
+      "explanation": "El filtro nativo aparece como `PushedFilters` en la lectura del archivo. Con la UDF, Spark lee todo, lo manda a Python y filtra después. Las dos devuelven las mismas 1440 filas."
+    },
+    {
+      "id": "q-first-native",
+      "question": "¿Cuál es la regla práctica antes de escribir una UDF?",
+      "options": [
+        "Escribirla siempre: es más legible.",
+        "Buscar primero la función nativa en `F`: casi siempre existe y corre dentro de la JVM.",
+        "Usar `collect` y pandas.",
+        "Escribirla en Scala."
+      ],
+      "answer": 1,
+      "explanation": "Mayúsculas, recortes, fechas, condiciones, regex, listas: todo tiene función nativa. Una UDF es el último recurso, para lógica que de verdad no existe en Spark."
+    },
+    {
+      "id": "q-pandas-udf-why",
+      "question": "¿Por qué `pandas_udf` es más rápida que `F.udf` aunque las dos corran en Python?",
+      "options": [
+        "Porque no cruza datos entre procesos.",
+        "Porque procesa lotes enteros como `pandas.Series`, con cálculo vectorizado, en vez de una llamada por fila.",
+        "Porque corre en la JVM.",
+        "Porque usa varios hilos."
+      ],
+      "answer": 1,
+      "explanation": "El viaje entre la JVM y Python sigue existiendo, pero el cálculo dentro de Python se hace sobre lotes, no fila a fila. Medido con 2 millones de filas: 0.54 s frente a 0.80 s, y la nativa 0.15 s."
+    },
+    {
+      "id": "q-compare-nullsafe",
+      "question": "Quieres comprobar que `band` (UDF) y `band_native` coinciden en todas las filas. ¿Por qué `filter(F.col(\"band\") != F.col(\"band_native\")).count() == 0` puede engañarte?",
+      "options": [
+        "Porque `!=` no existe en Spark.",
+        "Porque si una de las dos es `NULL`, la comparación no es verdadera y el `filter` descarta esa fila: usa `eqNullSafe`.",
+        "Porque `count` ignora las diferencias.",
+        "No engaña: es la forma correcta."
+      ],
+      "answer": 1,
+      "explanation": "`NULL != 'mid'` no es verdadero, así que una fila con nulo en una de las dos columnas no aparece en el filtro y parece que coinciden. `~F.col(\"band\").eqNullSafe(F.col(\"band_native\"))` sí la detecta."
+    }
+  ]
 }

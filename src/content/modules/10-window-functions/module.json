@@ -2,8 +2,222 @@
   "id": "10-window-functions",
   "order": 10,
   "block": "resumir-combinar",
-  "status": "planned",
+  "status": "published",
   "title": "Window functions",
   "summary": "row_number, rank, dense_rank y sumas acumuladas con ventanas.",
-  "estimatedMinutes": 60
+  "estimatedMinutes": 75,
+  "objectives": [
+    "Escribir una window function con `.over(Window...)` y explicar en qué se diferencia de un `groupBy`.",
+    "Numerar y clasificar filas con `row_number`, `rank` y `dense_rank`, y predecir qué hace cada una con los empates.",
+    "Partir la ventana con `partitionBy` para sacar el top N de cada grupo y quedarte con una fila por clave.",
+    "Calcular totales por grupo sin colapsar filas y usarlos para porcentajes.",
+    "Definir el marco con `rowsBetween` para sumas acumuladas y explicar qué hace Spark sin marco.",
+    "Comparar cada fila con la anterior o la siguiente con `lag` y `lead`."
+  ],
+  "lab": {
+    "path": "labs/10-window-functions",
+    "minutes": 45,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Numeras y clasificas las ventas de BigMart, acumulas el precio con un marco, sacas el top 3 de cada tienda, te quedas con la mejor tienda de cada producto y calculas el peso de cada venta sobre el total de su tienda.",
+    "tasks": [
+      "Numerar las filas con `row_number` y un orden sin empates.",
+      "Clasificar con `rank` y `dense_rank` y ver el salto tras los empates.",
+      "Suma acumulada de `Item_MRP` con `rowsBetween`.",
+      "Top 3 de productos por tienda con `partitionBy`.",
+      "Una fila por producto: la tienda donde más vendió, con desempate.",
+      "Porcentaje de cada venta sobre el total de su tienda."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-over-window",
+      "type": "fill-code",
+      "prompt": "Numera las ventas de cada tienda de mayor a menor `Item_Outlet_Sales`.",
+      "code": "sales.withColumn(\"rn\", F.row_number().___(Window.___(\"Outlet_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"))))",
+      "blanks": [
+        { "answers": ["over"], "hint": "El método que une la función con la ventana." },
+        {
+          "answers": ["partitionBy"],
+          "hint": "Lo que hace que la numeración empiece de cero en cada tienda."
+        }
+      ],
+      "explanation": "`over` aplica la función a la ventana. `partitionBy(\"Outlet_Identifier\")` parte la ventana por tienda, y `orderBy` dentro de cada una decide quién es el 1."
+    },
+    {
+      "id": "ex-rank-ties",
+      "type": "predict-output",
+      "prompt": "`scores` tiene los puntos 90, 90, 85, 85, 70 y 60. ¿Qué imprime?",
+      "code": "w = Window.orderBy(F.desc(\"points\"))\nscores.withColumn(\"r\", F.rank().over(w)).withColumn(\"d\", F.dense_rank().over(w)).filter(F.col(\"points\") == 70).select(\"r\", \"d\").show()",
+      "optionsFormat": "code",
+      "options": ["r = 5, d = 3", "r = 3, d = 3", "r = 5, d = 5", "r = 4, d = 3"],
+      "answer": 0,
+      "hint": "Antes del 70 hay dos parejas empatadas.",
+      "explanation": "`rank` cuenta las cuatro filas anteriores y da 5; `dense_rank` cuenta los dos valores distintos anteriores (90 y 85) y da 3."
+    },
+    {
+      "id": "ex-row-number-max",
+      "type": "predict-output",
+      "prompt": "`sales` tiene 8523 filas y 1559 productos distintos. ¿Qué imprime?",
+      "code": "w = Window.orderBy(F.desc(\"Item_Identifier\"))\nprint(sales.withColumn(\"d\", F.dense_rank().over(w)).agg(F.max(\"d\")).first()[0])",
+      "answers": ["1559"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "`dense_rank` no salta números.",
+      "explanation": "Imprime 1559. `dense_rank` da un número por valor distinto de la columna de orden, sin saltos. Con `rank` el máximo sería 8518 y con `row_number`, 8523."
+    },
+    {
+      "id": "ex-frame-running",
+      "type": "fill-code",
+      "prompt": "Suma acumulada de `amount` por día, desde el principio hasta la fila actual.",
+      "code": "daily.withColumn(\"running\", F.sum(\"amount\").over(Window.orderBy(\"day\").rowsBetween(Window.___, Window.___)))",
+      "blanks": [
+        { "answers": ["unboundedPreceding"], "hint": "Desde la primera fila." },
+        { "answers": ["currentRow"], "hint": "Hasta la fila actual." }
+      ],
+      "explanation": "`rowsBetween(Window.unboundedPreceding, Window.currentRow)` es el marco de la suma acumulada. Con `unboundedFollowing` al final, todas las filas recibirían el total."
+    },
+    {
+      "id": "ex-no-frame",
+      "type": "choice",
+      "prompt": "`Item_Type` empieza por `Baking Goods` (suma 81894.74) y sigue con `Breads` (suma 35379.12). ¿Qué valor reciben las filas de `Breads` con `F.sum(\"Item_MRP\").over(Window.orderBy(\"Item_Type\"))`, sin marco?",
+      "options": [
+        "35379.12, el total de `Breads`.",
+        "117273.86: `Baking Goods` más `Breads`, porque el marco por defecto acumula hasta la fila actual y sus empates.",
+        "Un valor distinto en cada fila de `Breads`.",
+        "Error: falta el marco."
+      ],
+      "answer": 1,
+      "hint": "Con `orderBy` y sin marco, Spark acumula desde el principio e incluye las filas empatadas.",
+      "explanation": "Sin marco, el marco por defecto es `rangeBetween(unboundedPreceding, currentRow)`: todo lo anterior más las filas con el mismo valor de orden. Por eso las de `Breads` comparten 117273.86. Para el total por tipo, `partitionBy(\"Item_Type\")` sin `orderBy`."
+    },
+    {
+      "id": "ex-partition-total",
+      "type": "predict-output",
+      "prompt": "`sales` tiene 8523 filas y 10 tiendas. ¿Cuántas filas tiene el resultado?",
+      "code": "sales.withColumn(\"total\", F.sum(\"Item_Outlet_Sales\").over(Window.partitionBy(\"Outlet_Identifier\")))",
+      "answers": ["8523"],
+      "inputLabel": "Número de filas",
+      "inputMode": "numeric",
+      "hint": "Una ventana no colapsa.",
+      "explanation": "Siguen siendo 8523 filas: la ventana pega el total de la tienda en cada una. Con `groupBy` serían 10."
+    },
+    {
+      "id": "ex-top-n",
+      "type": "choice",
+      "prompt": "Quieres las 3 ventas más altas de cada tienda. ¿Qué falla en `sales.filter(F.row_number().over(w) <= 3)`?",
+      "options": [
+        "Nada, funciona.",
+        "Hay que usar `rank` en vez de `row_number`.",
+        "No se puede usar una window function dentro de `filter`: primero `withColumn`, después `filter` por la columna.",
+        "Falta `partitionBy` en el `filter`."
+      ],
+      "answer": 2,
+      "hint": "El error es `WINDOW_FUNCTION_NOT_ALLOWED_IN_CLAUSE`.",
+      "explanation": "Las window functions no se admiten en `filter`. El patrón es calcular la columna con `withColumn(\"rn\", F.row_number().over(w))` y filtrar `F.col(\"rn\") <= 3`."
+    },
+    {
+      "id": "ex-lag-null",
+      "type": "predict-output",
+      "prompt": "`daily` tiene los días 1 a 5. ¿Cuántas filas tienen `prev` nulo?",
+      "code": "daily.withColumn(\"prev\", F.lag(\"amount\").over(Window.orderBy(\"day\")))",
+      "answers": ["1"],
+      "inputLabel": "Número de filas con prev nulo",
+      "inputMode": "numeric",
+      "hint": "¿Qué fila no tiene anterior?",
+      "explanation": "Solo la primera fila (día 1) no tiene anterior y recibe `NULL`. Con `partitionBy`, sería la primera de cada grupo. `F.lag(\"amount\", 1, 0)` pondría 0 en vez de nulo."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-window-vs-groupby",
+      "question": "¿Cuál es la diferencia principal entre una agregación con `groupBy` y la misma agregación con `.over(Window.partitionBy(...))`?",
+      "options": [
+        "La ventana es más rápida.",
+        "`groupBy` colapsa las filas en una por grupo; la ventana conserva todas las filas y pega el resultado en cada una.",
+        "La ventana no admite `sum`.",
+        "No hay diferencia."
+      ],
+      "answer": 1,
+      "explanation": "La ventana calcula por fila mirando a su grupo, sin colapsar. Por eso sirve para porcentajes sobre el total del grupo sin volver a hacer un join."
+    },
+    {
+      "id": "q-rank-skip",
+      "question": "Seis filas empatan en el primer puesto. ¿Qué número recibe la séptima con `rank` y con `dense_rank`?",
+      "options": ["7 y 7", "7 y 2", "2 y 2", "2 y 7"],
+      "answer": 1,
+      "explanation": "`rank` salta los seis números consumidos y da 7; `dense_rank` sigue correlativo y da 2. Es lo que pasa en BigMart con `NCZ54` (siete filas) y `NCZ53`."
+    },
+    {
+      "id": "q-row-number-ties",
+      "question": "Ordenas por `Item_Identifier`, que se repite, y usas `row_number`. ¿Es reproducible qué fila recibe el 1?",
+      "options": [
+        "Sí, siempre la primera del archivo.",
+        "No: entre empatadas, el reparto depende de cómo lleguen las filas. Añade columnas al `orderBy` hasta que el orden sea único.",
+        "Sí, Spark ordena por todas las columnas automáticamente.",
+        "Da error por los empates."
+      ],
+      "answer": 1,
+      "explanation": "`row_number` no repite números, así que entre empatadas tiene que elegir, y elige según el orden de llegada. Desempata siempre, por ejemplo con `Outlet_Identifier`."
+    },
+    {
+      "id": "q-order-required",
+      "question": "¿Qué pasa con `F.row_number().over(Window.partitionBy(\"Outlet_Identifier\"))`, sin `orderBy`?",
+      "options": [
+        "Numera en el orden del archivo.",
+        "Error `WINDOW_FUNCTION_FRAME_NOT_ORDERED`: `row_number` exige una ventana ordenada.",
+        "Devuelve 1 en todas las filas.",
+        "Devuelve el número de filas del grupo."
+      ],
+      "answer": 1,
+      "explanation": "`row_number`, `rank`, `dense_rank`, `lag` y `lead` necesitan `orderBy` para saber qué fila va antes. Las agregaciones como `sum` sí funcionan sin orden: agregan el grupo entero."
+    },
+    {
+      "id": "q-unbounded-following",
+      "question": "Cambias el marco de una suma acumulada a `rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)`. ¿Qué obtienes?",
+      "options": [
+        "Lo mismo.",
+        "El total de todas las filas de la ventana, repetido en cada fila.",
+        "Una suma acumulada al revés.",
+        "Error."
+      ],
+      "answer": 1,
+      "explanation": "El marco abarca toda la ventana en cada fila, así que todas reciben el total: en BigMart, 1201681.48 en las 8523 filas."
+    },
+    {
+      "id": "q-dedup-choice",
+      "question": "¿Por qué quedarse con una fila por producto usando `row_number` en vez de `dropDuplicates([\"Item_Identifier\"])`?",
+      "options": [
+        "Porque `dropDuplicates` no acepta una lista.",
+        "Porque con `row_number` eliges qué fila sobrevive (por ejemplo, la de mayor venta); `dropDuplicates` se queda con una cualquiera.",
+        "Porque `row_number` es más rápido.",
+        "Porque `dropDuplicates` quita también las columnas."
+      ],
+      "answer": 1,
+      "explanation": "Las dos dejan 1559 filas, pero solo con la ventana controlas cuál: numeras dentro de cada producto en el orden que te interesa y filtras el 1."
+    },
+    {
+      "id": "q-single-partition",
+      "question": "¿Qué efecto tiene una ventana sin `partitionBy` sobre millones de filas?",
+      "options": [
+        "Ninguno, es lo normal.",
+        "Spark mueve todos los datos a una sola partición y una sola tarea hace todo el trabajo.",
+        "Falla por falta de memoria siempre.",
+        "Se ejecuta en el driver."
+      ],
+      "answer": 1,
+      "explanation": "Para numerar o acumular de seguido, Spark necesita todas las filas juntas y ordenadas: una partición. Los logs avisan con `No Partition Defined for Window operation`. Parte la ventana siempre que puedas."
+    },
+    {
+      "id": "q-lag-default",
+      "question": "¿Qué devuelve `F.lag(\"amount\")` en la primera fila de cada partición?",
+      "options": [
+        "0",
+        "El último valor de la partición",
+        "`NULL`, salvo que pases un valor por defecto como tercer argumento",
+        "Error"
+      ],
+      "answer": 2,
+      "explanation": "La primera fila no tiene anterior. `F.lag(\"amount\", 1, 0)` devuelve 0 en su lugar. Lo mismo le pasa a `lead` en la última fila."
+    }
+  ]
 }

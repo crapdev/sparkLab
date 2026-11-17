@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 328">
+  <defs>
+    <marker id="wf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+  <text class="d-code" x="16" y="26">F.sum("amount").over(Window.orderBy("day")</text>
+  <text class="d-code" x="16" y="46">    .rowsBetween(Window.unboundedPreceding, Window.currentRow))</text>
+
+  <!-- Five snapshots of the frame, one per current row -->
+  <!-- Column titles -->
+  <text class="d-title" x="16" y="76">fila actual: 1</text>
+  <text class="d-title" x="166" y="76">2</text>
+  <text class="d-title" x="316" y="76">3</text>
+  <text class="d-title" x="466" y="76">4</text>
+  <text class="d-title" x="616" y="76">5</text>
+
+  <!-- Snapshot 1 -->
+  <rect class="d-box-success" x="16" y="86" width="120" height="24" />
+  <rect class="d-box" x="16" y="110" width="120" height="24" />
+  <rect class="d-box" x="16" y="134" width="120" height="24" />
+  <rect class="d-box" x="16" y="158" width="120" height="24" />
+  <rect class="d-box" x="16" y="182" width="120" height="24" />
+  <text class="d-text" x="76" y="103" text-anchor="middle">día 1 · 10</text>
+  <text class="d-muted" x="76" y="127" text-anchor="middle">día 2 · 20</text>
+  <text class="d-muted" x="76" y="151" text-anchor="middle">día 3 · 15</text>
+  <text class="d-muted" x="76" y="175" text-anchor="middle">día 4 · 5</text>
+  <text class="d-muted" x="76" y="199" text-anchor="middle">día 5 · 30</text>
+  <text class="d-accent-text" x="76" y="226" text-anchor="middle">= 10</text>
+
+  <!-- Snapshot 2 -->
+  <rect class="d-box-success" x="166" y="86" width="120" height="24" />
+  <rect class="d-box-success" x="166" y="110" width="120" height="24" />
+  <rect class="d-box" x="166" y="134" width="120" height="24" />
+  <rect class="d-box" x="166" y="158" width="120" height="24" />
+  <rect class="d-box" x="166" y="182" width="120" height="24" />
+  <text class="d-text" x="226" y="103" text-anchor="middle">día 1 · 10</text>
+  <text class="d-text" x="226" y="127" text-anchor="middle">día 2 · 20</text>
+  <text class="d-muted" x="226" y="151" text-anchor="middle">día 3 · 15</text>
+  <text class="d-muted" x="226" y="175" text-anchor="middle">día 4 · 5</text>
+  <text class="d-muted" x="226" y="199" text-anchor="middle">día 5 · 30</text>
+  <text class="d-accent-text" x="226" y="226" text-anchor="middle">= 30</text>
+
+  <!-- Snapshot 3 -->
+  <rect class="d-box-success" x="316" y="86" width="120" height="24" />
+  <rect class="d-box-success" x="316" y="110" width="120" height="24" />
+  <rect class="d-box-success" x="316" y="134" width="120" height="24" />
+  <rect class="d-box" x="316" y="158" width="120" height="24" />
+  <rect class="d-box" x="316" y="182" width="120" height="24" />
+  <text class="d-text" x="376" y="103" text-anchor="middle">día 1 · 10</text>
+  <text class="d-text" x="376" y="127" text-anchor="middle">día 2 · 20</text>
+  <text class="d-text" x="376" y="151" text-anchor="middle">día 3 · 15</text>
+  <text class="d-muted" x="376" y="175" text-anchor="middle">día 4 · 5</text>
+  <text class="d-muted" x="376" y="199" text-anchor="middle">día 5 · 30</text>
+  <text class="d-accent-text" x="376" y="226" text-anchor="middle">= 45</text>
+
+  <!-- Snapshot 4 -->
+  <rect class="d-box-success" x="466" y="86" width="120" height="24" />
+  <rect class="d-box-success" x="466" y="110" width="120" height="24" />
+  <rect class="d-box-success" x="466" y="134" width="120" height="24" />
+  <rect class="d-box-success" x="466" y="158" width="120" height="24" />
+  <rect class="d-box" x="466" y="182" width="120" height="24" />
+  <text class="d-text" x="526" y="103" text-anchor="middle">día 1 · 10</text>
+  <text class="d-text" x="526" y="127" text-anchor="middle">día 2 · 20</text>
+  <text class="d-text" x="526" y="151" text-anchor="middle">día 3 · 15</text>
+  <text class="d-text" x="526" y="175" text-anchor="middle">día 4 · 5</text>
+  <text class="d-muted" x="526" y="199" text-anchor="middle">día 5 · 30</text>
+  <text class="d-accent-text" x="526" y="226" text-anchor="middle">= 50</text>
+
+  <!-- Snapshot 5 -->
+  <rect class="d-box-success" x="616" y="86" width="120" height="24" />
+  <rect class="d-box-success" x="616" y="110" width="120" height="24" />
+  <rect class="d-box-success" x="616" y="134" width="120" height="24" />
+  <rect class="d-box-success" x="616" y="158" width="120" height="24" />
+  <rect class="d-box-success" x="616" y="182" width="120" height="24" />
+  <text class="d-text" x="676" y="103" text-anchor="middle">día 1 · 10</text>
+  <text class="d-text" x="676" y="127" text-anchor="middle">día 2 · 20</text>
+  <text class="d-text" x="676" y="151" text-anchor="middle">día 3 · 15</text>
+  <text class="d-text" x="676" y="175" text-anchor="middle">día 4 · 5</text>
+  <text class="d-text" x="676" y="199" text-anchor="middle">día 5 · 30</text>
+  <text class="d-accent-text" x="676" y="226" text-anchor="middle">= 80</text>
+
+  <!-- Arrows between snapshots -->
+  <path class="d-line-accent" d="M140 146H160" marker-end="url(#wf-arrow)" />
+  <path class="d-line-accent" d="M290 146H310" marker-end="url(#wf-arrow)" />
+  <path class="d-line-accent" d="M440 146H460" marker-end="url(#wf-arrow)" />
+  <path class="d-line-accent" d="M590 146H610" marker-end="url(#wf-arrow)" />
+
+  <!-- Footer -->
+  <rect class="d-box-info" x="16" y="250" width="728" height="64" rx="8" />
+  <text class="d-text" x="32" y="272">El marco (en verde) crece una fila cada vez: cada fila recibe la suma de su marco, y el resultado tiene 5 filas.</text>
+  <text class="d-muted" x="32" y="292">rowsBetween(-2, 0): las dos anteriores y la actual (media móvil). rowsBetween(unboundedPreceding, unboundedFollowing): todas, 80.</text>
+  <text class="d-muted" x="32" y="308">Sin marco y con orderBy: desde el principio hasta la fila actual y sus empates. Sin orderBy: el grupo entero.</text>
+</svg>

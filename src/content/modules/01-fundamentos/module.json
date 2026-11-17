@@ -8,11 +8,12 @@
   "estimatedMinutes": 85,
   "objectives": [
     "Explicar qué hacen el driver, los executors y el cluster manager.",
+    "Explicar qué es la SparkSession y qué hace cada paso de `builder...getOrCreate()`.",
     "Distinguir una transformación de una acción.",
     "Nombrar las acciones principales, qué devuelve cada una y por qué `limit()` no es una de ellas.",
     "Predecir cuándo Spark ejecuta de verdad y cuándo solo apunta pasos.",
     "Relacionar particiones, tasks, stages y jobs.",
-    "Crear una SparkSession y medir los jobs que lanza tu código."
+    "Medir los jobs, stages y tasks que lanza tu código."
   ],
   "lab": {
     "path": "labs/01-fundamentos",
@@ -20,7 +21,7 @@
     "datasets": ["bigmart_sales.csv"],
     "summary": "Creas tu primera `SparkSession` y compruebas con mediciones reales todo lo que dice la teoría: cuántos jobs, stages y tasks lanza cada operación.",
     "tasks": [
-      "Crear una `SparkSession` en modo local.",
+      "Crear una `SparkSession` en modo local y comprobar su configuración.",
       "Construir un pipeline de transformaciones que no dispare ningún job.",
       "Clasificar operaciones en transformaciones y acciones, y medirlo.",
       "Obtener resultados con `count`, `take` y una agregación.",
@@ -73,20 +74,6 @@
       "explanation": "Las líneas 1 a 4 son transformaciones: con el esquema escrito, ni siquiera la lectura lanza un job. `collect()` es la única acción, y ahí Spark lee, filtra, selecciona, recorta y trae las 10 filas a Python."
     },
     {
-      "id": "ex-show-output",
-      "type": "predict-output",
-      "prompt": "Partiendo del DataFrame `squared` del ejercicio anterior, ¿qué imprime esta línea?",
-      "code": "squared.show(3)",
-      "optionsFormat": "code",
-      "options": [
-        "+---+-------+\n| id|squared|\n+---+-------+\n|  1|      1|\n|  2|      4|\n|  3|      9|\n+---+-------+\nonly showing top 3 rows",
-        "+---+-------+\n| id|squared|\n+---+-------+\n|  7|     49|\n| 14|    196|\n| 21|    441|\n+---+-------+\nonly showing top 3 rows",
-        "+---+\n| id|\n+---+\n|  7|\n| 14|\n| 21|\n+---+\nonly showing top 3 rows"
-      ],
-      "answer": 1,
-      "explanation": "El filtro deja solo los múltiplos de 7 y `withColumn` añade la columna `squared`. `show(3)` imprime las 3 primeras filas del resultado, no de los datos originales."
-    },
-    {
       "id": "ex-limit-take",
       "type": "choice",
       "prompt": "¿Cuál es la diferencia entre `df.limit(5)` y `df.take(5)`?",
@@ -115,24 +102,32 @@
           "hint": "Devuelve la sesión existente o crea una nueva."
         }
       ],
-      "explanation": "`master(\"local[*]\")` ejecuta Spark en tu máquina con todos los núcleos, y `getOrCreate()` devuelve la sesión que ya exista o crea una."
+      "explanation": "`master(\"local[*]\")` ejecuta Spark en tu máquina con todos los núcleos, y `getOrCreate()` es el único paso que crea algo. Si ya existe una sesión en el proceso, devuelve esa misma e ignora el `master` y el `appName` nuevos."
     },
     {
-      "id": "ex-pipeline",
-      "type": "fill-code",
-      "prompt": "Quédate con los números pares y cuenta cuántos hay.",
-      "code": "numbers = spark.range(0, 1000)\nevens = numbers.___(F.col(\"id\") % 2 == 0)\ntotal = evens.___()",
-      "blanks": [
-        {
-          "answers": ["filter", "where"],
-          "hint": "La transformación que se queda con las filas que cumplen una condición."
-        },
-        {
-          "answers": ["count"],
-          "hint": "La acción que devuelve el número de filas."
-        }
+      "id": "ex-builder-only",
+      "type": "choice",
+      "prompt": "¿Qué devuelve `SparkSession.builder.appName(\"x\")` si no le añades `getOrCreate()`?",
+      "options": [
+        "Una `SparkSession` sin master.",
+        "Un `Builder`: un constructor con opciones apuntadas, que todavía no ha creado nada.",
+        "`None`.",
+        "Error: falta el `master`."
       ],
-      "explanation": "`filter` (o su alias `where`) es una transformación. `count()` es la acción que pone a Spark a trabajar; `total` vale 500."
+      "answer": 1,
+      "hint": "¿Cuál de los cuatro pasos de la receta crea la sesión?",
+      "explanation": "El `builder` solo acumula opciones. Hasta que no llamas a `getOrCreate()` no hay sesión, y lo primero que le pidas falla: `AttributeError: 'Builder' object has no attribute 'read'`."
+    },
+    {
+      "id": "ex-getorcreate-name",
+      "type": "predict-output",
+      "prompt": "En un proceso donde ya existe `spark`, creada con `appName(\"lab-01-fundamentos\")`, se ejecuta este código. ¿Qué imprime?",
+      "code": "spark2 = SparkSession.builder.master(\"local[2]\").appName(\"otra-app\").getOrCreate()\nprint(spark2.sparkContext.appName)",
+      "optionsFormat": "code",
+      "options": ["otra-app", "lab-01-fundamentos", "local[2]", "Error: ya existe una sesión"],
+      "answer": 1,
+      "hint": "`getOrCreate` significa «dame la que haya, y si no hay, crea una».",
+      "explanation": "Imprime `lab-01-fundamentos`. Ya había una sesión, así que `getOrCreate()` la devuelve tal cual: `spark2 is spark` es `True`, y el nombre y el master nuevos se ignoran."
     },
     {
       "id": "ex-read-jobs",
@@ -178,6 +173,30 @@
       ],
       "answer": 1,
       "explanation": "El driver construye el plan y coordina. Las tasks las ejecutan los executors, y los recursos los reparte el cluster manager."
+    },
+    {
+      "id": "q-session-where",
+      "question": "¿Dónde vive la `SparkSession`?",
+      "options": [
+        "En cada executor, una copia por máquina.",
+        "En el driver: es el objeto que representa tu aplicación y por el que pasa todo lo que pides a Spark.",
+        "En el cluster manager.",
+        "En el notebook, fuera de Spark."
+      ],
+      "answer": 1,
+      "explanation": "La sesión es el punto de entrada y vive en el driver. Desde ella se construyen los planes que después se reparten en tasks a los executors."
+    },
+    {
+      "id": "q-local-star",
+      "question": "¿Qué significa `master(\"local[*]\")`?",
+      "options": [
+        "Conectar con el clúster local de la empresa.",
+        "Ejecutar Spark en esta máquina usando todos los núcleos disponibles.",
+        "Ejecutar Spark con un solo hilo.",
+        "Guardar los datos en el disco local."
+      ],
+      "answer": 1,
+      "explanation": "`local[*]` es modo local con todos los núcleos; `local[2]` serían dos. `spark.sparkContext.defaultParallelism` te dice cuántos está usando, y con ese número de particiones nacen los `spark.range`."
     },
     {
       "id": "q-horizontal",

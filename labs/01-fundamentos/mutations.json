@@ -1,5 +1,17 @@
 [
   {
+    "name": "task 1: getOrCreate forgotten",
+    "old": "spark = SparkSession.builder.master(\"local[*]\").appName(\"lab-01-fundamentos\").getOrCreate()",
+    "new": "spark = SparkSession.builder.master(\"local[*]\").appName(\"lab-01-fundamentos\")",
+    "expect": "Tarea 1 · spark es una SparkSession"
+  },
+  {
+    "name": "task 1: another appName",
+    "old": "spark = SparkSession.builder.master(\"local[*]\").appName(\"lab-01-fundamentos\").getOrCreate()",
+    "new": "spark = SparkSession.builder.master(\"local[*]\").appName(\"mi-app\").getOrCreate()",
+    "expect": "Tarea 1 · el nombre"
+  },
+  {
     "name": "task 5: take instead of limit",
     "old": "top_five = pipeline.limit(5)",
     "new": "top_five = pipeline.take(5)",

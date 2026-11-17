@@ -1,0 +1,128 @@
+[
+  {
+    "name": "task 1: tie-break forgotten",
+    "old": "numbered = sales.withColumn(\"row_num\", F.row_number().over(Window.orderBy(\"Item_Identifier\", \"Outlet_Identifier\")))",
+    "new": "numbered = sales.withColumn(\"row_num\", F.row_number().over(Window.orderBy(\"Item_Identifier\")))",
+    "expect": "Tarea 1 · las filas"
+  },
+  {
+    "name": "task 1: descending order",
+    "old": "numbered = sales.withColumn(\"row_num\", F.row_number().over(Window.orderBy(\"Item_Identifier\", \"Outlet_Identifier\")))",
+    "new": "numbered = sales.withColumn(\"row_num\", F.row_number().over(Window.orderBy(F.desc(\"Item_Identifier\"), \"Outlet_Identifier\")))",
+    "expect": "Tarea 1 · las filas"
+  },
+  {
+    "name": "task 1: outlet first",
+    "old": "numbered = sales.withColumn(\"row_num\", F.row_number().over(Window.orderBy(\"Item_Identifier\", \"Outlet_Identifier\")))",
+    "new": "numbered = sales.withColumn(\"row_num\", F.row_number().over(Window.orderBy(\"Outlet_Identifier\", \"Item_Identifier\")))",
+    "expect": "Tarea 1 · las filas"
+  },
+  {
+    "name": "task 2: ascending order",
+    "old": "by_item_desc = Window.orderBy(F.desc(\"Item_Identifier\"))",
+    "new": "by_item_desc = Window.orderBy(\"Item_Identifier\")",
+    "expect": "Tarea 2 · las 7 filas"
+  },
+  {
+    "name": "task 2: rank and dense_rank swapped",
+    "old": "ranked = sales.withColumn(\"rank\", F.rank().over(by_item_desc)).withColumn(\"dense_rank\", F.dense_rank().over(by_item_desc))",
+    "new": "ranked = sales.withColumn(\"rank\", F.dense_rank().over(by_item_desc)).withColumn(\"dense_rank\", F.rank().over(by_item_desc))",
+    "expect": "Tarea 2 · NCZ53"
+  },
+  {
+    "name": "task 2: row_number instead of rank",
+    "old": "ranked = sales.withColumn(\"rank\", F.rank().over(by_item_desc)).withColumn(\"dense_rank\", F.dense_rank().over(by_item_desc))",
+    "new": "ranked = sales.withColumn(\"rank\", F.row_number().over(by_item_desc)).withColumn(\"dense_rank\", F.dense_rank().over(by_item_desc))",
+    "expect": "Tarea 2 · las 7 filas"
+  },
+  {
+    "name": "task 2: rank used twice",
+    "old": "ranked = sales.withColumn(\"rank\", F.rank().over(by_item_desc)).withColumn(\"dense_rank\", F.dense_rank().over(by_item_desc))",
+    "new": "ranked = sales.withColumn(\"rank\", F.rank().over(by_item_desc)).withColumn(\"dense_rank\", F.rank().over(by_item_desc))",
+    "expect": "Tarea 2 · NCZ53"
+  },
+  {
+    "name": "task 3: frame to the end",
+    "old": "running = sales.withColumn(\"cum_mrp\", F.sum(\"Item_MRP\").over(by_type_item.rowsBetween(Window.unboundedPreceding, Window.currentRow)))",
+    "new": "running = sales.withColumn(\"cum_mrp\", F.sum(\"Item_MRP\").over(by_type_item.rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))",
+    "expect": "Tarea 3 · FDA11"
+  },
+  {
+    "name": "task 3: avg instead of sum",
+    "old": "running = sales.withColumn(\"cum_mrp\", F.sum(\"Item_MRP\").over(by_type_item.rowsBetween(Window.unboundedPreceding, Window.currentRow)))",
+    "new": "running = sales.withColumn(\"cum_mrp\", F.avg(\"Item_MRP\").over(by_type_item.rowsBetween(Window.unboundedPreceding, Window.currentRow)))",
+    "expect": "Tarea 3 · FDA11"
+  },
+  {
+    "name": "task 3: wrong column summed",
+    "old": "running = sales.withColumn(\"cum_mrp\", F.sum(\"Item_MRP\").over(by_type_item.rowsBetween(Window.unboundedPreceding, Window.currentRow)))",
+    "new": "running = sales.withColumn(\"cum_mrp\", F.sum(\"Item_Outlet_Sales\").over(by_type_item.rowsBetween(Window.unboundedPreceding, Window.currentRow)))",
+    "expect": "Tarea 3 · FDA11"
+  },
+  {
+    "name": "task 4: no partition",
+    "old": "by_outlet_sales = Window.partitionBy(\"Outlet_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Item_Identifier\")",
+    "new": "by_outlet_sales = Window.orderBy(F.desc(\"Item_Outlet_Sales\"), \"Item_Identifier\")",
+    "expect": "Tarea 4 · 30 filas"
+  },
+  {
+    "name": "task 4: ascending sales",
+    "old": "by_outlet_sales = Window.partitionBy(\"Outlet_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Item_Identifier\")",
+    "new": "by_outlet_sales = Window.partitionBy(\"Outlet_Identifier\").orderBy(\"Item_Outlet_Sales\", \"Item_Identifier\")",
+    "expect": "Tarea 4 · en OUT027"
+  },
+  {
+    "name": "task 4: strict comparison",
+    "old": "top3 = sales.withColumn(\"rank_in_outlet\", F.row_number().over(by_outlet_sales)).filter(F.col(\"rank_in_outlet\") <= 3)",
+    "new": "top3 = sales.withColumn(\"rank_in_outlet\", F.row_number().over(by_outlet_sales)).filter(F.col(\"rank_in_outlet\") < 3)",
+    "expect": "Tarea 4 · 30 filas"
+  },
+  {
+    "name": "task 4: partition by type",
+    "old": "by_outlet_sales = Window.partitionBy(\"Outlet_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Item_Identifier\")",
+    "new": "by_outlet_sales = Window.partitionBy(\"Item_Type\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Item_Identifier\")",
+    "expect": "Tarea 4 · 30 filas"
+  },
+  {
+    "name": "task 5: dropDuplicates keeps an arbitrary row",
+    "old": "best_outlet = sales.withColumn(\"rn\", F.row_number().over(by_item_sales)).filter(F.col(\"rn\") == 1).drop(\"rn\")",
+    "new": "best_outlet = sales.dropDuplicates([\"Item_Identifier\"])",
+    "expect": "Tarea 5 · FDA15"
+  },
+  {
+    "name": "task 5: helper column not dropped",
+    "old": "best_outlet = sales.withColumn(\"rn\", F.row_number().over(by_item_sales)).filter(F.col(\"rn\") == 1).drop(\"rn\")",
+    "new": "best_outlet = sales.withColumn(\"rn\", F.row_number().over(by_item_sales)).filter(F.col(\"rn\") == 1)",
+    "expect": "Tarea 5 · 1559"
+  },
+  {
+    "name": "task 5: ascending sales",
+    "old": "by_item_sales = Window.partitionBy(\"Item_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Outlet_Identifier\")",
+    "new": "by_item_sales = Window.partitionBy(\"Item_Identifier\").orderBy(\"Item_Outlet_Sales\", \"Outlet_Identifier\")",
+    "expect": "Tarea 5 · FDA15"
+  },
+  {
+    "name": "task 5: tie broken by outlet descending",
+    "old": "by_item_sales = Window.partitionBy(\"Item_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), \"Outlet_Identifier\")",
+    "new": "by_item_sales = Window.partitionBy(\"Item_Identifier\").orderBy(F.desc(\"Item_Outlet_Sales\"), F.desc(\"Outlet_Identifier\"))",
+    "expect": "Tarea 5 · FDA15"
+  },
+  {
+    "name": "task 6: orderBy turns the total into a running sum",
+    "old": "by_outlet = Window.partitionBy(\"Outlet_Identifier\")",
+    "new": "by_outlet = Window.partitionBy(\"Outlet_Identifier\").orderBy(\"Item_Identifier\")",
+    "expect": "Tarea 6 · sigue"
+  },
+  {
+    "name": "task 6: partition by type",
+    "old": "by_outlet = Window.partitionBy(\"Outlet_Identifier\")",
+    "new": "by_outlet = Window.partitionBy(\"Item_Type\")",
+    "expect": "Tarea 6 · sigue"
+  },
+  {
+    "name": "task 6: share not multiplied by 100",
+    "old": "    \"share_pct\", F.round(F.col(\"Item_Outlet_Sales\") / F.col(\"outlet_total\") * 100, 2)",
+    "new": "    \"share_pct\", F.round(F.col(\"Item_Outlet_Sales\") / F.col(\"outlet_total\"), 2)",
+    "expect": "Tarea 6 · FDA15"
+  }
+]
