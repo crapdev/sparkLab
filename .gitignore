@@ -1,0 +1,23 @@
+# Source notes extracted from the video: reference only, never published
+material/
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local Python environment used to verify the labs
+.venv/
+__pycache__/
+*.pyc
+
+# Spark and notebook leftovers
+spark-warehouse/
+metastore_db/
+derby.log
+.ipynb_checkpoints/
+
+# Tooling
+.vercel/
+.claude/
+.DS_Store
+*.log

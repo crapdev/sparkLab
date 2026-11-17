@@ -1,0 +1,150 @@
+[
+  {
+    "name": "SparkSession.builder",
+    "category": "Sesión",
+    "signature": "SparkSession.builder.master(url).appName(name).getOrCreate()",
+    "description": "Crea la sesión de Spark, o devuelve la que ya existe. Es el punto de entrada a todo lo demás.",
+    "example": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.master(\"local[*]\").appName(\"mi-app\").getOrCreate()",
+    "gotcha": "Si ya hay una sesión, `getOrCreate()` la reutiliza e ignora el nombre y el master nuevos. En Databricks `spark` ya viene creada.",
+    "module": "01-fundamentos",
+    "keywords": ["sesion", "session", "crear", "iniciar", "local", "master", "appName"]
+  },
+  {
+    "name": "spark.range",
+    "category": "Crear datos",
+    "signature": "spark.range(start, end=None, step=1, numPartitions=None)",
+    "description": "Crea un DataFrame con una columna `id` de números consecutivos. Útil para probar sin leer archivos.",
+    "example": "numbers = spark.range(1, 1001)  # ids from 1 to 1000",
+    "gotcha": "El final no se incluye: `spark.range(1, 1001)` llega hasta 1000.",
+    "module": "01-fundamentos",
+    "keywords": ["rango", "numeros", "secuencia", "generar", "prueba"]
+  },
+  {
+    "name": "spark.conf.set",
+    "category": "Sesión",
+    "signature": "spark.conf.set(key, value)",
+    "description": "Cambia una opción de configuración de Spark SQL en la sesión actual.",
+    "example": "spark.conf.set(\"spark.sql.shuffle.partitions\", \"4\")",
+    "gotcha": "Por defecto un shuffle produce 200 particiones, demasiadas para datos pequeños.",
+    "module": "01-fundamentos",
+    "keywords": ["configuracion", "config", "opciones", "shuffle", "particiones", "aqe"]
+  },
+  {
+    "name": "filter",
+    "category": "Transformaciones",
+    "signature": "df.filter(condition)",
+    "description": "Se queda con las filas que cumplen la condición. `where` es un alias exacto.",
+    "example": "evens = numbers.filter(F.col(\"id\") % 2 == 0)",
+    "gotcha": "Es una transformación: no ejecuta nada hasta que haya una acción.",
+    "module": "01-fundamentos",
+    "keywords": ["filtrar", "where", "condicion", "filas"]
+  },
+  {
+    "name": "withColumn",
+    "category": "Transformaciones",
+    "signature": "df.withColumn(name, column)",
+    "description": "Añade una columna, o reemplaza la que ya tenga ese nombre.",
+    "example": "squared = numbers.withColumn(\"squared\", F.col(\"id\") * F.col(\"id\"))",
+    "gotcha": "Devuelve un DataFrame nuevo; el original no cambia.",
+    "module": "01-fundamentos",
+    "keywords": ["columna", "nueva", "añadir", "agregar", "calcular"]
+  },
+  {
+    "name": "show",
+    "category": "Acciones",
+    "signature": "df.show(n=20, truncate=True)",
+    "description": "Imprime las primeras filas en forma de tabla. Es la forma habitual de mirar un DataFrame.",
+    "example": "df.show(5, truncate=False)",
+    "gotcha": "`display(df)` solo existe en Databricks; `show()` funciona en cualquier entorno.",
+    "module": "01-fundamentos",
+    "keywords": ["mostrar", "ver", "imprimir", "display", "tabla"]
+  },
+  {
+    "name": "count",
+    "category": "Acciones",
+    "signature": "df.count()",
+    "description": "Devuelve el número de filas como un entero de Python.",
+    "example": "total = df.count()",
+    "gotcha": "Recorre todos los datos. En tablas grandes no lo llames solo por curiosidad.",
+    "module": "01-fundamentos",
+    "keywords": ["contar", "filas", "numero", "total"]
+  },
+  {
+    "name": "collect",
+    "category": "Acciones",
+    "signature": "df.collect()",
+    "description": "Trae todas las filas al driver como una lista de objetos `Row`.",
+    "example": "rows = small_df.collect()\nfirst_id = rows[0][\"id\"]",
+    "gotcha": "Con datos grandes puede dejar al driver sin memoria. Úsalo solo con resultados pequeños.",
+    "module": "01-fundamentos",
+    "keywords": ["traer", "lista", "filas", "driver", "python"]
+  },
+  {
+    "name": "take",
+    "category": "Acciones",
+    "signature": "df.take(n)",
+    "description": "Devuelve las primeras `n` filas como una lista de Python.",
+    "example": "sample = df.take(3)",
+    "gotcha": "Sin un `orderBy` previo, no hay garantía de cuáles son las \"primeras\".",
+    "module": "01-fundamentos",
+    "keywords": ["primeras", "filas", "muestra", "head", "limit"]
+  },
+  {
+    "name": "first",
+    "category": "Acciones",
+    "signature": "df.first()",
+    "description": "Devuelve la primera fila como un `Row`, o `None` si el DataFrame está vacío.",
+    "example": "biggest = df.agg(F.max(\"squared\")).first()[0]",
+    "gotcha": "Muy útil para sacar el valor de una agregación que devuelve una sola fila.",
+    "module": "01-fundamentos",
+    "keywords": ["primera", "fila", "valor", "escalar"]
+  },
+  {
+    "name": "explain",
+    "category": "Inspección",
+    "signature": "df.explain(mode=None)",
+    "description": "Imprime el plan con el que Spark ejecutaría el DataFrame, sin ejecutarlo.",
+    "example": "df.explain()            # physical plan\ndf.explain(\"formatted\")  # easier to read",
+    "gotcha": "El plan se lee de abajo arriba.",
+    "module": "01-fundamentos",
+    "keywords": ["plan", "ejecucion", "optimizador", "catalyst", "depurar"]
+  },
+  {
+    "name": "columns",
+    "category": "Inspección",
+    "signature": "df.columns",
+    "description": "Lista de Python con los nombres de las columnas. No ejecuta nada.",
+    "example": "print(df.columns)  # ['id', 'squared']",
+    "module": "01-fundamentos",
+    "keywords": ["nombres", "columnas", "lista", "esquema"]
+  },
+  {
+    "name": "dtypes",
+    "category": "Inspección",
+    "signature": "df.dtypes",
+    "description": "Lista de pares `(nombre, tipo)` de cada columna. No ejecuta nada.",
+    "example": "types = dict(df.dtypes)\ntypes[\"Item_Weight\"]  # 'double'",
+    "module": "01-fundamentos",
+    "keywords": ["tipos", "columnas", "esquema", "schema"]
+  },
+  {
+    "name": "rdd.getNumPartitions",
+    "category": "Inspección",
+    "signature": "df.rdd.getNumPartitions()",
+    "description": "Número de particiones en las que está repartido el DataFrame.",
+    "example": "numbers = spark.range(0, 1000, numPartitions=4)\nnumbers.rdd.getNumPartitions()  # 4",
+    "gotcha": "Cada stage lanza una task por partición.",
+    "module": "01-fundamentos",
+    "keywords": ["particiones", "paralelismo", "tasks", "partition"]
+  },
+  {
+    "name": "spark.read (CSV)",
+    "category": "Lectura",
+    "signature": "spark.read.format(\"csv\").option(key, value).load(path)",
+    "description": "Lee un archivo CSV. `header` usa la primera fila como nombres e `inferSchema` deduce los tipos.",
+    "example": "sales = (\n    spark.read.format(\"csv\")\n    .option(\"header\", True)\n    .option(\"inferSchema\", True)\n    .load(\"data/bigmart_sales.csv\")\n)",
+    "gotcha": "`inferSchema` obliga a Spark a recorrer el archivo una vez más. Con archivos grandes es mejor dar el esquema.",
+    "module": "01-fundamentos",
+    "keywords": ["leer", "csv", "cargar", "archivo", "header", "inferSchema", "load"]
+  }
+]

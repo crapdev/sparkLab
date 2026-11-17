@@ -1,0 +1,9 @@
+{
+  "id": "15-proyecto-integrador",
+  "order": 15,
+  "block": "rumbo-a-pro",
+  "status": "planned",
+  "title": "Proyecto integrador",
+  "summary": "Un pipeline completo de principio a fin con todo lo aprendido.",
+  "estimatedMinutes": 90
+}

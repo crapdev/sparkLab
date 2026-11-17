@@ -1,0 +1,7 @@
+dist/
+node_modules/
+.venv/
+material/
+public/data/
+labs/**/*.ipynb
+package-lock.json

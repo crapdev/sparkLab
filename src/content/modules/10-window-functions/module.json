@@ -1,0 +1,9 @@
+{
+  "id": "10-window-functions",
+  "order": 10,
+  "block": "resumir-combinar",
+  "status": "planned",
+  "title": "Window functions",
+  "summary": "row_number, rank, dense_rank y sumas acumuladas con ventanas.",
+  "estimatedMinutes": 60
+}

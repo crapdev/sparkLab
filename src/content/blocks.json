@@ -1,0 +1,27 @@
+[
+  {
+    "id": "fundamentos",
+    "title": "A · Fundamentos",
+    "description": "Cómo piensa Spark y cómo se le dan los datos."
+  },
+  {
+    "id": "transformaciones",
+    "title": "B · Transformaciones",
+    "description": "Dar forma a los datos: columnas, filas, texto, fechas y listas."
+  },
+  {
+    "id": "resumir-combinar",
+    "title": "C · Resumir y combinar",
+    "description": "Agregar, cruzar tablas y calcular mirando a las filas vecinas."
+  },
+  {
+    "id": "extender-persistir",
+    "title": "D · Extender y persistir",
+    "description": "Funciones propias, formatos de archivo, tablas y SQL."
+  },
+  {
+    "id": "rumbo-a-pro",
+    "title": "E · Rumbo a pro",
+    "description": "Lo que marca la diferencia en un trabajo real: rendimiento y un proyecto completo."
+  }
+]

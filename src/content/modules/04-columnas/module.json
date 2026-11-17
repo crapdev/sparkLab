@@ -1,0 +1,9 @@
+{
+  "id": "04-columnas",
+  "order": 4,
+  "block": "transformaciones",
+  "status": "planned",
+  "title": "Crear y modificar columnas",
+  "summary": "withColumn, lit, renombrar, regexp_replace, cast y columnas condicionales con when.",
+  "estimatedMinutes": 50
+}

@@ -1,0 +1,9 @@
+{
+  "id": "02-lectura-esquemas",
+  "order": 2,
+  "block": "fundamentos",
+  "status": "planned",
+  "title": "Lectura de datos y esquemas",
+  "summary": "Leer CSV y JSON controlando los tipos: inferSchema, DDL y StructType.",
+  "estimatedMinutes": 45
+}

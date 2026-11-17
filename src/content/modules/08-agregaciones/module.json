@@ -1,0 +1,9 @@
+{
+  "id": "08-agregaciones",
+  "order": 8,
+  "block": "resumir-combinar",
+  "status": "planned",
+  "title": "Agregaciones",
+  "summary": "Resumir por grupos con groupBy, agg, collect_list y pivot.",
+  "estimatedMinutes": 50
+}

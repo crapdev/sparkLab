@@ -1,0 +1,7 @@
+{
+  "siteName": "PySpark Labs",
+  "siteUrl": "https://YOUR-SITE.vercel.app",
+  "githubRepo": "crapdev/sparkLab",
+  "githubBranch": "main",
+  "pysparkVersion": "4.2.0"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "14-rendimiento",
+  "order": 14,
+  "block": "rumbo-a-pro",
+  "status": "planned",
+  "title": "Rendimiento por dentro",
+  "summary": "Particiones, shuffle, planes de ejecución, caché y broadcast joins.",
+  "estimatedMinutes": 60
+}

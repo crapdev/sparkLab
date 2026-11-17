@@ -1,0 +1,9 @@
+{
+  "id": "11-udfs",
+  "order": 11,
+  "block": "extender-persistir",
+  "status": "planned",
+  "title": "UDFs",
+  "summary": "Escribir funciones propias en Python y saber cuándo no conviene.",
+  "estimatedMinutes": 30
+}

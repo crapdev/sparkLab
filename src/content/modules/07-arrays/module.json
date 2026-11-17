@@ -1,0 +1,9 @@
+{
+  "id": "07-arrays",
+  "order": 7,
+  "block": "transformaciones",
+  "status": "planned",
+  "title": "Arrays",
+  "summary": "Columnas que contienen listas: split, índices, explode y array_contains.",
+  "estimatedMinutes": 35
+}

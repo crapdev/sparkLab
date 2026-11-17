@@ -1,0 +1,231 @@
+{
+  "id": "01-fundamentos",
+  "order": 1,
+  "block": "fundamentos",
+  "status": "published",
+  "title": "Fundamentos de Spark",
+  "summary": "Cómo trabaja Spark por dentro: clúster, evaluación perezosa y la jerarquía Job, Stage y Task.",
+  "estimatedMinutes": 75,
+  "objectives": [
+    "Explicar qué hacen el driver, los executors y el cluster manager.",
+    "Distinguir una transformación de una acción.",
+    "Predecir cuándo Spark ejecuta de verdad y cuándo solo apunta pasos.",
+    "Relacionar particiones, tasks, stages y jobs.",
+    "Crear una SparkSession y medir los jobs que lanza tu código."
+  ],
+  "lab": {
+    "path": "labs/01-fundamentos",
+    "minutes": 30,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Creas tu primera `SparkSession` y compruebas con mediciones reales todo lo que dice la teoría: cuántos jobs, stages y tasks lanza cada operación.",
+    "tasks": [
+      "Crear una `SparkSession` en modo local.",
+      "Construir un pipeline de transformaciones que no dispare ningún job.",
+      "Clasificar operaciones en transformaciones y acciones, y medirlo.",
+      "Obtener resultados con `count`, `take` y una agregación.",
+      "Comparar una transformación narrow con una wide contando stages y tasks.",
+      "Leer el CSV de BigMart y ver por qué leer también lanza jobs."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-actions",
+      "type": "choice",
+      "prompt": "¿Cuáles de estas operaciones son **acciones**?",
+      "options": [
+        "`df.filter(F.col(\"id\") > 10)`",
+        "`df.count()`",
+        "`df.select(\"id\")`",
+        "`df.show()`",
+        "`df.collect()`",
+        "`df.withColumn(\"x\", F.lit(1))`"
+      ],
+      "answer": [1, 3, 4],
+      "hint": "Fíjate en qué devuelve cada una: ¿otro DataFrame o un resultado?",
+      "explanation": "`count`, `show` y `collect` obligan a Spark a calcular: devuelven un número, imprimen filas o traen las filas a Python. `filter`, `select` y `withColumn` devuelven otro DataFrame y no ejecutan nada."
+    },
+    {
+      "id": "ex-zero-jobs",
+      "type": "predict-output",
+      "prompt": "Se ejecuta este código en una sesión recién creada. ¿Cuántos jobs ha lanzado Spark al terminar?",
+      "code": "numbers = spark.range(1, 1001)\nmultiples = numbers.filter(F.col(\"id\") % 7 == 0)\nsquared = multiples.withColumn(\"squared\", F.col(\"id\") * F.col(\"id\"))",
+      "answers": ["0", "cero", "ninguno"],
+      "inputLabel": "Número de jobs",
+      "inputMode": "numeric",
+      "hint": "Busca una acción en el código.",
+      "explanation": "Cero. Las tres líneas son transformaciones: Spark apunta los pasos en un plan y no calcula nada hasta que llegue una acción."
+    },
+    {
+      "id": "ex-show-output",
+      "type": "predict-output",
+      "prompt": "Partiendo del DataFrame `squared` del ejercicio anterior, ¿qué imprime esta línea?",
+      "code": "squared.show(3)",
+      "optionsFormat": "code",
+      "options": [
+        "+---+-------+\n| id|squared|\n+---+-------+\n|  1|      1|\n|  2|      4|\n|  3|      9|\n+---+-------+\nonly showing top 3 rows",
+        "+---+-------+\n| id|squared|\n+---+-------+\n|  7|     49|\n| 14|    196|\n| 21|    441|\n+---+-------+\nonly showing top 3 rows",
+        "+---+\n| id|\n+---+\n|  7|\n| 14|\n| 21|\n+---+\nonly showing top 3 rows"
+      ],
+      "answer": 1,
+      "explanation": "El filtro deja solo los múltiplos de 7 y `withColumn` añade la columna `squared`. `show(3)` imprime las 3 primeras filas del resultado, no de los datos originales."
+    },
+    {
+      "id": "ex-session",
+      "type": "fill-code",
+      "prompt": "Completa el código para crear una `SparkSession` en modo local.",
+      "code": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.___(\"local[*]\").appName(\"mi-app\").___()",
+      "blanks": [
+        {
+          "answers": ["master"],
+          "hint": "Indica dónde se ejecuta Spark: local o en un clúster."
+        },
+        {
+          "answers": ["getOrCreate"],
+          "hint": "Devuelve la sesión existente o crea una nueva."
+        }
+      ],
+      "explanation": "`master(\"local[*]\")` ejecuta Spark en tu máquina con todos los núcleos, y `getOrCreate()` devuelve la sesión que ya exista o crea una."
+    },
+    {
+      "id": "ex-pipeline",
+      "type": "fill-code",
+      "prompt": "Quédate con los números pares y cuenta cuántos hay.",
+      "code": "numbers = spark.range(0, 1000)\nevens = numbers.___(F.col(\"id\") % 2 == 0)\ntotal = evens.___()",
+      "blanks": [
+        {
+          "answers": ["filter", "where"],
+          "hint": "La transformación que se queda con las filas que cumplen una condición."
+        },
+        {
+          "answers": ["count"],
+          "hint": "La acción que devuelve el número de filas."
+        }
+      ],
+      "explanation": "`filter` (o su alias `where`) es una transformación. `count()` es la acción que pone a Spark a trabajar; `total` vale 500."
+    },
+    {
+      "id": "ex-read-jobs",
+      "type": "choice",
+      "prompt": "Lees un CSV con `header` e `inferSchema` y no llamas a ninguna acción. ¿Lanza Spark algún job?",
+      "options": [
+        "No. Leer es perezoso, como cualquier transformación.",
+        "Sí. Spark abre el archivo para conocer los nombres y los tipos de las columnas.",
+        "Solo si después llamas a `show()`."
+      ],
+      "answer": 1,
+      "explanation": "Para saber cómo se llaman las columnas y de qué tipo son, Spark tiene que mirar el archivo. Con `header` e `inferSchema` son 2 jobs. Si le das tú el esquema, no lanza ninguno."
+    },
+    {
+      "id": "ex-tasks",
+      "type": "predict-output",
+      "prompt": "`numbers` tiene 4 particiones y solo se aplica una transformación narrow. ¿Cuántas **tasks** lanza el `collect()`?",
+      "code": "numbers = spark.range(0, 1000, numPartitions=4)\nflagged = numbers.withColumn(\"is_even\", F.col(\"id\") % 2 == 0)\nrows = flagged.collect()",
+      "answers": ["4", "cuatro"],
+      "inputLabel": "Número de tasks",
+      "inputMode": "numeric",
+      "hint": "Un stage lanza una task por cada partición.",
+      "explanation": "Cuatro: sin shuffle hay un solo stage, y cada stage lanza una task por partición."
+    },
+    {
+      "id": "ex-wide",
+      "type": "choice",
+      "prompt": "¿Cuál de estas transformaciones provoca un **shuffle** y, con él, un stage nuevo?",
+      "options": ["`filter`", "`withColumn`", "`groupBy` seguido de una agregación", "`select`"],
+      "answer": 2,
+      "explanation": "Para agrupar, Spark tiene que juntar las filas con la misma clave, que pueden estar en particiones distintas. Las otras tres son narrow: cada partición se procesa por separado."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-driver",
+      "question": "¿Cuál es el papel del **driver**?",
+      "options": [
+        "Guardar los datos en disco.",
+        "Planificar el trabajo y repartir las tasks entre los executors.",
+        "Ejecutar las tasks sobre cada partición.",
+        "Decidir cuánta memoria recibe cada aplicación del clúster."
+      ],
+      "answer": 1,
+      "explanation": "El driver construye el plan y coordina. Las tasks las ejecutan los executors, y los recursos los reparte el cluster manager."
+    },
+    {
+      "id": "q-horizontal",
+      "question": "¿Qué significa escalar **horizontalmente**?",
+      "options": [
+        "Añadir más memoria a la misma máquina.",
+        "Cambiar el disco por uno más rápido.",
+        "Repartir el trabajo entre más máquinas.",
+        "Reescribir el código en otro lenguaje."
+      ],
+      "answer": 2,
+      "explanation": "Escalar horizontalmente es añadir máquinas al clúster. Añadir recursos a una sola máquina es escalar verticalmente."
+    },
+    {
+      "id": "q-lazy",
+      "question": "Ejecutas `df2 = df.filter(F.col(\"id\") > 10)`. ¿Qué ha hecho Spark?",
+      "options": [
+        "Ha recorrido todos los datos y guardado el resultado en memoria.",
+        "Ha modificado `df` quitándole filas.",
+        "Ha añadido el filtro al plan, sin procesar ningún dato.",
+        "Ha lanzado un job con una task por partición."
+      ],
+      "answer": 2,
+      "explanation": "`filter` es una transformación: devuelve un DataFrame nuevo con un paso más en el plan. `df` no cambia y no se procesa nada."
+    },
+    {
+      "id": "q-why-lazy",
+      "question": "¿Qué ventaja tiene la evaluación perezosa?",
+      "options": [
+        "Spark puede optimizar el plan completo antes de ejecutarlo.",
+        "El código ocupa menos líneas.",
+        "Los datos se guardan en disco automáticamente.",
+        "Las acciones dejan de ser necesarias."
+      ],
+      "answer": 0,
+      "explanation": "Al conocer todos los pasos antes de empezar, Spark puede reordenarlos y combinarlos: filtrar antes, leer solo las columnas necesarias, etc."
+    },
+    {
+      "id": "q-job",
+      "question": "¿Qué dispara un **job**?",
+      "options": [
+        "Cada celda del notebook.",
+        "Cada transformación.",
+        "Cada acción, que dispara al menos uno.",
+        "Crear la SparkSession."
+      ],
+      "answer": 2,
+      "explanation": "Los jobs los disparan las acciones. Una celda sin acciones no dispara ninguno, y una acción puede repartirse en varios jobs."
+    },
+    {
+      "id": "q-tasks",
+      "question": "Dentro de un stage, ¿qué determina cuántas **tasks** se lanzan?",
+      "options": [
+        "El número de columnas del DataFrame.",
+        "El número de particiones.",
+        "El número de transformaciones encadenadas.",
+        "El número de filas."
+      ],
+      "answer": 1,
+      "explanation": "Cada stage lanza una task por partición."
+    },
+    {
+      "id": "q-lineage",
+      "question": "Una máquina del clúster falla a mitad de un job. ¿Cómo recupera Spark los datos que tenía?",
+      "options": [
+        "No puede: hay que lanzar todo de nuevo a mano.",
+        "Los copia de otro clúster de respaldo.",
+        "Vuelve a calcular lo perdido siguiendo el linaje de las transformaciones.",
+        "Los pide al usuario."
+      ],
+      "answer": 2,
+      "explanation": "Spark guarda la receta con la que se construyó cada dato. Con ese linaje recalcula solo las particiones perdidas."
+    },
+    {
+      "id": "q-colab",
+      "question": "En Databricks se usa `display(df)`. ¿Qué usas en Colab para ver las filas de un DataFrame?",
+      "options": ["`df.show()`", "`print(df)`", "`df.display()`", "`dbutils.show(df)`"],
+      "answer": 0,
+      "explanation": "`display` y `dbutils` son de Databricks. `df.show()` funciona en cualquier entorno. `print(df)` solo muestra los nombres y tipos de las columnas."
+    }
+  ]
+}

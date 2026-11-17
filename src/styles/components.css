@@ -1,0 +1,496 @@
+/* Reusable pieces: buttons, badges, progress, exercises, quiz, lab, cheatsheet. */
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.btn--primary:hover {
+  background: var(--accent-strong);
+  color: var(--on-accent);
+}
+.btn--ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn--ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn--danger {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+  color: var(--danger);
+}
+.btn--danger:hover {
+  background: var(--danger-soft);
+}
+.btn--large {
+  padding: var(--space-3) var(--space-5);
+  font-size: 1.05rem;
+}
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Badges and chips */
+.badge {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--surface-alt);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.chip {
+  display: inline-block;
+  padding: 0.2em 0.75em;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.chip--button {
+  cursor: pointer;
+}
+.chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Progress bar */
+.progress {
+  height: 0.5rem;
+  background: var(--surface-alt);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+.progress--full .progress__fill {
+  background: var(--success);
+}
+
+/* Feedback boxes */
+.feedback {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--info);
+  background: var(--info-soft);
+}
+.feedback--right {
+  border-left-color: var(--success);
+  background: var(--success-soft);
+}
+.feedback--wrong {
+  border-left-color: var(--danger);
+  background: var(--danger-soft);
+}
+.feedback__title {
+  margin: 0;
+  font-weight: 700;
+}
+.feedback__text {
+  margin: var(--space-1) 0 0;
+}
+
+/* Choice lists */
+.choice-list {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.choice-list__note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  min-width: 0;
+}
+.choice:hover {
+  border-color: var(--accent);
+}
+.choice:has(.choice__input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.choice__input {
+  margin-top: 0.3em;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.choice__text {
+  min-width: 0;
+}
+.choice__code {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.choice--right {
+  border-color: var(--success) !important;
+  background: var(--success-soft) !important;
+}
+.choice--wrong {
+  border-color: var(--danger) !important;
+  background: var(--danger-soft) !important;
+}
+.choice--answer {
+  border-color: var(--success) !important;
+  border-style: dashed;
+}
+
+/* Exercises */
+.exercise {
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  scroll-margin-top: calc(var(--header-height) + 0.75rem);
+}
+.exercise--solved {
+  border-color: color-mix(in srgb, var(--success) 50%, var(--border));
+}
+.exercise__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: 0.82rem;
+}
+.exercise__number {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.exercise__type {
+  color: var(--muted);
+}
+.exercise__status {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--success);
+}
+.exercise__prompt {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.exercise__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* Fill-in code */
+.fill-code__code {
+  padding: var(--space-4);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  line-height: 2;
+  margin-bottom: var(--space-3);
+}
+.blank {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  padding: 0.05em 0.4em;
+  margin-inline: 0.15em;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  max-width: 100%;
+}
+.blank--right {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+.blank--wrong {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+.fill-code__hints {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.fill-code__hints:empty {
+  display: none;
+}
+
+/* Typed answers */
+.predict-output .code-block {
+  margin-bottom: var(--space-3);
+}
+.text-answer {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 16rem;
+  margin-bottom: var(--space-3);
+}
+.text-answer__label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.text-answer__input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.text-answer__input--right {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+.text-answer__input--wrong {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+/* Quiz */
+.quiz__best {
+  color: var(--muted);
+}
+.quiz__question {
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  scroll-margin-top: calc(var(--header-height) + 0.75rem);
+}
+.quiz__question--right {
+  border-color: color-mix(in srgb, var(--success) 60%, var(--border));
+}
+.quiz__question--wrong {
+  border-color: color-mix(in srgb, var(--danger) 60%, var(--border));
+}
+.quiz__title {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.quiz__index {
+  color: var(--accent);
+}
+.quiz__explanation {
+  padding-top: var(--space-2);
+  font-size: 0.95rem;
+}
+.quiz__explanation p {
+  margin: 0 0 var(--space-1);
+}
+.quiz__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.quiz__result:focus {
+  outline: none;
+}
+
+/* Lab */
+.lab {
+  max-width: var(--prose-width);
+}
+.lab__summary {
+  font-size: 1.1rem;
+}
+.lab__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+.lab__facts div {
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.lab__facts dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.lab__facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+.lab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block: var(--space-5) var(--space-3);
+}
+.lab__note {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.lab__done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+.lab__done:has(:checked) {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+.lab__checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: var(--success);
+  flex-shrink: 0;
+}
+
+/* Cheatsheet */
+.sheet__search {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 1.05rem;
+}
+.sheet__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+.sheet__count {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.sheet__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+}
+.sheet__empty {
+  color: var(--muted);
+}
+.sheet-entry {
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+.sheet-entry__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.sheet-entry__name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+}
+.sheet-entry__signature {
+  display: block;
+  margin-block: var(--space-2);
+  padding: var(--space-1) var(--space-2) !important;
+  font-size: 0.82rem;
+}
+.sheet-entry__description {
+  margin-bottom: var(--space-3);
+}
+.sheet-entry__gotcha {
+  margin: var(--space-3) 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.sheet-entry__module {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* Progress table */
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-4);
+  font-size: 0.95rem;
+}
+.progress-table th,
+.progress-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.progress-table thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}

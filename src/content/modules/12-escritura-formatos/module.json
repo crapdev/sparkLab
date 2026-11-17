@@ -1,0 +1,9 @@
+{
+  "id": "12-escritura-formatos",
+  "order": 12,
+  "block": "extender-persistir",
+  "status": "planned",
+  "title": "Escritura y formatos",
+  "summary": "Modos de escritura, formatos por filas y columnares, Parquet y Delta Lake.",
+  "estimatedMinutes": 50
+}

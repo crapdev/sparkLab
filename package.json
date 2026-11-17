@@ -1,0 +1,38 @@
+{
+  "name": "pyspark-labs",
+  "version": "0.1.0",
+  "description": "Sitio para estudiar y practicar PySpark, con laboratorios en Google Colab.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "labs:build": ".venv/bin/python scripts/build-labs.py",
+    "labs:check": ".venv/bin/python scripts/check-labs.py",
+    "check": "npm run lint && npm run format:check && npm test && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crapdev/sparkLab.git"
+  },
+  "dependencies": {
+    "highlight.js": "^11.12.0",
+    "marked": "^18.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "jsdom": "^31.0.1",
+    "prettier": "^3.10.1",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

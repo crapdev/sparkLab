@@ -1,0 +1,9 @@
+{
+  "id": "13-tablas-spark-sql",
+  "order": 13,
+  "block": "extender-persistir",
+  "status": "planned",
+  "title": "Tablas y Spark SQL",
+  "summary": "Tablas managed y external, vistas temporales y consultas con spark.sql.",
+  "estimatedMinutes": 45
+}

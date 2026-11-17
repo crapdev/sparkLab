@@ -1,0 +1,280 @@
+/* Rendered Markdown: prose, code blocks, callouts, tables and diagrams. */
+
+.prose {
+  max-width: var(--prose-width);
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+.prose h2 {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.prose li {
+  margin-bottom: var(--space-1);
+}
+.prose li > ul,
+.prose li > ol {
+  margin-top: var(--space-1);
+  margin-bottom: 0;
+}
+
+.objectives {
+  max-width: var(--prose-width);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.objectives__title {
+  margin: 0 0 var(--space-2);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.objectives ul {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+/* Code blocks */
+.code-block {
+  position: relative;
+  margin: 0 0 var(--space-4);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.code-block pre {
+  padding: var(--space-4);
+  color: var(--code-text);
+  line-height: 1.55;
+}
+.code-block__copy {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  padding: 0.15em 0.6em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.code-block:hover .code-block__copy,
+.code-block__copy:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .code-block__copy {
+    opacity: 1;
+  }
+}
+.code-block--output {
+  background: transparent;
+  border-style: dashed;
+}
+.code-block--output pre {
+  padding-top: var(--space-5);
+  color: var(--muted);
+}
+.code-block__label {
+  position: absolute;
+  top: var(--space-1);
+  left: var(--space-3);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* highlight.js tokens, driven by theme variables */
+.hljs-keyword,
+.hljs-literal,
+.hljs-operator {
+  color: var(--hl-keyword);
+}
+.hljs-string,
+.hljs-regexp {
+  color: var(--hl-string);
+}
+.hljs-number {
+  color: var(--hl-number);
+}
+.hljs-comment {
+  color: var(--hl-comment);
+  font-style: italic;
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-title.class_ {
+  color: var(--hl-function);
+}
+.hljs-built_in,
+.hljs-type,
+.hljs-meta {
+  color: var(--hl-builtin);
+}
+
+/* Callouts */
+.callout {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius-sm);
+  background: var(--info-soft);
+}
+.callout > :last-child {
+  margin-bottom: 0;
+}
+.callout__title {
+  margin: 0 0 var(--space-1);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--info);
+}
+.callout--tip {
+  border-left-color: var(--success);
+  background: var(--success-soft);
+}
+.callout--tip .callout__title {
+  color: var(--success);
+}
+.callout--warning {
+  border-left-color: var(--danger);
+  background: var(--danger-soft);
+}
+.callout--warning .callout__title {
+  color: var(--danger);
+}
+.callout--extra {
+  border-left-color: var(--extra);
+  background: var(--extra-soft);
+}
+.callout--extra .callout__title {
+  color: var(--extra);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.prose th,
+.prose td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.prose thead th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom-width: 2px;
+}
+
+/* Diagrams: SVGs use these classes so they follow the theme. */
+.diagram {
+  margin: var(--space-5) 0;
+}
+.diagram__canvas {
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.diagram svg {
+  display: block;
+  width: 100%;
+  min-width: 30rem;
+  height: auto;
+  font-family: var(--font-sans);
+}
+.diagram figcaption {
+  margin-top: var(--space-2);
+  font-size: 0.88rem;
+  color: var(--muted);
+  text-align: center;
+}
+.d-box {
+  fill: var(--surface-alt);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+.d-box-accent {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.d-box-success {
+  fill: var(--success-soft);
+  stroke: var(--success);
+  stroke-width: 1.5;
+}
+.d-box-info {
+  fill: var(--info-soft);
+  stroke: var(--info);
+  stroke-width: 1.5;
+}
+.d-box-ghost {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.d-text {
+  fill: var(--text);
+  font-size: 14px;
+}
+.d-title {
+  fill: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+}
+.d-muted {
+  fill: var(--muted);
+  font-size: 12px;
+}
+.d-accent-text {
+  fill: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+.d-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+.d-line-accent {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.d-line-dashed {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.d-arrowhead {
+  fill: var(--muted);
+}
+.d-arrowhead-accent {
+  fill: var(--accent);
+}

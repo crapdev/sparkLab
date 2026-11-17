@@ -1,0 +1,9 @@
+{
+  "id": "05-ordenar-limpiar",
+  "order": 5,
+  "block": "transformaciones",
+  "status": "planned",
+  "title": "Ordenar y limpiar",
+  "summary": "sort, limit, drop, duplicados y valores nulos con dropna y fillna.",
+  "estimatedMinutes": 50
+}

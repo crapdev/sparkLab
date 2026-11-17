@@ -1,0 +1,3 @@
+# Local environment used by scripts/check-labs.py to verify every lab.
+# Keep in sync with "pysparkVersion" in site.config.json.
+pyspark==4.2.0

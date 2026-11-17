@@ -1,0 +1,9 @@
+{
+  "id": "06-strings-fechas",
+  "order": 6,
+  "block": "transformaciones",
+  "status": "planned",
+  "title": "Strings y fechas",
+  "summary": "Limpiar texto y calcular con fechas: initcap, date_add, datediff, date_format.",
+  "estimatedMinutes": 45
+}

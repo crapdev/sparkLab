@@ -1,0 +1,9 @@
+{
+  "id": "03-seleccionar-filtrar",
+  "order": 3,
+  "block": "transformaciones",
+  "status": "planned",
+  "title": "Seleccionar y filtrar",
+  "summary": "Quedarte con las columnas y las filas que te interesan: select, col, alias y filter.",
+  "estimatedMinutes": 40
+}

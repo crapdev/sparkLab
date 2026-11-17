@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Estudia y practica PySpark: teoría corta, ejercicios interactivos y laboratorios en Google Colab con tests automáticos."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title>PySpark Labs</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      // This is the only localStorage access outside src/services/storage.js;
+      // tests/storage.test.js checks that the key stays in sync.
+      try {
+        var saved = JSON.parse(localStorage.getItem('pyspark-labs:v1:settings') || 'null');
+        if (saved && (saved.theme === 'light' || saved.theme === 'dark')) {
+          document.documentElement.dataset.theme = saved.theme;
+        }
+      } catch (error) {
+        // Storage blocked or corrupted: keep the system theme.
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <div id="app"></div>
+    <noscript>Este sitio necesita JavaScript para funcionar.</noscript>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

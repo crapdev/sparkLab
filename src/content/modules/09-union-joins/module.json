@@ -1,0 +1,9 @@
+{
+  "id": "09-union-joins",
+  "order": 9,
+  "block": "resumir-combinar",
+  "status": "planned",
+  "title": "Union y joins",
+  "summary": "Apilar y cruzar DataFrames sin perder ni duplicar filas por accidente.",
+  "estimatedMinutes": 60
+}

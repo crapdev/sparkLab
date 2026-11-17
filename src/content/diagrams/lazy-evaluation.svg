@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 270">
+  <defs>
+    <marker id="lazy-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0L10 5L0 10z" />
+    </marker>
+    <marker id="lazy-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="16" y="22">Lo que escribes</text>
+
+  <!-- Transformations -->
+  <rect class="d-box" x="16" y="34" width="150" height="52" rx="8" />
+  <text class="d-text" x="91" y="65" text-anchor="middle">spark.range(…)</text>
+  <path class="d-line" d="M166 60H190" marker-end="url(#lazy-arrow)" />
+
+  <rect class="d-box" x="194" y="34" width="150" height="52" rx="8" />
+  <text class="d-text" x="269" y="65" text-anchor="middle">.filter(…)</text>
+  <path class="d-line" d="M344 60H368" marker-end="url(#lazy-arrow)" />
+
+  <rect class="d-box" x="372" y="34" width="150" height="52" rx="8" />
+  <text class="d-text" x="447" y="65" text-anchor="middle">.withColumn(…)</text>
+  <path class="d-line-accent" d="M522 60H556" marker-end="url(#lazy-arrow-accent)" />
+
+  <!-- Action -->
+  <rect class="d-box-accent" x="560" y="34" width="144" height="52" rx="8" />
+  <text class="d-title" x="632" y="65" text-anchor="middle">.count()</text>
+
+  <text class="d-muted" x="269" y="106" text-anchor="middle">transformaciones · 0 jobs</text>
+  <text class="d-accent-text" x="632" y="106" text-anchor="middle">acción · dispara</text>
+
+  <!-- Into the plan -->
+  <path class="d-line-dashed" d="M91 116V150" marker-end="url(#lazy-arrow)" />
+  <path class="d-line-dashed" d="M269 116V150" marker-end="url(#lazy-arrow)" />
+  <path class="d-line-dashed" d="M447 116V150" marker-end="url(#lazy-arrow)" />
+
+  <text class="d-muted" x="180" y="140" text-anchor="middle">Lo que hace Spark</text>
+
+  <!-- Plan -->
+  <rect class="d-box-ghost" x="16" y="156" width="506" height="64" rx="8" />
+  <text class="d-title" x="269" y="183" text-anchor="middle">Plan: Range → Filter → Project</text>
+  <text class="d-muted" x="269" y="203" text-anchor="middle">solo apunta los pasos; todavía no ha calculado nada</text>
+
+  <!-- Execution -->
+  <path class="d-line-accent" d="M632 116V150" marker-end="url(#lazy-arrow-accent)" />
+  <path class="d-line-accent" d="M522 188H556" marker-end="url(#lazy-arrow-accent)" />
+  <rect class="d-box-success" x="560" y="156" width="144" height="64" rx="8" />
+  <text class="d-title" x="632" y="183" text-anchor="middle">Optimiza y ejecuta</text>
+  <text class="d-muted" x="632" y="203" text-anchor="middle">resultado: 142</text>
+
+  <text class="d-muted" x="16" y="252">Hasta que no hay una acción, el plan es solo una receta.</text>
+</svg>
