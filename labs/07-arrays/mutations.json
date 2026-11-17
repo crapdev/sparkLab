@@ -1,0 +1,74 @@
+[
+  {
+    "name": "task 1: wrong separator",
+    "old": "parts = sales.withColumn(\"type_parts\", F.split(\"Outlet_Type\", \" \"))",
+    "new": "parts = sales.withColumn(\"type_parts\", F.split(\"Outlet_Type\", \"-\"))",
+    "expect": "Tarea 1 · todas las listas"
+  },
+  {
+    "name": "task 1: column overwritten",
+    "old": "parts = sales.withColumn(\"type_parts\", F.split(\"Outlet_Type\", \" \"))",
+    "new": "parts = sales.withColumn(\"Outlet_Type\", F.split(\"Outlet_Type\", \" \")).withColumn(\"type_parts\", F.col(\"Outlet_Type\"))",
+    "expect": "Tarea 1 · Outlet_Type sigue"
+  },
+  {
+    "name": "task 2: index 0",
+    "old": "coded = parts.withColumn(\"type_code\", F.col(\"type_parts\")[1])",
+    "new": "coded = parts.withColumn(\"type_code\", F.col(\"type_parts\")[0])",
+    "expect": "Tarea 2 · 5577"
+  },
+  {
+    "name": "task 2: whole array kept",
+    "old": "coded = parts.withColumn(\"type_code\", F.col(\"type_parts\")[1])",
+    "new": "coded = parts.withColumn(\"type_code\", F.col(\"type_parts\"))",
+    "expect": "Tarea 2 · type_code es string"
+  },
+  {
+    "name": "task 3: length instead of size",
+    "old": "counted = sales.withColumn(\"word_count\", F.size(F.split(\"Item_Type\", \" \")))",
+    "new": "counted = sales.withColumn(\"word_count\", F.length(\"Item_Type\"))",
+    "expect": "Tarea 3 · 3260"
+  },
+  {
+    "name": "task 3: wrong column",
+    "old": "counted = sales.withColumn(\"word_count\", F.size(F.split(\"Item_Type\", \" \")))",
+    "new": "counted = sales.withColumn(\"word_count\", F.size(F.split(\"Outlet_Type\", \" \")))",
+    "expect": "Tarea 3 · 3260"
+  },
+  {
+    "name": "task 4: index instead of explode",
+    "old": "exploded = parts.withColumn(\"type_word\", F.explode(\"type_parts\"))",
+    "new": "exploded = parts.withColumn(\"type_word\", F.col(\"type_parts\")[0])",
+    "expect": "Tarea 4 · 17046"
+  },
+  {
+    "name": "task 4: select instead of withColumn",
+    "old": "exploded = parts.withColumn(\"type_word\", F.explode(\"type_parts\"))",
+    "new": "exploded = parts.select(F.explode(\"type_parts\").alias(\"type_word\"))",
+    "expect": "Tarea 4 · type_word es string"
+  },
+  {
+    "name": "task 5: lowercase value",
+    "old": "flagged = parts.withColumn(\"type1_flag\", F.array_contains(\"type_parts\", \"Type1\"))",
+    "new": "flagged = parts.withColumn(\"type1_flag\", F.array_contains(\"type_parts\", \"type1\"))",
+    "expect": "Tarea 5 · 5577"
+  },
+  {
+    "name": "task 5: comparison instead of array_contains",
+    "old": "flagged = parts.withColumn(\"type1_flag\", F.array_contains(\"type_parts\", \"Type1\"))",
+    "new": "flagged = parts.withColumn(\"type1_flag\", F.col(\"type_parts\")[1])",
+    "expect": "Tarea 5 · type1_flag es boolean"
+  },
+  {
+    "name": "task 6: explode used twice",
+    "old": "all_products = tagged.withColumn(\"tag\", F.explode_outer(\"tags\"))",
+    "new": "all_products = tagged.withColumn(\"tag\", F.explode(\"tags\"))",
+    "expect": "Tarea 6 · explode_outer"
+  },
+  {
+    "name": "task 6: explode_outer used twice",
+    "old": "one_per_tag = tagged.withColumn(\"tag\", F.explode(\"tags\"))",
+    "new": "one_per_tag = tagged.withColumn(\"tag\", F.explode_outer(\"tags\"))",
+    "expect": "Tarea 6 · explode deja"
+  }
+]

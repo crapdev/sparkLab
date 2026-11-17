@@ -2,8 +2,223 @@
   "id": "08-agregaciones",
   "order": 8,
   "block": "resumir-combinar",
-  "status": "planned",
+  "status": "published",
   "title": "Agregaciones",
   "summary": "Resumir por grupos con groupBy, agg, collect_list y pivot.",
-  "estimatedMinutes": 50
+  "estimatedMinutes": 75,
+  "objectives": [
+    "Resumir un DataFrame por grupos con `groupBy` y `agg`, con alias en cada resultado.",
+    "Elegir la función de agregación adecuada y saber qué hace cada una con los nulos.",
+    "Agrupar por varias columnas y calcular varias agregaciones a la vez.",
+    "Juntar los valores de un grupo en una lista con `collect_list` y `collect_set`.",
+    "Construir una tabla pivotada y explicar por qué conviene pasarle la lista de valores.",
+    "Contar o sumar solo las filas que cumplen una condición dentro de cada grupo."
+  ],
+  "lab": {
+    "path": "labs/08-agregaciones",
+    "minutes": 40,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Resumes las ventas de BigMart por tipo de producto y por tienda, juntas los tamaños de tienda en listas, montas una tabla pivotada y cuentas los productos `Regular` de cada tipo.",
+    "tasks": [
+      "Sumar `Item_MRP` por tipo de producto con alias.",
+      "Calcular conteo, media y suma por tienda en un solo `agg`.",
+      "Agrupar por dos columnas, nulos incluidos.",
+      "Juntar los tamaños de tienda de cada tipo con `collect_set`.",
+      "Pivotar los tamaños de tienda en columnas con la lista de valores.",
+      "Contar los productos `Regular` de cada tipo con `count` y `when`."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-groupby-agg",
+      "type": "fill-code",
+      "prompt": "Calcula el precio medio por tipo de producto, en una columna llamada `avg_mrp`.",
+      "code": "sales.___(\"Item_Type\").___(F.avg(\"Item_MRP\").alias(\"avg_mrp\"))",
+      "blanks": [
+        { "answers": ["groupBy", "groupby"], "hint": "El método que decide qué filas van juntas." },
+        { "answers": ["agg"], "hint": "El método que calcula algo sobre cada grupo." }
+      ],
+      "explanation": "`groupBy` forma los grupos y `agg` calcula sobre ellos. El `alias` evita que la columna se llame `avg(Item_MRP)`."
+    },
+    {
+      "id": "ex-group-count",
+      "type": "predict-output",
+      "prompt": "`Item_Type` tiene 16 valores distintos y `Outlet_Size` tiene 3 valores más nulos. ¿Qué imprime?",
+      "code": "print(sales.groupBy(\"Item_Type\", \"Outlet_Size\").count().count())",
+      "answers": ["64"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Un grupo por combinación, y el nulo también cuenta como valor.",
+      "explanation": "Imprime 64: 16 tipos por 4 tamaños, contando el grupo de los nulos. Todas las combinaciones existen en BigMart. Sin los nulos serían 48."
+    },
+    {
+      "id": "ex-count-null",
+      "type": "predict-output",
+      "prompt": "`Item_Weight` tiene 1463 nulos en 8523 filas. ¿Qué imprime?",
+      "code": "print(sales.agg(F.count(\"Item_Weight\")).first()[0])",
+      "answers": ["7060"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "`count(columna)` no es lo mismo que `count(\"*\")`.",
+      "explanation": "Imprime 7060. `count(\"Item_Weight\")` cuenta solo las filas donde la columna no es nula. Para contar todas las filas se usa `count(\"*\")`."
+    },
+    {
+      "id": "ex-missing-agg",
+      "type": "choice",
+      "prompt": "Ejecutas `sales.groupBy(\"Item_Type\").agg(F.col(\"Item_MRP\")).show()`. ¿Qué pasa?",
+      "options": [
+        "Muestra el primer `Item_MRP` de cada grupo.",
+        "Muestra todos los `Item_MRP`, uno por fila.",
+        "Error `MISSING_AGGREGATION`: `Item_MRP` no está en el `groupBy` ni agregada.",
+        "Muestra la suma de `Item_MRP` por grupo."
+      ],
+      "answer": 2,
+      "hint": "Cada grupo tiene muchos `Item_MRP`. ¿Cuál debería devolver Spark?",
+      "explanation": "Tras agrupar solo existen las columnas de agrupación y las agregadas. Spark no elige un valor por ti: hay que agregar la columna, por ejemplo con `F.sum`, o añadirla al `groupBy`."
+    },
+    {
+      "id": "ex-collect-set",
+      "type": "predict-output",
+      "prompt": "`books` tiene estas filas para `user3`: `book1`, `book3`, `book1`. ¿Cuántos elementos tiene cada array?",
+      "code": "books.groupBy(\"user\").agg(\n    F.size(F.collect_list(\"book\")).alias(\"n_list\"),\n    F.size(F.collect_set(\"book\")).alias(\"n_set\"),\n).filter(F.col(\"user\") == \"user3\").show()",
+      "optionsFormat": "code",
+      "options": [
+        "n_list = 3, n_set = 2",
+        "n_list = 2, n_set = 2",
+        "n_list = 3, n_set = 3",
+        "n_list = 2, n_set = 3"
+      ],
+      "answer": 0,
+      "hint": "`collect_list` guarda repetidos; `collect_set` no.",
+      "explanation": "`collect_list` junta los tres libros tal cual; `collect_set` quita el `book1` repetido y deja dos."
+    },
+    {
+      "id": "ex-pivot-values",
+      "type": "fill-code",
+      "prompt": "Pivota los tamaños de tienda en columnas, solo `Small`, `Medium` y `High`, con la media de `Item_MRP`.",
+      "code": "sales.groupBy(\"Item_Type\").___(\"Outlet_Size\", [\"Small\", \"Medium\", \"High\"]).agg(F.___(\"Item_MRP\"))",
+      "blanks": [
+        { "answers": ["pivot"], "hint": "El método que convierte valores en columnas." },
+        { "answers": ["avg", "mean"], "hint": "La media." }
+      ],
+      "explanation": "`pivot` va entre `groupBy` y `agg`. La lista de valores fija qué columnas salen, en qué orden, y evita una pasada extra por los datos."
+    },
+    {
+      "id": "ex-pivot-null-col",
+      "type": "predict-output",
+      "prompt": "`Outlet_Size` vale `High`, `Medium`, `Small` o nulo. ¿Qué imprime?",
+      "code": "print(sales.groupBy(\"Item_Type\").pivot(\"Outlet_Size\").agg(F.avg(\"Item_MRP\")).columns)",
+      "optionsFormat": "code",
+      "options": [
+        "['Item_Type', 'High', 'Medium', 'Small']",
+        "['Item_Type', 'null', 'High', 'Medium', 'Small']",
+        "['Item_Type', 'Small', 'Medium', 'High']",
+        "['Item_Type', 'avg(Item_MRP)']"
+      ],
+      "answer": 1,
+      "hint": "Sin la lista de valores, Spark saca todos los que encuentra, nulo incluido.",
+      "explanation": "Sin lista, `pivot` descubre los valores recorriendo los datos, los ordena alfabéticamente y convierte el nulo en una columna llamada `null`. Con la lista eliges tú."
+    },
+    {
+      "id": "ex-conditional",
+      "type": "fill-code",
+      "prompt": "Cuenta, por tipo de producto, cuántas filas tienen `Item_MRP` mayor que 200.",
+      "code": "sales.groupBy(\"Item_Type\").agg(F.count(F.___(F.col(\"Item_MRP\") > 200, 1)).alias(\"expensive\"))",
+      "blanks": [{ "answers": ["when"], "hint": "La condición dentro de la agregación." }],
+      "explanation": "`F.when(condición, 1)` sin `otherwise` deja nulo lo que no cumple, y `count` ignora los nulos: solo cuenta las filas caras. `F.sum(F.when(...).otherwise(0))` es equivalente."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-groupby-returns",
+      "question": "¿Qué devuelve `sales.groupBy(\"Item_Type\")` por sí solo?",
+      "options": [
+        "Un DataFrame con 16 filas.",
+        "Un objeto intermedio (`GroupedData`) al que hay que pedirle una agregación.",
+        "Una lista de Python con los grupos.",
+        "Un DataFrame ordenado por `Item_Type`."
+      ],
+      "answer": 1,
+      "explanation": "`groupBy` solo define los grupos. Hasta que no llamas a `agg`, `count` u otra agregación, no hay DataFrame. Por eso `.groupBy(...).show()` falla."
+    },
+    {
+      "id": "q-default-name",
+      "question": "Sin alias, ¿cómo se llama la columna que devuelve `agg(F.sum(\"Item_MRP\"))`?",
+      "options": ["`Item_MRP`", "`sum`", "`sum(Item_MRP)`", "`total`"],
+      "answer": 2,
+      "explanation": "La columna toma el nombre de la fórmula. Con `.alias(\"total_mrp\")` le das uno manejable."
+    },
+    {
+      "id": "q-avg-nulls",
+      "question": "`Item_Weight` tiene 1463 nulos. ¿Cómo calcula `F.avg(\"Item_Weight\")` la media?",
+      "options": [
+        "Suma todo y divide entre 8523, contando los nulos como 0.",
+        "Suma los no nulos y divide entre 7060: ignora los nulos.",
+        "Devuelve `NULL` porque hay nulos.",
+        "Lanza un error."
+      ],
+      "answer": 1,
+      "explanation": "Las agregaciones ignoran los nulos. Por eso `avg` da 12.86 y `sum / count(\"*\")` daría 10.65."
+    },
+    {
+      "id": "q-wide",
+      "question": "¿Por qué un `groupBy` suele añadir un stage al job?",
+      "options": [
+        "Porque crea un DataFrame nuevo.",
+        "Porque es una transformación wide: las filas de un mismo grupo hay que juntarlas desde particiones distintas, con un shuffle.",
+        "Porque `agg` es una acción.",
+        "Porque calcula varias agregaciones."
+      ],
+      "answer": 1,
+      "explanation": "Para agrupar, Spark redistribuye las filas por la clave del grupo. Ese movimiento es un shuffle y abre un stage nuevo."
+    },
+    {
+      "id": "q-collect-order",
+      "question": "¿Está garantizado el orden de los elementos que devuelve `collect_list`?",
+      "options": [
+        "Sí, es el orden del archivo.",
+        "Sí, es alfabético.",
+        "No. Si necesitas un orden estable, usa `F.array_sort` o una window function.",
+        "Solo si el DataFrame tiene una partición."
+      ],
+      "answer": 2,
+      "explanation": "El orden depende de cómo lleguen las filas tras el shuffle. Para comparar o mostrar, ordena el array."
+    },
+    {
+      "id": "q-pivot-list",
+      "question": "¿Qué dos cosas consigues pasando la lista de valores a `pivot`?",
+      "options": [
+        "Que el resultado tenga más filas y menos nulos.",
+        "Elegir qué columnas salen y en qué orden, y ahorrarle a Spark la pasada que descubre los valores.",
+        "Que las columnas se ordenen alfabéticamente y se eliminen los nulos.",
+        "Nada: la lista es obligatoria."
+      ],
+      "answer": 1,
+      "explanation": "Sin la lista, Spark recorre los datos una vez más para descubrir los valores, los pone en orden alfabético y añade una columna `null` si hay nulos."
+    },
+    {
+      "id": "q-python-sum",
+      "question": "Escribes `sales.groupBy(\"Item_Type\").agg(sum(\"Item_MRP\"))`, sin la `F.`, y obtienes `TypeError: unsupported operand type(s) for +: 'int' and 'str'`. ¿Qué ha pasado?",
+      "options": [
+        "`Item_MRP` es una columna de texto.",
+        "Se ha usado el `sum` de Python, que intenta sumar las letras del nombre de la columna.",
+        "Falta el `alias`.",
+        "`agg` no acepta `sum`."
+      ],
+      "answer": 1,
+      "explanation": "El `sum` nativo de Python recibe el string `\"Item_MRP\"` e intenta sumar sus caracteres. La función de Spark es `F.sum`. Es uno de los motivos para no usar `import *`."
+    },
+    {
+      "id": "q-conditional-count",
+      "question": "¿Por qué `F.count(F.when(F.col(\"Item_MRP\") > 200, 1))` cuenta solo las filas caras?",
+      "options": [
+        "Porque `count` solo cuenta unos.",
+        "Porque `when` filtra las filas antes de agrupar.",
+        "Porque el `when` sin `otherwise` deja nulo lo que no cumple, y `count` ignora los nulos.",
+        "Porque `count` evalúa la condición dos veces."
+      ],
+      "answer": 2,
+      "explanation": "Es la combinación de dos reglas que ya conoces: `when` sin `otherwise` produce nulos, y las agregaciones los ignoran."
+    }
+  ]
 }

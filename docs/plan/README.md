@@ -52,7 +52,7 @@ Actualizado el 2026-11-16, al terminar la fase 2.
 | ---- | ---------------------------------- | ------------------------------ |
 | 1    | Revisión del material y este plan  | Hecha                          |
 | 2    | Base del sitio + módulo 1 completo | Hecha, en tu revisión          |
-| 3    | Módulos 2 a 15                     | En curso: módulos 2 a 5 hechos |
+| 3    | Módulos 2 a 15                     | En curso: módulos 2 a 8 hechos |
 | 4    | Publicación en GitHub y Vercel     | Pendiente                      |
 
 ## Cambios durante la construcción

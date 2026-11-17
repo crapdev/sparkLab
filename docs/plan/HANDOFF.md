@@ -11,10 +11,13 @@ Actualizado el 2026-11-16. Leer esto primero al retomar el proyecto.
 | 3. Seleccionar y filtrar       | Hecho y verificado. En disco; pendiente de revisión del usuario.                                                                                 |
 | 4. Crear y modificar columnas  | Hecho y verificado. En disco; pendiente de revisión del usuario.                                                                                 |
 | 5. Ordenar y limpiar           | Hecho y verificado. En disco; pendiente de revisión del usuario.                                                                                 |
-| 6. Strings y fechas            | **Siguiente.** Diseñado en [02-curriculum.md](02-curriculum.md), sin empezar.                                                                    |
-| 7 a 15                         | Pendientes. Existen como `"status": "planned"` en `src/content/modules/`.                                                                        |
+| 6. Strings y fechas            | Hecho y verificado. En disco; pendiente de revisión del usuario.                                                                                 |
+| 7. Arrays                      | Hecho y verificado. En disco; pendiente de revisión del usuario.                                                                                 |
+| 8. Agregaciones                | Hecho y verificado. En disco; pendiente de revisión del usuario.                                                                                 |
+| 9. Union y joins               | **Siguiente.** Diseñado en [02-curriculum.md](02-curriculum.md), sin empezar.                                                                    |
+| 10 a 15                        | Pendientes. Existen como `"status": "planned"` en `src/content/modules/`.                                                                        |
 
-Última comprobación: lint, formato, tests, build y `npm run labs:check` (labs 1 a 5) pasan. El entorno local necesita ahora `pandas` (`requirements-labs.txt`) por el `toPandas()` del lab 1.
+Última comprobación: lint, formato, tests, build y `npm run labs:check` (labs 1 a 8) pasan. El entorno local necesita ahora `pandas` (`requirements-labs.txt`) por el `toPandas()` del lab 1.
 
 ## Reglas acordadas con el usuario
 
@@ -30,11 +33,21 @@ Actualizado el 2026-11-16. Leer esto primero al retomar el proyecto.
 
 ## Pendiente de confirmar por el usuario
 
-- Si el lab 1 abre en Google Colab y la celda de instalación termina bien. El repositorio
-  `crapdev/sparkLab` ya es público y sirve el lab 1 y los datos. La rama de la celda que
-  instala Java en Colab nunca se ha ejecutado.
 - `siteUrl` en `site.config.json` sigue con el marcador. Tras publicar en Vercel:
   `.venv/bin/python scripts/set-data-url.py https://<sitio>.vercel.app`
+
+**Confirmado el 2026-11-17:** los labs abren y funcionan en Google Colab (instalación de
+PySpark y Java incluida). El repositorio `crapdev/sparkLab` sirve los notebooks y los datos.
+
+## Decisiones sobre datos (2026-11-17)
+
+- Se sigue con `bigmart_sales.csv` (8523 filas) y `drivers.json` en los módulos 9 a 13:
+  pequeño a propósito, para que los tests comprueben valores exactos y todo corra rápido.
+- Módulo 9: añadir `public/data/outlets.csv`, una tabla de tiendas para los joins (ver el
+  diseño en la sección del módulo 9).
+- Módulo 14: los datos grandes se generan dentro del notebook (`spark.range` o BigMart
+  replicado ×100), no se descargan.
+- Módulo 15: BigMart ampliado a millones de filas más `outlets.csv`, de principio a fin.
 
 ## Cómo se hace un módulo
 
@@ -149,15 +162,104 @@ tiene los dos nulos. Media de `Item_Weight` 12.857645 (12.86). `fillna("texto")`
 `Outlet_Size`. En `orders`: 8 filas, 5 distintas, 3 clientes, 4 parejas cliente+tipo.
 Nulos al ordenar: ascendente primero, descendente al final.
 
-## Módulo 6, siguiente
+## Módulo 6, hecho
 
-Diseño en [02-curriculum.md](02-curriculum.md#6-strings-y-fechas): `initcap`, `lower`,
-`upper`; `current_date`, `date_add`, `date_sub`, `datediff`, `date_format`. Extra: `trim`,
-`concat_ws`, `substring`, `to_date`, `year`, `month`. Diagrama previsto: orden de los
-argumentos de `datediff` en una línea de tiempo. Lab sobre `drivers.json`: `dob` llega como
-`string` y hay que convertirlo con `to_date`; calcular edad y formatear. Los tests deben usar
-una fecha fija, no `current_date`, para no depender del día. Errores comunes: `YYYY` en vez
-de `yyyy`; `date_format` devuelve texto. Medir todo antes de escribir.
+Lab de 6 tareas (`labs/06-strings-fechas/`) sobre BigMart (texto) y `drivers.json`
+(fechas), 15 tests y 14 mutaciones. Teoría con el diagrama `datediff-order.svg`, 8
+ejercicios, 8 preguntas de quiz y 9 entradas nuevas en la chuleta (categoría Columnas).
+
+Medido con Spark: prefijos de `Item_Identifier` FD 6125, NC 1599, DR 799; `SOFT DRINKS` 445;
+`initcap` sobre `Item_Fat_Content` da `Lf` 316, `Low Fat` 5201, `Reg` 117, `Regular` 2889;
+`initcap("alain de changy")` → `Alain De Changy`. Pilotos: 885, 7 sin `dob`, 765 sin `code`
+(`concat` con `code` da 765 nulos, `concat_ws` ninguno). Hamilton: `dob` 1985-01-07, a
+2025-01-01 lleva 14604 días y 479.806 meses → 39 años; `date_add(dob, 7)` 1985-01-14,
+`date_sub(dob, 7)` 1984-12-31, `add_months(dob, 1)` 1985-02-07. Nacidos en 1990 o después:
+59; en los 80: 39; menores de 30 a 2025-01-01: 39, menores de 25: 23; el más joven tiene
+16 (`freddie_slater`, 2008-08-09); el más viejo `etancelin` 1896-12-28. `year("dob")`
+funciona sobre el texto ISO (conversión implícita). `to_date` con patrón que no encaja
+lanza `CANNOT_PARSE_TIMESTAMP`; sin patrón y texto no ISO, `CAST_INVALID_INPUT`;
+`F.try_to_date` devuelve nulo. `date_format` con `YYYY` lanza
+`INCONSISTENT_BEHAVIOR_CROSS_VERSION.DATETIME_PATTERN_RECOGNITION`; `mm` da `00`; `DD` es
+el día del año (1985-02-10 → `41`). Nombres de mes y día salen en inglés (`January`,
+`Monday`). `floor` devuelve `bigint`. `substring` empieza en 1 (con 0 da lo mismo que 1).
+
+## Módulo 7, hecho
+
+Lab de 6 tareas (`labs/07-arrays/`) sobre BigMart más un DataFrame `tagged` de 3 filas con
+una lista vacía y otra nula, 14 tests y 12 mutaciones. Teoría con el diagrama
+`explode-rows.svg`, 8 ejercicios, 8 preguntas de quiz y 5 entradas nuevas en la chuleta.
+
+Medido con Spark: `split("Outlet_Type", " ")` da 2 elementos en las 8523 filas;
+`[1]` → `Type1` 5577, `Type2` 928, `Type3` 935, `Store` 1083; `explode` → 17046 filas
+(`Supermarket` 7440, `Grocery` y `Store` 1083); `array_contains(..., "Type1")` 5577 true y
+2946 false. Palabras de `Item_Type`: 1 → 3260, 2 → 3511, 3 → 1752 (`Fruits and Vegetables`,
+`Health and Hygiene`); `explode` sobre ellas → 15538 filas. `tagged`: `explode` 2 filas,
+`explode_outer` 4. ANSI: `col[5]` sobre una lista de 2 lanza
+`ArrayIndexOutOfBoundsException [INVALID_ARRAY_INDEX]`; `F.get(col, 5)` y
+`F.try_element_at(col, F.lit(6))` devuelven `NULL`; `element_at(col, 0)` lanza
+`INVALID_INDEX_OF_ZERO`. `explode`/`array_contains` sobre texto:
+`AnalysisException [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]`. `split(v, ".")` sobre
+`4.2.0` da `[, , , , , ]`; `split(v, "\\.")` da `[4, 2, 0]`; `split(v, "\\.", 2)` da
+`[4, 2.0]`. `size(NULL)` es `NULL`. `array_contains` sobre lista nula da `NULL`.
+
+## Módulo 8, hecho
+
+Lab de 6 tareas (`labs/08-agregaciones/`) sobre BigMart más un DataFrame `books` de 6 filas,
+15 tests y 15 mutaciones. Teoría con dos diagramas, `groupby-collapse.svg` y
+`pivot-shape.svg`, 8 ejercicios, 8 preguntas de quiz y 6 entradas nuevas en la chuleta.
+
+Medido con Spark: total de `Item_MRP` 1201681.4808 (las notas decían ≈ 1 201 681: correcto);
+por `Item_Type` 16 grupos, `Fruits and Vegetables` 178124.081, `Snack Foods` 175433.92,
+`Household` 135976.53; media de `Item_MRP` más alta `Household` 149.42. Por
+`Outlet_Identifier` 10 grupos: `OUT027` 935 filas, media 139.8, ventas 3453926.05 (la mayor);
+`OUT019` 528 filas y 179694.09. `Item_Type` × `Outlet_Size` 64 grupos (48 sin el nulo, 16
+con nulo). `count(*)` 8523, `count(Item_Weight)` 7060, `count(Outlet_Size)` 6113,
+`countDistinct(Item_Identifier)` 1559; `avg(Item_Weight)` 12.86 frente a `sum/count(*)`
+10.65. `collect_set(Outlet_Size)` por `Outlet_Type`: `Supermarket Type1` [High, Medium,
+Small] (3722 elementos con `collect_list` porque salta nulos), los otros tres un solo
+tamaño; `countDistinct(Outlet_Identifier)` por tipo: 2, 6, 1, 1. Pivot `Item_Type` ×
+`Outlet_Size` sin lista: columnas `['Item_Type', 'null', 'High', 'Medium', 'Small']`, 7
+jobs; con lista `["Small", "Medium", "High"]`: 3 jobs; `Baking Goods` Small 125.21, Medium
+126.18, High 129.2; ninguna celda nula con esos tres valores. Pivot
+`Outlet_Type` × `Outlet_Location_Type` sobre ventas sí tiene celdas nulas. Condicional:
+`Regular` por tipo suma 2889 (`Dairy` 258 de 682, `Fruits and Vegetables` 577 de 1232);
+`Item_MRP > 200` suma 1440. Errores capturados: `agg(F.col("Item_MRP"))` →
+`AnalysisException [MISSING_AGGREGATION]` (sugiere `any_value`); `sum("Item_MRP")` de Python
+→ `TypeError: unsupported operand type(s) for +: 'int' and 'str'`; `F.count("*")` dentro
+de `pivot` → `[INVALID_USAGE_OF_STAR_OR_REGEX] Invalid usage of '*' in Pivot`;
+`groupBy(...).show()` → `AttributeError: 'GroupedData' object has no attribute 'show'`;
+`F.sum` sobre texto → `CAST_INVALID_INPUT` (ANSI). `groupBy().agg` con AQE: 2 jobs, 3 stages.
+Pivot con varias agregaciones nombra `Tier 1_s`, `Tier 1_n`.
+
+## Módulo 9, siguiente
+
+Diseño en [02-curriculum.md](02-curriculum.md#9-union-y-joins): `union` (por posición, no
+quita duplicados) y `unionByName`; clave de unión; inner, left, right y anti; ambigüedad de
+columnas. Extra: full outer y semi; unir por nombre de columna para no duplicarla; claves
+nulas que nunca cruzan; filas que se multiplican con claves repetidas. Diagramas: uno por
+tipo de join con las mismas dos tablas (`d01`…`d06`): inner 5 filas, left 6, right 6, anti
+1 (medir igualmente). Las notas (`material/parte3.md` y `parte4.md`) traen `df1` con
+`d01, d02, d03 (×2), d05, d06` y `df2` con `d01…d05`.
+
+**Dataset nuevo acordado con el usuario: `public/data/outlets.csv`**, tabla de tiendas para
+cruzar con BigMart. Generarla con un script `scripts/build-outlets.py` (como se hizo con
+`fetch-drivers.py`) y documentar en el README de dónde sale cada columna:
+
+- Una fila por tienda, clave `Outlet_Identifier`. Las columnas `Outlet_Establishment_Year`,
+  `Outlet_Size`, `Outlet_Location_Type` y `Outlet_Type` se copian de los valores reales de
+  BigMart (son constantes por tienda; `Outlet_Size` es nulo en OUT010, OUT017 y OUT045).
+- Dos o tres columnas inventadas que no existen en las ventas (p. ej. `City`, `Manager`),
+  marcadas en la página como ficticias: son las que hacen útil el join.
+- Incluir una tienda que **no** vende nada (p. ej. `OUT099`) y **quitar** una que sí vende
+  (p. ej. `OUT019`, 528 filas). Así inner pierde 528 filas (8523 − 528 = 7995), left
+  conserva las 8523 con nulos en las de OUT019, y anti desde `outlets` devuelve OUT099.
+  Medir todos los conteos con Spark antes de escribir los tests.
+- Lab 9: primero los DataFrames de juguete `d01`…`d06` (se ven enteros en pantalla), después
+  BigMart × `outlets.csv`. Añadir `outlets.csv` a `[data]` y al `module.json`.
+- Se reutiliza en los módulos 13 (Spark SQL con dos tablas) y 15 (proyecto integrador).
+
+Las 10 tiendas reales y sus filas: OUT010 555, OUT013 932, OUT017 926, OUT018 928, OUT019
+528, OUT027 935, OUT035 930, OUT045 929, OUT046 930, OUT049 930.
 
 ## Datos útiles ya medidos
 

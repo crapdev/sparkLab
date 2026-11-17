@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 300">
+  <defs>
+    <marker id="dd-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+    <marker id="dd-arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <text class="d-title" x="16" y="24">datediff(fin, inicio): el primero es el más reciente</text>
+
+  <!-- Timeline -->
+  <path class="d-line" d="M40 110H700" marker-end="url(#dd-arrow-muted)" />
+  <text class="d-muted" x="700" y="130" text-anchor="end">tiempo →</text>
+
+  <!-- dob tick -->
+  <path class="d-line-accent" d="M140 92V128" />
+  <rect class="d-box-accent" x="80" y="40" width="120" height="40" rx="6" />
+  <text class="d-code-small" x="140" y="58" text-anchor="middle">dob</text>
+  <text class="d-text" x="140" y="74" text-anchor="middle">1985-01-07</text>
+
+  <!-- reference tick -->
+  <path class="d-line-accent" d="M560 92V128" />
+  <rect class="d-box-accent" x="490" y="40" width="140" height="40" rx="6" />
+  <text class="d-code-small" x="560" y="58" text-anchor="middle">REFERENCE</text>
+  <text class="d-text" x="560" y="74" text-anchor="middle">2025-01-01</text>
+
+  <!-- forward arrow: positive -->
+  <path class="d-line-accent" d="M150 160H548" marker-end="url(#dd-arrow)" />
+  <text class="d-code-small" x="350" y="152" text-anchor="middle">datediff(REFERENCE, dob)</text>
+  <text class="d-accent-text" x="350" y="182" text-anchor="middle">= 14604 días</text>
+
+  <!-- backward arrow: negative -->
+  <path class="d-line-dashed" d="M548 220H152" marker-end="url(#dd-arrow-muted)" />
+  <text class="d-code-small" x="350" y="212" text-anchor="middle">datediff(dob, REFERENCE)</text>
+  <text class="d-muted" x="350" y="242" text-anchor="middle">= −14604 días: el mismo tramo, recorrido al revés</text>
+
+  <!-- months_between note -->
+  <rect class="d-box-info" x="16" y="262" width="708" height="30" rx="6" />
+  <text class="d-text" x="370" y="282" text-anchor="middle">months_between(REFERENCE, dob) = 479.81 meses → floor(479.81 / 12) = 39 años cumplidos</text>
+</svg>

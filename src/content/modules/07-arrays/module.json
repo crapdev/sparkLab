@@ -2,8 +2,221 @@
   "id": "07-arrays",
   "order": 7,
   "block": "transformaciones",
-  "status": "planned",
+  "status": "published",
   "title": "Arrays",
   "summary": "Columnas que contienen listas: split, índices, explode y array_contains.",
-  "estimatedMinutes": 35
+  "estimatedMinutes": 60,
+  "objectives": [
+    "Crear una columna de tipo array partiendo texto con `split`, y saber que el separador es una regex.",
+    "Sacar un elemento por su posición y contar elementos con `size`.",
+    "Desplegar una lista en filas con `explode` y predecir cuántas filas salen.",
+    "Conservar las listas vacías o nulas con `explode_outer`.",
+    "Preguntar si un valor está en la lista con `array_contains` y reconocer el error de aplicarla a texto."
+  ],
+  "lab": {
+    "path": "labs/07-arrays",
+    "minutes": 35,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Partes `Outlet_Type` en palabras, sacas la segunda, cuentas las palabras de `Item_Type`, despliegas las listas con `explode` y compruebas qué pasa con las listas vacías.",
+    "tasks": [
+      "Partir `Outlet_Type` con `split`.",
+      "Sacar la segunda palabra por su índice.",
+      "Contar palabras con `size`.",
+      "Desplegar la lista en filas con `explode`.",
+      "Marcar las filas que contienen `Type1` con `array_contains`.",
+      "Comparar `explode` con `explode_outer` sobre listas vacías y nulas."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-split",
+      "type": "fill-code",
+      "prompt": "Parte `Outlet_Type` (`Supermarket Type1`) en una lista de palabras.",
+      "code": "sales.withColumn(\"type_parts\", F.___(\"Outlet_Type\", \" \"))",
+      "blanks": [
+        {
+          "answers": ["split"],
+          "hint": "La función que convierte texto en array."
+        }
+      ],
+      "explanation": "`F.split(columna, separador)` devuelve un `array<string>`. El separador es una expresión regular; con un espacio no hay sorpresas."
+    },
+    {
+      "id": "ex-index",
+      "type": "predict-output",
+      "prompt": "`type_parts` vale `[Supermarket, Type1]`. ¿Qué devuelve `F.col(\"type_parts\")[1]` para esa fila?",
+      "options": [
+        "`Supermarket`",
+        "`Type1`",
+        "`[Supermarket, Type1]`",
+        "Un error: el índice empieza en 1."
+      ],
+      "code": "parts.select(F.col(\"type_parts\")[1]).show(1)",
+      "answer": 1,
+      "hint": "Los corchetes cuentan desde 0.",
+      "explanation": "El índice 0 es `Supermarket` y el 1 es `Type1`. `element_at` es la que cuenta desde 1."
+    },
+    {
+      "id": "ex-split-dot",
+      "type": "predict-output",
+      "prompt": "¿Qué devuelve esta celda para el valor `4.2.0`?",
+      "code": "versions.select(F.split(\"version\", \".\")).show()",
+      "optionsFormat": "code",
+      "options": ["[4, 2, 0]", "[, , , , , ]", "[4.2.0]", "Un error de patrón"],
+      "answer": 1,
+      "hint": "El separador es una regex, y `.` significa cualquier carácter.",
+      "explanation": "Con `.` sin escapar, cada carácter es un separador y solo quedan trozos vacíos. Hay que escribir `\"\\\\.\"`."
+    },
+    {
+      "id": "ex-size",
+      "type": "fill-code",
+      "prompt": "Cuenta cuántas palabras tiene `Item_Type`.",
+      "code": "sales.withColumn(\"word_count\", F.___(F.split(\"Item_Type\", \" \")))",
+      "blanks": [
+        {
+          "answers": ["size"],
+          "hint": "Número de elementos de un array. No es `length`, que mide caracteres."
+        }
+      ],
+      "explanation": "`F.size` cuenta los elementos de la lista. `F.length` contaría los caracteres del texto."
+    },
+    {
+      "id": "ex-explode-count",
+      "type": "predict-output",
+      "prompt": "`parts` tiene 8523 filas y cada `type_parts` tiene exactamente 2 elementos. ¿Qué imprime?",
+      "code": "exploded = parts.withColumn(\"type_word\", F.explode(\"type_parts\"))\nprint(exploded.count())",
+      "answers": ["17046", "17.046"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Una fila por elemento.",
+      "explanation": "Imprime 17046: cada fila se convierte en dos, una por palabra, y las demás columnas se repiten."
+    },
+    {
+      "id": "ex-explode-empty",
+      "type": "predict-output",
+      "prompt": "`tagged` tiene 3 filas: `tags` vale `[bio, local]`, `[]` y `NULL`. ¿Qué imprime?",
+      "code": "print(tagged.withColumn(\"tag\", F.explode(\"tags\")).count())",
+      "answers": ["2", "dos"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "¿Qué pasa con una fila cuya lista no tiene elementos?",
+      "explanation": "Imprime 2: solo las dos etiquetas de la primera fila. Las filas con lista vacía o nula desaparecen. Con `explode_outer` saldrían 4."
+    },
+    {
+      "id": "ex-array-contains-string",
+      "type": "choice",
+      "prompt": "Ejecutas `sales.withColumn(\"flag\", F.array_contains(\"Outlet_Type\", \"Type1\"))`, donde `Outlet_Type` es texto. ¿Qué pasa?",
+      "options": [
+        "Devuelve `true` donde el texto contiene `Type1`.",
+        "Devuelve `false` en todas las filas.",
+        "`AnalysisException` por `DATATYPE_MISMATCH`: el primer argumento tiene que ser un array.",
+        "Devuelve `NULL` en todas las filas."
+      ],
+      "answer": 2,
+      "hint": "`array_contains` solo entiende arrays.",
+      "explanation": "Falla al analizar la consulta: la columna es `STRING` y la función exige `ARRAY`. Hay que aplicarla sobre el resultado de `split`, o usar `contains` para texto."
+    },
+    {
+      "id": "ex-out-of-bounds",
+      "type": "choice",
+      "prompt": "En Spark 4, `type_parts` tiene 2 elementos y pides `F.col(\"type_parts\")[5]`. ¿Qué pasa al ejecutar?",
+      "options": [
+        "Devuelve `NULL`.",
+        "Devuelve el último elemento.",
+        "Error `INVALID_ARRAY_INDEX`.",
+        "Devuelve una cadena vacía."
+      ],
+      "answer": 2,
+      "hint": "El modo ANSI convierte en errores lo que antes eran nulos.",
+      "explanation": "Con el modo ANSI, un índice fuera de rango es un error. Para obtener `NULL` se usa `F.get(\"type_parts\", 5)`."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-array-type",
+      "question": "¿Qué tipo tiene la columna que devuelve `F.split(\"Outlet_Type\", \" \")`?",
+      "options": ["`string`", "`array<string>`", "`struct`", "`list`"],
+      "answer": 1,
+      "explanation": "`split` devuelve un array cuyos elementos son strings. En el esquema aparece como `array` con `element: string`."
+    },
+    {
+      "id": "q-split-regex",
+      "question": "¿Por qué `F.split(\"version\", \"|\")` parte `1|2|3` entre todos los caracteres?",
+      "options": [
+        "Porque `|` no es un separador válido.",
+        "Porque el separador es una expresión regular y `|` significa \"o\" vacío.",
+        "Porque `split` siempre parte por caracteres.",
+        "Porque falta el tercer argumento."
+      ],
+      "answer": 1,
+      "explanation": "El segundo argumento de `split` es una regex. `|` y `.` tienen significado especial y hay que escaparlos: `\"\\\\|\"`, `\"\\\\.\"`."
+    },
+    {
+      "id": "q-first-index",
+      "question": "¿Cómo sacas el primer elemento de un array `tags`?",
+      "options": [
+        "`F.col(\"tags\")[1]`",
+        "`F.col(\"tags\")[0]` o `F.element_at(\"tags\", 1)`",
+        "`F.first(\"tags\")`",
+        "`F.col(\"tags\").head()`"
+      ],
+      "answer": 1,
+      "explanation": "Los corchetes y `getItem` cuentan desde 0; `element_at` cuenta desde 1. `F.first` es una agregación, otra cosa."
+    },
+    {
+      "id": "q-size-length",
+      "question": "¿Qué diferencia hay entre `F.size` y `F.length`?",
+      "options": [
+        "Ninguna.",
+        "`size` cuenta elementos de un array; `length` cuenta caracteres de un texto.",
+        "`size` cuenta caracteres; `length` cuenta elementos.",
+        "`size` es para números y `length` para texto."
+      ],
+      "answer": 1,
+      "explanation": "Sobre `Fruits and Vegetables`, `length` da 21 y `size(split(...))` da 3."
+    },
+    {
+      "id": "q-explode-rows",
+      "question": "Tienes 100 filas y cada una tiene una lista de 3 géneros. Tras `explode`, ¿cuántas filas hay?",
+      "options": ["100", "3", "300", "Depende del número de columnas."],
+      "answer": 2,
+      "explanation": "Una fila por elemento: 100 × 3 = 300. Las demás columnas se repiten en cada fila nueva."
+    },
+    {
+      "id": "q-explode-outer",
+      "question": "¿Cuándo usas `explode_outer` en vez de `explode`?",
+      "options": [
+        "Cuando el array tiene más de 10 elementos.",
+        "Cuando quieres conservar las filas cuya lista está vacía o es nula.",
+        "Cuando el array contiene números.",
+        "Nunca: es una versión antigua."
+      ],
+      "answer": 1,
+      "explanation": "`explode` descarta esas filas porque no tiene nada que desplegar; `explode_outer` las deja con `NULL`."
+    },
+    {
+      "id": "q-array-contains-type",
+      "question": "¿Qué devuelve `F.array_contains(\"type_parts\", \"Type1\")`?",
+      "options": [
+        "Un `int` con la posición del valor.",
+        "Una columna `boolean`: `true`, `false` o `NULL` si la lista es nula.",
+        "El elemento encontrado.",
+        "Un `array` con las coincidencias."
+      ],
+      "answer": 1,
+      "explanation": "Devuelve verdadero o falso por fila, y sirve directamente como condición de `filter`."
+    },
+    {
+      "id": "q-mismatch",
+      "question": "Ves `DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE ... requires the \"ARRAY\" type, however \"Outlet_Type\" has the type \"STRING\"`. ¿Cuál es la causa habitual?",
+      "options": [
+        "Falta importar `functions`.",
+        "Se aplicó una función de arrays al DataFrame que todavía tiene el texto sin partir.",
+        "El array está vacío.",
+        "La columna tiene nulos."
+      ],
+      "answer": 1,
+      "explanation": "Casi siempre se usó `df` en vez del DataFrame con el `split`. `printSchema()` enseña qué columnas son arrays de verdad."
+    }
+  ]
 }

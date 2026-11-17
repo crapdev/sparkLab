@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 270">
+  <defs>
+    <marker id="pv-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <!-- Long table -->
+  <text class="d-title" x="16" y="24">Formato largo: groupBy con dos claves</text>
+  <text class="d-muted" x="16" y="42">una fila por combinación</text>
+  <rect class="d-box" x="16" y="52" width="110" height="24" rx="3" />
+  <rect class="d-box-accent" x="126" y="52" width="80" height="24" rx="3" />
+  <rect class="d-box" x="206" y="52" width="70" height="24" rx="3" />
+  <text class="d-muted" x="71" y="69" text-anchor="middle">Item_Type</text>
+  <text class="d-muted" x="166" y="69" text-anchor="middle">Outlet_Size</text>
+  <text class="d-muted" x="241" y="69" text-anchor="middle">avg_mrp</text>
+
+  <rect class="d-box" x="16" y="76" width="110" height="22" />
+  <rect class="d-box-accent" x="126" y="76" width="80" height="22" />
+  <rect class="d-box" x="206" y="76" width="70" height="22" />
+  <text class="d-text" x="71" y="92" text-anchor="middle">Baking Goods</text>
+  <text class="d-text" x="166" y="92" text-anchor="middle">Small</text>
+  <text class="d-text" x="241" y="92" text-anchor="middle">125.21</text>
+
+  <rect class="d-box" x="16" y="98" width="110" height="22" />
+  <rect class="d-box-accent" x="126" y="98" width="80" height="22" />
+  <rect class="d-box" x="206" y="98" width="70" height="22" />
+  <text class="d-text" x="71" y="114" text-anchor="middle">Baking Goods</text>
+  <text class="d-text" x="166" y="114" text-anchor="middle">Medium</text>
+  <text class="d-text" x="241" y="114" text-anchor="middle">126.18</text>
+
+  <rect class="d-box" x="16" y="120" width="110" height="22" />
+  <rect class="d-box-accent" x="126" y="120" width="80" height="22" />
+  <rect class="d-box" x="206" y="120" width="70" height="22" />
+  <text class="d-text" x="71" y="136" text-anchor="middle">Baking Goods</text>
+  <text class="d-text" x="166" y="136" text-anchor="middle">High</text>
+  <text class="d-text" x="241" y="136" text-anchor="middle">129.20</text>
+
+  <rect class="d-box" x="16" y="142" width="110" height="22" />
+  <rect class="d-box-accent" x="126" y="142" width="80" height="22" />
+  <rect class="d-box" x="206" y="142" width="70" height="22" />
+  <text class="d-text" x="71" y="158" text-anchor="middle">Breads</text>
+  <text class="d-text" x="166" y="158" text-anchor="middle">Small</text>
+  <text class="d-text" x="241" y="158" text-anchor="middle">145.52</text>
+
+  <rect class="d-box" x="16" y="164" width="110" height="22" />
+  <rect class="d-box-accent" x="126" y="164" width="80" height="22" />
+  <rect class="d-box" x="206" y="164" width="70" height="22" />
+  <text class="d-text" x="71" y="180" text-anchor="middle">Breads</text>
+  <text class="d-text" x="166" y="180" text-anchor="middle">Medium</text>
+  <text class="d-text" x="241" y="180" text-anchor="middle">140.86</text>
+
+  <rect class="d-box" x="16" y="186" width="110" height="22" />
+  <rect class="d-box-accent" x="126" y="186" width="80" height="22" />
+  <rect class="d-box" x="206" y="186" width="70" height="22" />
+  <text class="d-text" x="71" y="202" text-anchor="middle">Breads</text>
+  <text class="d-text" x="166" y="202" text-anchor="middle">High</text>
+  <text class="d-text" x="241" y="202" text-anchor="middle">133.76</text>
+
+  <!-- Arrow -->
+  <path class="d-line-accent" d="M290 130H510" marker-end="url(#pv-arrow)" />
+  <text class="d-code-small" x="400" y="118" text-anchor="middle">.pivot("Outlet_Size",</text>
+  <text class="d-code-small" x="400" y="152" text-anchor="middle">["Small", "Medium", "High"])</text>
+
+  <!-- Wide table -->
+  <text class="d-title" x="520" y="24">Formato ancho: pivot</text>
+  <text class="d-muted" x="520" y="42">los valores de Outlet_Size pasan a ser columnas</text>
+  <rect class="d-box" x="520" y="52" width="110" height="24" rx="109" />
+  <rect class="d-box-accent" x="630" y="52" width="66" height="24" rx="109" />
+  <rect class="d-box-accent" x="696" y="52" width="66" height="24" rx="109" />
+  <rect class="d-box-accent" x="762" y="52" width="66" height="24" rx="109" />
+  <text class="d-muted" x="575" y="69" text-anchor="middle">Item_Type</text>
+  <text class="d-accent-text" x="663" y="69" text-anchor="middle">Small</text>
+  <text class="d-accent-text" x="729" y="69" text-anchor="middle">Medium</text>
+  <text class="d-accent-text" x="795" y="69" text-anchor="middle">High</text>
+
+  <rect class="d-box" x="520" y="76" width="110" height="22" />
+  <rect class="d-box-success" x="630" y="76" width="66" height="22" />
+  <rect class="d-box-success" x="696" y="76" width="66" height="22" />
+  <rect class="d-box-success" x="762" y="76" width="66" height="22" />
+  <text class="d-text" x="575" y="92" text-anchor="middle">Baking Goods</text>
+  <text class="d-text" x="663" y="92" text-anchor="middle">125.21</text>
+  <text class="d-text" x="729" y="92" text-anchor="middle">126.18</text>
+  <text class="d-text" x="795" y="92" text-anchor="middle">129.20</text>
+
+  <rect class="d-box" x="520" y="98" width="110" height="22" />
+  <rect class="d-box-success" x="630" y="98" width="66" height="22" />
+  <rect class="d-box-success" x="696" y="98" width="66" height="22" />
+  <rect class="d-box-success" x="762" y="98" width="66" height="22" />
+  <text class="d-text" x="575" y="114" text-anchor="middle">Breads</text>
+  <text class="d-text" x="663" y="114" text-anchor="middle">145.52</text>
+  <text class="d-text" x="729" y="114" text-anchor="middle">140.86</text>
+  <text class="d-text" x="795" y="114" text-anchor="middle">133.76</text>
+
+  <text class="d-muted" x="520" y="160">Una celda sin datos queda en NULL.</text>
+  <text class="d-muted" x="520" y="180">Sin la lista de valores, Spark recorre los datos</text>
+  <text class="d-muted" x="520" y="198">para descubrirlos y añade una columna "null".</text>
+
+  <!-- Footer -->
+  <rect class="d-box-info" x="16" y="226" width="828" height="32" rx="8" />
+  <text class="d-text" x="32" y="247">En BigMart: 48 filas en formato largo (sin los nulos) → 16 filas × 3 columnas de tamaño en formato ancho.</text>
+</svg>

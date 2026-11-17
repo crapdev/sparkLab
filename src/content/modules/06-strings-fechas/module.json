@@ -2,8 +2,214 @@
   "id": "06-strings-fechas",
   "order": 6,
   "block": "transformaciones",
-  "status": "planned",
+  "status": "published",
   "title": "Strings y fechas",
   "summary": "Limpiar texto y calcular con fechas: initcap, date_add, datediff, date_format.",
-  "estimatedMinutes": 45
+  "estimatedMinutes": 70,
+  "objectives": [
+    "Cambiar mayúsculas, cortar y unir texto con `upper`, `lower`, `initcap`, `substring` y `concat_ws`.",
+    "Convertir texto en fecha con `to_date` y saber qué pasa cuando el patrón no encaja.",
+    "Sacar partes de una fecha y sumar o restar días con `year`, `date_add` y `date_sub`.",
+    "Calcular distancias entre fechas con `datediff` y `months_between`, en el orden correcto.",
+    "Formatear una fecha como texto con `date_format` sin caer en `YYYY` ni en `mm`."
+  ],
+  "lab": {
+    "path": "labs/06-strings-fechas",
+    "minutes": 40,
+    "datasets": ["bigmart_sales.csv", "drivers.json"],
+    "summary": "Sacas la familia de cada producto de su identificador, montas el nombre completo de los pilotos, conviertes su fecha de nacimiento, calculas su edad a una fecha fija y la formateas al estilo europeo.",
+    "tasks": [
+      "Cortar un prefijo con `substring` y pasar a mayúsculas con `upper`.",
+      "Unir nombre y apellido con `concat_ws`.",
+      "Convertir `dob` de texto a fecha con `to_date`.",
+      "Sacar el año con `year` y filtrar por él.",
+      "Calcular la edad a una fecha fija con `months_between` y `floor`.",
+      "Formatear la fecha como `dd/MM/yyyy` con `date_format`."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-initcap",
+      "type": "predict-output",
+      "prompt": "¿Qué imprime esta celda?",
+      "code": "spark.range(1).select(F.initcap(F.lit(\"soft DRINKS\"))).show()",
+      "optionsFormat": "code",
+      "options": ["Soft Drinks", "Soft drinks", "SOFT DRINKS", "soft drinks"],
+      "answer": 0,
+      "hint": "`initcap` toca la primera letra de **cada** palabra y baja el resto.",
+      "explanation": "`initcap` pone en mayúscula la primera letra de cada palabra y el resto en minúscula: `Soft Drinks`. Por eso no sirve para unificar variantes como `LF`: las convierte en `Lf`."
+    },
+    {
+      "id": "ex-substring",
+      "type": "fill-code",
+      "prompt": "Saca las dos primeras letras del identificador (`FDA15` → `FD`).",
+      "code": "sales.withColumn(\"prefix\", F.substring(\"Item_Identifier\", ___, 2))",
+      "blanks": [{ "answers": ["1"], "hint": "En `substring` el primer carácter no es el 0." }],
+      "explanation": "`substring(columna, inicio, longitud)` cuenta desde 1. Con `1, 2` se obtienen los dos primeros caracteres."
+    },
+    {
+      "id": "ex-concat-null",
+      "type": "predict-output",
+      "prompt": "De 885 pilotos, 765 no tienen `code`. ¿Qué imprime?",
+      "code": "joined = drivers.withColumn(\"tag\", F.concat(\"driverRef\", F.lit(\"-\"), \"code\"))\nprint(joined.filter(F.col(\"tag\").isNull()).count())",
+      "answers": ["765"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "¿Qué devuelve `concat` cuando una de sus columnas es nula?",
+      "explanation": "Imprime 765. `concat` devuelve nulo si cualquier argumento es nulo. `concat_ws(\"-\", \"driverRef\", \"code\")` saltaría el nulo y no dejaría ninguno."
+    },
+    {
+      "id": "ex-to-date",
+      "type": "fill-code",
+      "prompt": "La columna `fecha` trae textos como `07/01/1985`. Conviértela a fecha.",
+      "code": "df.withColumn(\"fecha\", F.___(\"fecha\", \"___\"))",
+      "blanks": [
+        { "answers": ["to_date"], "hint": "La función que convierte texto en `date`." },
+        {
+          "answers": ["dd/MM/yyyy"],
+          "hint": "Día, mes y año con barras. Mes en mayúsculas, año en minúsculas."
+        }
+      ],
+      "explanation": "`to_date(columna, patrón)` interpreta el texto según el patrón. `dd` día, `MM` mes y `yyyy` año. Sin patrón, Spark esperaría `yyyy-MM-dd`."
+    },
+    {
+      "id": "ex-datediff-sign",
+      "type": "predict-output",
+      "prompt": "¿Qué imprime?",
+      "code": "ref = F.to_date(F.lit(\"2025-01-08\"))\nstart = F.to_date(F.lit(\"2025-01-01\"))\nspark.range(1).select(F.datediff(start, ref)).show()",
+      "answers": ["-7", "−7", "menos 7"],
+      "inputLabel": "Número que muestra",
+      "inputMode": "numeric",
+      "hint": "El primer argumento debería ser la fecha más reciente, y aquí no lo es.",
+      "explanation": "Muestra -7. `datediff(fin, inicio)` resta `inicio` a `fin`; con el orden cambiado, el resultado sale negativo."
+    },
+    {
+      "id": "ex-age",
+      "type": "fill-code",
+      "prompt": "Calcula los años cumplidos entre `dob` y la referencia.",
+      "code": "aged = dated.withColumn(\n    \"age\",\n    F.___(F.months_between(REFERENCE, F.col(\"dob\")) / 12).cast(\"int\"),\n)",
+      "blanks": [
+        { "answers": ["floor"], "hint": "Redondear hacia abajo: 39.98 años cumplidos son 39." }
+      ],
+      "explanation": "`floor` redondea hacia abajo, que es lo que significa \"cumplidos\". Con `round`, alguien a punto de cumplir 40 saldría con 40."
+    },
+    {
+      "id": "ex-yyyy",
+      "type": "choice",
+      "prompt": "Ejecutas `F.date_format(\"dob\", \"dd/MM/YYYY\")`. ¿Qué pasa?",
+      "options": [
+        "Devuelve `07/01/1985`, igual que con `yyyy`.",
+        "Devuelve el año en dos cifras: `07/01/85`.",
+        "Error: Spark no acepta `YYYY` en el patrón.",
+        "Devuelve el año de la semana, que a veces difiere en un año."
+      ],
+      "answer": 2,
+      "hint": "Desde Spark 3 los patrones de año por semana se rechazan.",
+      "explanation": "Spark 3 y posteriores lanzan `INCONSISTENT_BEHAVIOR_CROSS_VERSION.DATETIME_PATTERN_RECOGNITION` con `YYYY`. El año siempre va en minúsculas: `yyyy`."
+    },
+    {
+      "id": "ex-mm",
+      "type": "predict-output",
+      "prompt": "`dob` vale `1985-01-07`. ¿Qué imprime?",
+      "code": "hamilton.select(F.date_format(\"dob\", \"dd-mm-yyyy\")).show()",
+      "optionsFormat": "code",
+      "options": ["07-01-1985", "07-00-1985", "01-07-1985", "Un error de patrón"],
+      "answer": 1,
+      "hint": "`mm` en minúsculas no es el mes.",
+      "explanation": "`mm` son minutos, y una fecha no tiene: sale `00`. El mes es `MM`, en mayúsculas. No hay error, y por eso este fallo pasa desapercibido."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-lower-join",
+      "question": "Vas a cruzar dos tablas por una columna de texto y en una pone `British` y en la otra `british`. ¿Qué haces antes?",
+      "options": [
+        "Nada: Spark compara texto sin distinguir mayúsculas.",
+        "Pasar las dos columnas por `lower` (o `upper`).",
+        "Usar `initcap` en las dos.",
+        "Convertirlas con `to_date`."
+      ],
+      "answer": 1,
+      "explanation": "Para Spark son valores distintos. Normalizar con `lower` o `upper` en las dos tablas evita perder coincidencias. `initcap` también podría, pero es menos habitual como convención."
+    },
+    {
+      "id": "q-concat-ws",
+      "question": "¿En qué se diferencian `concat` y `concat_ws`?",
+      "options": [
+        "`concat_ws` es más rápida.",
+        "`concat_ws` lleva separador y salta los nulos; `concat` devuelve nulo si alguna columna es nula.",
+        "`concat` solo acepta dos columnas.",
+        "No hay diferencia: `ws` significa *with strings*."
+      ],
+      "answer": 1,
+      "explanation": "`ws` es *with separator*. Además del separador, la diferencia práctica es el trato de los nulos."
+    },
+    {
+      "id": "q-string-date",
+      "question": "Lees un JSON y `dob` queda como `string` con valores `1985-01-07`. ¿Qué conviene hacer?",
+      "options": [
+        "Nada: Spark ya lo trata como fecha.",
+        "Convertirla con `F.to_date(\"dob\")` y trabajar con el tipo `date`.",
+        "Usar `cast(\"int\")` para quedarte con el año.",
+        "Usar `date_format` para convertirla a fecha."
+      ],
+      "answer": 1,
+      "explanation": "Algunas funciones convierten el texto por debajo cuando tiene formato ISO, pero eso se rompe con cualquier otro formato. `to_date` deja una fecha de verdad. `date_format` hace lo contrario: de fecha a texto."
+    },
+    {
+      "id": "q-to-date-fail",
+      "question": "En Spark 4, `F.to_date(F.lit(\"1985-01-07\"), \"dd/MM/yyyy\")`. ¿Qué devuelve?",
+      "options": [
+        "`NULL`.",
+        "`1985-01-07`: Spark detecta el formato.",
+        "Un error `CANNOT_PARSE_TIMESTAMP` al ejecutar.",
+        "`0007-01-19`."
+      ],
+      "answer": 2,
+      "explanation": "El texto no encaja con el patrón y, con el modo ANSI, Spark falla en lugar de devolver nulo. Para obtener `NULL` existe `try_to_date`."
+    },
+    {
+      "id": "q-date-add-neg",
+      "question": "¿Qué devuelve `F.date_add(F.col(\"dob\"), -7)`?",
+      "options": [
+        "Un error: `date_add` no acepta negativos.",
+        "La fecha 7 días antes, igual que `date_sub(dob, 7)`.",
+        "La fecha 7 meses antes.",
+        "`NULL`."
+      ],
+      "answer": 1,
+      "explanation": "`date_add` con un número negativo resta días. Es un truco habitual para no cambiar de función."
+    },
+    {
+      "id": "q-months-between",
+      "question": "¿Por qué calcular la edad con `months_between(...) / 12` en vez de `datediff(...) / 365`?",
+      "options": [
+        "Porque `datediff` no acepta fechas de nacimiento.",
+        "Porque `months_between` respeta los años bisiestos y da los años cumplidos sin trucos.",
+        "Porque `datediff` devuelve texto.",
+        "No hay diferencia: dan siempre lo mismo."
+      ],
+      "answer": 1,
+      "explanation": "Dividir días entre 365 acumula error con los bisiestos; `months_between` cuenta meses de calendario. Con `floor` quedan los años cumplidos."
+    },
+    {
+      "id": "q-date-format-type",
+      "question": "¿Qué tipo tiene la columna que devuelve `F.date_format(\"dob\", \"dd/MM/yyyy\")`?",
+      "options": ["`date`", "`timestamp`", "`string`", "`int`"],
+      "answer": 2,
+      "explanation": "`date_format` produce texto. Si lo guardas sobre la misma columna, pierdes la fecha; úsalo en una columna nueva o solo al presentar."
+    },
+    {
+      "id": "q-fixed-date",
+      "question": "¿Por qué el laboratorio calcula la edad a una fecha fija en vez de con `current_date()`?",
+      "options": [
+        "Porque `current_date()` no existe en Colab.",
+        "Para que los tests den siempre el mismo resultado, sea cual sea el día en que se ejecutan.",
+        "Porque `current_date()` devuelve texto.",
+        "Porque las fechas fijas se calculan más rápido."
+      ],
+      "answer": 1,
+      "explanation": "Un cálculo que depende del día de ejecución no se puede probar con un valor esperado. En producción se usaría `current_date()`, pero con esta precaución en mente."
+    }
+  ]
 }

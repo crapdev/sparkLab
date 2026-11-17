@@ -12,7 +12,10 @@ interactivos en el navegador y laboratorios en Google Colab con tests automátic
 | 3. Seleccionar y filtrar       | Publicado      |
 | 4. Crear y modificar columnas  | Publicado      |
 | 5. Ordenar y limpiar           | Publicado      |
-| 6 a 15                         | En preparación |
+| 6. Strings y fechas            | Publicado      |
+| 7. Arrays                      | Publicado      |
+| 8. Agregaciones                | Publicado      |
+| 9 a 15                         | En preparación |
 
 El plan completo está en [docs/plan](docs/plan/README.md).
 

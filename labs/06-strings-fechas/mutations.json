@@ -1,0 +1,86 @@
+[
+  {
+    "name": "task 1: substring starting at 0 with length 3",
+    "old": "coded = sales.withColumn(\"prefix\", F.substring(\"Item_Identifier\", 1, 2)).withColumn(\"Item_Type\", F.upper(\"Item_Type\"))",
+    "new": "coded = sales.withColumn(\"prefix\", F.substring(\"Item_Identifier\", 2, 2)).withColumn(\"Item_Type\", F.upper(\"Item_Type\"))",
+    "expect": "Tarea 1 · prefix"
+  },
+  {
+    "name": "task 1: initcap instead of upper",
+    "old": ".withColumn(\"Item_Type\", F.upper(\"Item_Type\"))",
+    "new": ".withColumn(\"Item_Type\", F.initcap(\"Item_Type\"))",
+    "expect": "Tarea 1 · Item_Type"
+  },
+  {
+    "name": "task 1: upper written to a new column",
+    "old": ".withColumn(\"Item_Type\", F.upper(\"Item_Type\"))",
+    "new": ".withColumn(\"Item_Type_Upper\", F.upper(\"Item_Type\"))",
+    "expect": "Tarea 1"
+  },
+  {
+    "name": "task 2: concat without separator",
+    "old": "named = drivers.withColumn(\"full_name\", F.concat_ws(\" \", \"name.forename\", \"name.surname\"))",
+    "new": "named = drivers.withColumn(\"full_name\", F.concat(\"name.forename\", \"name.surname\"))",
+    "expect": "Tarea 2 · Lewis"
+  },
+  {
+    "name": "task 2: surname first",
+    "old": "named = drivers.withColumn(\"full_name\", F.concat_ws(\" \", \"name.forename\", \"name.surname\"))",
+    "new": "named = drivers.withColumn(\"full_name\", F.concat_ws(\" \", \"name.surname\", \"name.forename\"))",
+    "expect": "Tarea 2 · Lewis"
+  },
+  {
+    "name": "task 3: new column instead of overwrite",
+    "old": "dated = named.withColumn(\"dob\", F.to_date(\"dob\"))",
+    "new": "dated = named.withColumn(\"dob_date\", F.to_date(\"dob\"))",
+    "expect": "Tarea 3 · dob es de tipo date"
+  },
+  {
+    "name": "task 3: nulls dropped",
+    "old": "dated = named.withColumn(\"dob\", F.to_date(\"dob\"))",
+    "new": "dated = named.withColumn(\"dob\", F.to_date(\"dob\")).dropna(subset=[\"dob\"])",
+    "expect": "Tarea 3 · los 7 nulos"
+  },
+  {
+    "name": "task 4: year as text via date_format",
+    "old": "with_year = dated.withColumn(\"birth_year\", F.year(\"dob\"))",
+    "new": "with_year = dated.withColumn(\"birth_year\", F.date_format(\"dob\", \"yyyy\"))",
+    "expect": "Tarea 4 · birth_year"
+  },
+  {
+    "name": "task 4: strict greater than",
+    "old": "young = with_year.filter(F.col(\"birth_year\") >= 1990)",
+    "new": "young = with_year.filter(F.col(\"birth_year\") > 1990)",
+    "expect": "Tarea 4 · 59"
+  },
+  {
+    "name": "task 5: arguments reversed",
+    "old": "aged = with_year.withColumn(\"age\", F.floor(F.months_between(REFERENCE, F.col(\"dob\")) / 12).cast(\"int\"))",
+    "new": "aged = with_year.withColumn(\"age\", F.floor(F.months_between(F.col(\"dob\"), REFERENCE) / 12).cast(\"int\"))",
+    "expect": "Tarea 5 · Hamilton"
+  },
+  {
+    "name": "task 5: round instead of floor",
+    "old": "aged = with_year.withColumn(\"age\", F.floor(F.months_between(REFERENCE, F.col(\"dob\")) / 12).cast(\"int\"))",
+    "new": "aged = with_year.withColumn(\"age\", F.round(F.months_between(REFERENCE, F.col(\"dob\")) / 12).cast(\"int\"))",
+    "expect": "Tarea 5"
+  },
+  {
+    "name": "task 5: cast forgotten",
+    "old": "aged = with_year.withColumn(\"age\", F.floor(F.months_between(REFERENCE, F.col(\"dob\")) / 12).cast(\"int\"))",
+    "new": "aged = with_year.withColumn(\"age\", F.floor(F.months_between(REFERENCE, F.col(\"dob\")) / 12))",
+    "expect": "Tarea 5 · 39 pilotos"
+  },
+  {
+    "name": "task 6: mm instead of MM",
+    "old": "formatted = aged.withColumn(\"dob_text\", F.date_format(\"dob\", \"dd/MM/yyyy\"))",
+    "new": "formatted = aged.withColumn(\"dob_text\", F.date_format(\"dob\", \"dd/mm/yyyy\"))",
+    "expect": "Tarea 6 · Hamilton"
+  },
+  {
+    "name": "task 6: dob overwritten with text",
+    "old": "formatted = aged.withColumn(\"dob_text\", F.date_format(\"dob\", \"dd/MM/yyyy\"))",
+    "new": "formatted = aged.withColumn(\"dob\", F.date_format(\"dob\", \"dd/MM/yyyy\")).withColumn(\"dob_text\", F.col(\"dob\"))",
+    "expect": "Tarea 6 · dob_text es string"
+  }
+]

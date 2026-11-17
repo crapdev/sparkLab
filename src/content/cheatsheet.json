@@ -571,5 +571,217 @@
     "gotcha": "Solo rellena las columnas cuyo tipo encaja con el valor: un texto no toca las numéricas, ni aunque lo pidas con `subset`. `df.na.fill` es lo mismo.",
     "module": "05-ordenar-limpiar",
     "keywords": ["nulos", "rellenar", "sustituir", "null", "valor", "defecto", "na"]
+  },
+  {
+    "name": "upper / lower / initcap",
+    "category": "Columnas",
+    "signature": "F.upper(col)   F.lower(col)   F.initcap(col)",
+    "description": "Cambian las mayúsculas de un texto: todo mayúsculas, todo minúsculas, o la primera letra de cada palabra.",
+    "example": "sales.withColumn(\"Item_Type\", F.upper(\"Item_Type\"))",
+    "gotcha": "`initcap` no unifica variantes: `LF` pasa a `Lf`, no a `Low Fat`. Para comparar o cruzar texto, normaliza con `lower` en las dos tablas.",
+    "module": "06-strings-fechas",
+    "keywords": ["mayusculas", "minusculas", "texto", "string", "capitalizar", "case"]
+  },
+  {
+    "name": "substring / length / trim",
+    "category": "Columnas",
+    "signature": "F.substring(col, pos, len)   F.length(col)   F.trim(col)",
+    "description": "Corta un trozo de texto, mide su longitud o quita los espacios de los extremos.",
+    "example": "sales.withColumn(\"prefix\", F.substring(\"Item_Identifier\", 1, 2))",
+    "gotcha": "En `substring` la primera posición es 1, no 0. Una posición negativa cuenta desde el final.",
+    "module": "06-strings-fechas",
+    "keywords": ["cortar", "trozo", "subcadena", "longitud", "espacios", "recortar", "texto"]
+  },
+  {
+    "name": "concat_ws / concat",
+    "category": "Columnas",
+    "signature": "F.concat_ws(sep, *cols)   F.concat(*cols)",
+    "description": "Unen varias columnas de texto. `concat_ws` pone un separador entre ellas; `concat` las pega tal cual.",
+    "example": "drivers.withColumn(\"full_name\", F.concat_ws(\" \", \"name.forename\", \"name.surname\"))",
+    "gotcha": "`concat` devuelve nulo si cualquier columna es nula; `concat_ws` salta las nulas.",
+    "module": "06-strings-fechas",
+    "keywords": ["unir", "juntar", "concatenar", "texto", "separador", "nombre"]
+  },
+  {
+    "name": "regexp_extract",
+    "category": "Columnas",
+    "signature": "F.regexp_extract(col, pattern, group)",
+    "description": "Saca el trozo de texto que encaja con una expresión regular. `group` 0 es la coincidencia completa; 1, 2… los grupos entre paréntesis.",
+    "example": "sales.withColumn(\"digits\", F.regexp_extract(\"Item_Identifier\", r\"\\d+\", 0))",
+    "gotcha": "Si nada encaja devuelve una cadena vacía, no nulo.",
+    "module": "06-strings-fechas",
+    "keywords": ["regex", "extraer", "patron", "texto", "expresion regular"]
+  },
+  {
+    "name": "to_date",
+    "category": "Columnas",
+    "signature": "F.to_date(col, format=None)",
+    "description": "Convierte texto en una columna de tipo `date`. Sin patrón espera `yyyy-MM-dd`; con patrón, el que indiques.",
+    "example": "drivers.withColumn(\"dob\", F.to_date(\"dob\"))\nF.to_date(F.col(\"fecha\"), \"dd/MM/yyyy\")",
+    "gotcha": "Si el texto no encaja, en Spark 4 falla al ejecutar (`CANNOT_PARSE_TIMESTAMP` o `CAST_INVALID_INPUT`); `F.try_to_date` devuelve nulo en su lugar.",
+    "module": "06-strings-fechas",
+    "keywords": ["fecha", "convertir", "texto", "date", "parsear", "formato"]
+  },
+  {
+    "name": "year / month / dayofmonth",
+    "category": "Columnas",
+    "signature": "F.year(col)   F.month(col)   F.dayofmonth(col)",
+    "description": "Sacan una parte de una fecha como entero.",
+    "example": "dated.withColumn(\"birth_year\", F.year(\"dob\"))",
+    "gotcha": "Sobre un texto con formato `yyyy-MM-dd` funcionan por conversión implícita, pero con otro formato fallan: convierte antes con `to_date`.",
+    "module": "06-strings-fechas",
+    "keywords": ["año", "mes", "dia", "fecha", "parte", "extraer"]
+  },
+  {
+    "name": "date_add / date_sub",
+    "category": "Columnas",
+    "signature": "F.date_add(col, days)   F.date_sub(col, days)   F.add_months(col, months)",
+    "description": "Suman o restan días a una fecha; `add_months` hace lo mismo con meses.",
+    "example": "F.date_add(\"dob\", 7)\nF.date_add(\"dob\", -7)   # same as date_sub(\"dob\", 7)",
+    "gotcha": "`date_add` con un número negativo resta. `F.current_date()` da la fecha de hoy.",
+    "module": "06-strings-fechas",
+    "keywords": ["sumar", "restar", "dias", "fecha", "semana", "meses", "hoy", "current_date"]
+  },
+  {
+    "name": "datediff / months_between",
+    "category": "Columnas",
+    "signature": "F.datediff(end, start)   F.months_between(end, start)",
+    "description": "Distancia entre dos fechas: en días enteros o en meses con decimales.",
+    "example": "F.datediff(REFERENCE, F.col(\"dob\"))\nF.floor(F.months_between(REFERENCE, F.col(\"dob\")) / 12)   # age in full years",
+    "gotcha": "El primer argumento es la fecha más reciente; al revés, el resultado sale negativo. Para edades, `months_between / 12` con `floor` respeta los bisiestos.",
+    "module": "06-strings-fechas",
+    "keywords": ["diferencia", "dias", "meses", "edad", "entre", "restar fechas"]
+  },
+  {
+    "name": "date_format",
+    "category": "Columnas",
+    "signature": "F.date_format(col, pattern)",
+    "description": "Convierte una fecha en texto con el patrón indicado: `yyyy` año, `MM` mes, `dd` día, `MMMM` nombre del mes, `EEEE` día de la semana.",
+    "example": "F.date_format(\"dob\", \"dd/MM/yyyy\")   # 07/01/1985",
+    "gotcha": "Devuelve `string`. `mm` son minutos (saldrá `00`) y `YYYY` da error: año en minúsculas, mes en mayúsculas. Los nombres salen en inglés.",
+    "module": "06-strings-fechas",
+    "keywords": ["formato", "fecha", "texto", "patron", "yyyy", "presentar"]
+  },
+  {
+    "name": "split",
+    "category": "Columnas",
+    "signature": "F.split(col, pattern, limit=-1)",
+    "description": "Parte un texto por un separador y devuelve un `array<string>`.",
+    "example": "sales.withColumn(\"type_parts\", F.split(\"Outlet_Type\", \" \"))",
+    "gotcha": "El separador es una expresión regular: `.` y `|` hay que escaparlos (`\"\\\\.\"`, `\"\\\\|\"`). El camino de vuelta es `concat_ws` o `array_join`.",
+    "module": "07-arrays",
+    "keywords": ["partir", "separar", "lista", "array", "texto", "palabras", "regex"]
+  },
+  {
+    "name": "Índice de array",
+    "category": "Columnas",
+    "signature": "F.col(name)[i]   F.col(name).getItem(i)   F.element_at(col, n)",
+    "description": "Saca un elemento de un array por su posición. Los corchetes y `getItem` cuentan desde 0; `element_at` desde 1 y admite negativos.",
+    "example": "parts.withColumn(\"type_code\", F.col(\"type_parts\")[1])",
+    "gotcha": "En Spark 4 un índice fuera de la lista lanza `INVALID_ARRAY_INDEX`; `F.get(col, i)` devuelve `NULL` en su lugar.",
+    "module": "07-arrays",
+    "keywords": [
+      "elemento",
+      "posicion",
+      "indice",
+      "primero",
+      "ultimo",
+      "getItem",
+      "element_at",
+      "get"
+    ]
+  },
+  {
+    "name": "size",
+    "category": "Columnas",
+    "signature": "F.size(col)",
+    "description": "Número de elementos de un array (o de un mapa), como entero.",
+    "example": "sales.withColumn(\"word_count\", F.size(F.split(\"Item_Type\", \" \")))",
+    "gotcha": "No confundir con `length`, que cuenta caracteres de un texto. `size` de una lista nula es `NULL`.",
+    "module": "07-arrays",
+    "keywords": ["tamaño", "longitud", "cuantos", "elementos", "contar", "array"]
+  },
+  {
+    "name": "explode / explode_outer",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "F.explode(col)   F.explode_outer(col)   F.posexplode(col)",
+    "description": "Genera una fila por cada elemento de un array; las demás columnas se repiten. `posexplode` añade la posición.",
+    "example": "exploded = parts.withColumn(\"type_word\", F.explode(\"type_parts\"))   # 8523 -> 17046 rows",
+    "gotcha": "`explode` descarta las filas con lista vacía o nula; `explode_outer` las conserva con `NULL`. Sobre una columna de texto falla con `DATATYPE_MISMATCH`.",
+    "module": "07-arrays",
+    "keywords": ["desplegar", "filas", "lista", "array", "aplanar", "una fila por", "explotar"]
+  },
+  {
+    "name": "array_contains",
+    "category": "Columnas",
+    "signature": "F.array_contains(col, value)",
+    "description": "Condición `boolean`: verdadera si el array contiene el valor.",
+    "example": "parts.filter(F.array_contains(\"type_parts\", \"Type1\"))",
+    "gotcha": "Exige un array: sobre texto falla con `DATATYPE_MISMATCH` (para texto está `contains`). Distingue mayúsculas y devuelve `NULL` si la lista es nula.",
+    "module": "07-arrays",
+    "keywords": ["contiene", "esta en", "lista", "array", "buscar", "pertenece"]
+  },
+  {
+    "name": "groupBy + agg",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.groupBy(*cols).agg(*aggregations)",
+    "description": "Junta las filas que comparten los valores de las columnas indicadas y calcula una o varias agregaciones por grupo. Devuelve una fila por grupo.",
+    "example": "sales.groupBy(\"Item_Type\").agg(\n    F.sum(\"Item_MRP\").alias(\"total_mrp\"),\n    F.round(F.avg(\"Item_MRP\"), 2).alias(\"avg_mrp\"),\n)",
+    "gotcha": "Tras agrupar solo existen las claves y lo agregado: pedir otra columna da `MISSING_AGGREGATION`. Sin alias, la columna se llama `sum(Item_MRP)`. Los grupos salen en cualquier orden, y el nulo también forma grupo. Es wide: shuffle.",
+    "module": "08-agregaciones",
+    "keywords": ["agrupar", "grupo", "resumir", "agregar", "group by", "totales", "por"]
+  },
+  {
+    "name": "sum / avg / min / max",
+    "category": "Columnas",
+    "signature": "F.sum(col)   F.avg(col)   F.min(col)   F.max(col)",
+    "description": "Funciones de agregación básicas, para usar dentro de `agg`. `F.mean` es lo mismo que `F.avg`.",
+    "example": "sales.agg(F.sum(\"Item_MRP\"), F.avg(\"Item_Weight\"), F.max(\"Item_Outlet_Sales\"))",
+    "gotcha": "Todas ignoran los nulos: `avg` divide entre los no nulos. Un `agg` sin `groupBy` agrega la tabla entera. Usa siempre `F.sum`, no el `sum` de Python.",
+    "module": "08-agregaciones",
+    "keywords": ["suma", "media", "promedio", "minimo", "maximo", "total", "mean"]
+  },
+  {
+    "name": "count / countDistinct",
+    "category": "Columnas",
+    "signature": "F.count(\"*\")   F.count(col)   F.countDistinct(col)",
+    "description": "Cuentan dentro de `agg`: todas las filas, las filas con la columna no nula, o los valores distintos.",
+    "example": "sales.agg(F.count(\"*\"), F.count(\"Item_Weight\"), F.countDistinct(\"Item_Identifier\"))",
+    "gotcha": "`count(\"columna\")` no cuenta los nulos: en BigMart `count(\"Item_Weight\")` da 7060, no 8523. Dentro de un `pivot` no vale `count(\"*\")`; usa `count(F.lit(1))`.",
+    "module": "08-agregaciones",
+    "keywords": ["contar", "filas", "distintos", "unicos", "numero", "count_distinct"]
+  },
+  {
+    "name": "collect_list / collect_set",
+    "category": "Columnas",
+    "signature": "F.collect_list(col)   F.collect_set(col)",
+    "description": "Juntan los valores de cada grupo en un array: todos, o solo los distintos.",
+    "example": "sales.groupBy(\"Outlet_Type\").agg(F.array_sort(F.collect_set(\"Outlet_Size\")).alias(\"sizes\"))",
+    "gotcha": "Saltan los nulos y no garantizan el orden de los elementos: envuélvelos en `array_sort` si lo necesitas. Sobre grupos enormes crean arrays gigantes en una fila.",
+    "module": "08-agregaciones",
+    "keywords": ["lista", "array", "juntar", "valores", "grupo", "group_concat", "set"]
+  },
+  {
+    "name": "pivot",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.groupBy(rows).pivot(column, values=None).agg(aggregation)",
+    "description": "Convierte los valores de una columna en columnas nuevas, como una tabla dinámica. Va entre `groupBy` y `agg`.",
+    "example": "sales.groupBy(\"Item_Type\").pivot(\"Outlet_Size\", [\"Small\", \"Medium\", \"High\"]).agg(F.avg(\"Item_MRP\"))",
+    "gotcha": "Pasa la lista de valores: eliges las columnas y su orden, y Spark se ahorra una pasada por los datos. Sin ella, los nulos salen como una columna `null`. Las celdas sin datos quedan en `NULL`.",
+    "module": "08-agregaciones",
+    "keywords": ["pivotar", "tabla dinamica", "ancho", "columnas", "transponer", "cruzar"]
+  },
+  {
+    "name": "Agregación condicional",
+    "category": "Columnas",
+    "signature": "F.count(F.when(cond, 1))   F.sum(F.when(cond, 1).otherwise(0))   F.avg(F.when(cond, col))",
+    "description": "Cuenta, suma o promedia solo las filas del grupo que cumplen una condición, combinando una agregación con `when`.",
+    "example": "sales.groupBy(\"Item_Type\").agg(F.count(F.when(F.col(\"Item_Fat_Content\") == \"Regular\", 1)).alias(\"regular_items\"))",
+    "gotcha": "Funciona porque el `when` sin `otherwise` deja nulo lo que no cumple y las agregaciones ignoran los nulos. Con `count`, no pongas `otherwise(0)`: los ceros también cuentan.",
+    "module": "08-agregaciones",
+    "keywords": ["condicional", "contar si", "sumar si", "when", "case", "filtrar grupo"]
   }
 ]

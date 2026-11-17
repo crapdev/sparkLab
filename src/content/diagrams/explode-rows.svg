@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 300">
+  <defs>
+    <marker id="ex-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <!-- Before -->
+  <text class="d-title" x="16" y="24">Antes: una fila, una lista</text>
+  <rect class="d-box" x="16" y="40" width="90" height="26" rx="3" />
+  <rect class="d-box" x="106" y="40" width="130" height="26" rx="3" />
+  <rect class="d-box-accent" x="236" y="40" width="150" height="26" rx="3" />
+  <text class="d-muted" x="61" y="58" text-anchor="middle">Item_Identifier</text>
+  <text class="d-muted" x="171" y="58" text-anchor="middle">Outlet_Type</text>
+  <text class="d-muted" x="311" y="58" text-anchor="middle">type_parts</text>
+
+  <rect class="d-box" x="16" y="66" width="90" height="26" />
+  <rect class="d-box" x="106" y="66" width="130" height="26" />
+  <rect class="d-box-accent" x="236" y="66" width="150" height="26" />
+  <text class="d-text" x="61" y="84" text-anchor="middle">FDA15</text>
+  <text class="d-text" x="171" y="84" text-anchor="middle">Supermarket Type1</text>
+  <text class="d-code-small" x="311" y="84" text-anchor="middle">[Supermarket, Type1]</text>
+
+  <rect class="d-box" x="16" y="92" width="90" height="26" />
+  <rect class="d-box" x="106" y="92" width="130" height="26" />
+  <rect class="d-box-accent" x="236" y="92" width="150" height="26" />
+  <text class="d-text" x="61" y="110" text-anchor="middle">DRC01</text>
+  <text class="d-text" x="171" y="110" text-anchor="middle">Supermarket Type2</text>
+  <text class="d-code-small" x="311" y="110" text-anchor="middle">[Supermarket, Type2]</text>
+
+  <!-- Arrow -->
+  <path class="d-line-accent" d="M200 126V154" marker-end="url(#ex-arrow)" />
+  <text class="d-code-small" x="212" y="146">.withColumn("type_word", F.explode("type_parts"))</text>
+
+  <!-- After -->
+  <text class="d-title" x="16" y="178">Después: una fila por elemento; el resto de columnas se repite</text>
+  <rect class="d-box" x="16" y="190" width="90" height="26" rx="3" />
+  <rect class="d-box" x="106" y="190" width="130" height="26" rx="3" />
+  <rect class="d-box" x="236" y="190" width="150" height="26" rx="3" />
+  <rect class="d-box-success" x="386" y="190" width="110" height="26" rx="3" />
+  <text class="d-muted" x="61" y="208" text-anchor="middle">Item_Identifier</text>
+  <text class="d-muted" x="171" y="208" text-anchor="middle">Outlet_Type</text>
+  <text class="d-muted" x="311" y="208" text-anchor="middle">type_parts</text>
+  <text class="d-muted" x="441" y="208" text-anchor="middle">type_word</text>
+
+  <rect class="d-box" x="16" y="216" width="90" height="20" />
+  <rect class="d-box" x="106" y="216" width="130" height="20" />
+  <rect class="d-box" x="236" y="216" width="150" height="20" />
+  <rect class="d-box-success" x="386" y="216" width="110" height="20" />
+  <text class="d-muted" x="61" y="230" text-anchor="middle">FDA15</text>
+  <text class="d-muted" x="171" y="230" text-anchor="middle">Supermarket Type1</text>
+  <text class="d-muted" x="311" y="230" text-anchor="middle">[Supermarket, Type1]</text>
+  <text class="d-text" x="441" y="230" text-anchor="middle">Supermarket</text>
+
+  <rect class="d-box" x="16" y="236" width="90" height="20" />
+  <rect class="d-box" x="106" y="236" width="130" height="20" />
+  <rect class="d-box" x="236" y="236" width="150" height="20" />
+  <rect class="d-box-success" x="386" y="236" width="110" height="20" />
+  <text class="d-muted" x="61" y="250" text-anchor="middle">FDA15</text>
+  <text class="d-muted" x="171" y="250" text-anchor="middle">Supermarket Type1</text>
+  <text class="d-muted" x="311" y="250" text-anchor="middle">[Supermarket, Type1]</text>
+  <text class="d-text" x="441" y="250" text-anchor="middle">Type1</text>
+
+  <rect class="d-box" x="16" y="256" width="90" height="20" />
+  <rect class="d-box" x="106" y="256" width="130" height="20" />
+  <rect class="d-box" x="236" y="256" width="150" height="20" />
+  <rect class="d-box-success" x="386" y="256" width="110" height="20" />
+  <text class="d-muted" x="61" y="270" text-anchor="middle">DRC01</text>
+  <text class="d-muted" x="171" y="270" text-anchor="middle">Supermarket Type2</text>
+  <text class="d-muted" x="311" y="270" text-anchor="middle">[Supermarket, Type2]</text>
+  <text class="d-text" x="441" y="270" text-anchor="middle">Supermarket</text>
+
+  <rect class="d-box" x="16" y="276" width="90" height="20" />
+  <rect class="d-box" x="106" y="276" width="130" height="20" />
+  <rect class="d-box" x="236" y="276" width="150" height="20" />
+  <rect class="d-box-success" x="386" y="276" width="110" height="20" />
+  <text class="d-muted" x="61" y="290" text-anchor="middle">DRC01</text>
+  <text class="d-muted" x="171" y="290" text-anchor="middle">Supermarket Type2</text>
+  <text class="d-muted" x="311" y="290" text-anchor="middle">[Supermarket, Type2]</text>
+  <text class="d-text" x="441" y="290" text-anchor="middle">Type2</text>
+
+  <!-- Side note -->
+  <rect class="d-box-info" x="520" y="190" width="204" height="106" rx="8" />
+  <text class="d-title" x="622" y="214" text-anchor="middle">En BigMart</text>
+  <text class="d-text" x="622" y="238" text-anchor="middle">8523 filas × 2 palabras</text>
+  <text class="d-text" x="622" y="258" text-anchor="middle">= 17 046 filas</text>
+  <text class="d-muted" x="622" y="282" text-anchor="middle">una lista vacía: 0 filas</text>
+</svg>
