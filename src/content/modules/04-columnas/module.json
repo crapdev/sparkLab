@@ -2,8 +2,210 @@
   "id": "04-columnas",
   "order": 4,
   "block": "transformaciones",
-  "status": "planned",
+  "status": "published",
   "title": "Crear y modificar columnas",
   "summary": "withColumn, lit, renombrar, regexp_replace, cast y columnas condicionales con when.",
-  "estimatedMinutes": 50
+  "estimatedMinutes": 70,
+  "objectives": [
+    "Crear columnas constantes y calculadas con `withColumn` y `lit`.",
+    "Sobrescribir una columna existente usando su mismo nombre.",
+    "Renombrar con `withColumnRenamed` y saber cuándo conviene frente a `alias`.",
+    "Limpiar texto con `regexp_replace` y convertir tipos con `cast`.",
+    "Escribir un `when` encadenado sin huecos y explicar qué pasa sin `otherwise`.",
+    "Explicar qué hace un `cast` imposible en Spark 4 y cuándo usar `try_cast`."
+  ],
+  "lab": {
+    "path": "labs/04-columnas",
+    "minutes": 40,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Añades columnas constantes y calculadas al CSV de BigMart, unificas las cinco variantes de `Item_Fat_Content`, conviertes tipos y clasificas los precios con un `when` encadenado.",
+    "tasks": [
+      "Añadir una columna constante con `lit`.",
+      "Calcular una columna a partir de otras dos.",
+      "Renombrar una columna con `withColumnRenamed`.",
+      "Unificar `Item_Fat_Content` con `when` / `otherwise`.",
+      "Convertir tipos con `cast` y ver qué hace `try_cast`.",
+      "Clasificar precios en tres bandas sin dejar huecos."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-lit",
+      "type": "fill-code",
+      "prompt": "Añade una columna `source` que valga `\"bigmart\"` en todas las filas.",
+      "code": "sales.withColumn(\"source\", F.___(\"bigmart\"))",
+      "blanks": [
+        { "answers": ["lit"], "hint": "La función que convierte un valor de Python en columna." }
+      ],
+      "explanation": "`withColumn` necesita una columna, y un string de Python no lo es. `F.lit(\"bigmart\")` crea una columna con ese valor constante."
+    },
+    {
+      "id": "ex-no-lit",
+      "type": "choice",
+      "prompt": "Ejecutas `sales.withColumn(\"flag\", \"new\")`. ¿Qué pasa?",
+      "options": [
+        "Crea la columna `flag` con el valor `new`.",
+        "Crea la columna `flag` copiando la columna llamada `new`.",
+        "Error `NOT_EXPECTED_TYPE`: el segundo argumento tiene que ser una columna, no un `str`.",
+        "Crea la columna, pero llena de `NULL`."
+      ],
+      "answer": 2,
+      "hint": "¿Qué tipo espera `withColumn` en su segundo argumento?",
+      "explanation": "`withColumn` solo acepta columnas de Spark. El error dice `Argument col should be Column, got str`. La solución es `F.lit(\"new\")`."
+    },
+    {
+      "id": "ex-overwrite",
+      "type": "predict-output",
+      "prompt": "`sales` tiene 12 columnas. ¿Qué imprime este código?",
+      "code": "rounded = sales.withColumn(\"Item_MRP\", F.round(F.col(\"Item_MRP\")))\nprint(len(rounded.columns))",
+      "answers": ["12", "doce"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "El nombre `Item_MRP` ya existe.",
+      "explanation": "Imprime 12. Cuando el nombre ya existe, `withColumn` sustituye la columna en su misma posición en vez de añadir otra."
+    },
+    {
+      "id": "ex-rename",
+      "type": "fill-code",
+      "prompt": "Cambia el nombre de `Item_Weight` a `Item_WT` dejando las demás columnas intactas.",
+      "code": "sales.___(\"Item_Weight\", \"Item_WT\")",
+      "blanks": [
+        {
+          "answers": ["withColumnRenamed"],
+          "hint": "No es `alias`: eso obligaría a enumerar las demás columnas en un `select`."
+        }
+      ],
+      "explanation": "`withColumnRenamed(actual, nuevo)` cambia un nombre y conserva todo lo demás. `alias` solo funciona dentro de un `select`."
+    },
+    {
+      "id": "ex-null-propagation",
+      "type": "predict-output",
+      "prompt": "`Item_Weight` tiene 1463 nulos e `Item_MRP` ninguno. ¿Qué imprime?",
+      "code": "priced = sales.withColumn(\"weight_price\", F.col(\"Item_Weight\") * F.col(\"Item_MRP\"))\nprint(priced.filter(F.col(\"weight_price\").isNull()).count())",
+      "answers": ["1463"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "¿Cuánto es nulo por un número?",
+      "explanation": "Imprime 1463. Cualquier operación aritmética con un nulo da nulo, así que la columna calculada hereda los nulos de `Item_Weight`."
+    },
+    {
+      "id": "ex-when-order",
+      "type": "predict-output",
+      "prompt": "Las condiciones están en orden invertido. `Item_MRP` va de 31 a 267, sin nulos. ¿Qué imprime?",
+      "code": "banded = sales.withColumn(\n    \"price_band\",\n    F.when(F.col(\"Item_MRP\") < 200, \"mid\").when(F.col(\"Item_MRP\") < 100, \"cheap\").otherwise(\"expensive\"),\n)\nprint(banded.filter(F.col(\"price_band\") == \"cheap\").count())",
+      "answers": ["0", "cero"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Gana la primera condición que se cumple. ¿Qué fila con menos de 100 no tiene también menos de 200?",
+      "explanation": "Imprime 0. Toda fila con menos de 100 también tiene menos de 200, así que la primera rama se las lleva todas y `cheap` se queda vacía. Las condiciones estrechas van antes que las amplias."
+    },
+    {
+      "id": "ex-otherwise",
+      "type": "fill-code",
+      "prompt": "Marca los productos de tipo `Meat` como `Non-Veg` y el resto como `Veg`.",
+      "code": "sales.withColumn(\"veg_flag\", F.___(F.col(\"Item_Type\") == \"Meat\", \"Non-Veg\").___(\"Veg\"))",
+      "blanks": [
+        { "answers": ["when"], "hint": "El `CASE WHEN` de PySpark." },
+        { "answers": ["otherwise"], "hint": "La rama que recoge todo lo demás." }
+      ],
+      "explanation": "`F.when(condición, valor)` abre la cadena y `.otherwise(valor)` la cierra. Sin el `otherwise`, los productos que no son `Meat` quedarían en `NULL`."
+    },
+    {
+      "id": "ex-cast-ansi",
+      "type": "choice",
+      "prompt": "En Spark 4, con la configuración por defecto, ejecutas `sales.withColumn(\"id_num\", F.col(\"Item_Identifier\").cast(\"int\")).show()`. Los identificadores son como `FDA15`. ¿Qué pasa?",
+      "options": [
+        "La columna `id_num` se llena de `NULL`.",
+        "Error en la línea del `withColumn`, antes de ejecutar nada.",
+        "Error `CAST_INVALID_INPUT` al ejecutar el `show()`.",
+        "Spark extrae el `15` y descarta las letras."
+      ],
+      "answer": 2,
+      "hint": "El modo ANSI viene activado, y `withColumn` es una transformación.",
+      "explanation": "Con el modo ANSI, un `cast` imposible lanza `CAST_INVALID_INPUT`. Como `withColumn` es perezoso, el error salta en la acción. Para obtener `NULL` en vez de error se usa `try_cast`."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-withcolumn-existing",
+      "question": "¿Qué hace `withColumn` cuando el nombre que le das ya existe en el DataFrame?",
+      "options": [
+        "Lanza un error de columna duplicada.",
+        "Añade una segunda columna con el mismo nombre.",
+        "Sustituye la columna existente, en su misma posición.",
+        "Añade la columna con un sufijo `_1`."
+      ],
+      "answer": 2,
+      "explanation": "Es la forma habitual de modificar una columna en su sitio: limpiar su texto, cambiar su tipo o recalcularla."
+    },
+    {
+      "id": "q-lit-when",
+      "question": "¿En cuál de estas expresiones hace falta `F.lit`?",
+      "options": [
+        "`F.col(\"Item_MRP\") * 2`",
+        "`withColumn(\"flag\", \"new\")`, para que `new` sea el valor de la columna",
+        "`F.col(\"Item_MRP\") > 200`",
+        "`F.when(F.col(\"Item_MRP\") < 100, \"cheap\")`"
+      ],
+      "answer": 1,
+      "explanation": "Un valor suelto como único argumento de `withColumn` tiene que ser columna: `F.lit(\"new\")`. Dentro de una operación con una columna o como valor de un `when`, Spark convierte el literal solo."
+    },
+    {
+      "id": "q-rename-vs-alias",
+      "question": "Quieres cambiar el nombre de una columna y conservar las otras 11 sin enumerarlas. ¿Qué usas?",
+      "options": [
+        "`select` con `alias`.",
+        "`withColumnRenamed`.",
+        "`withColumn` con `F.lit`.",
+        "`cast`."
+      ],
+      "answer": 1,
+      "explanation": "`withColumnRenamed(actual, nuevo)` cambia solo el nombre y deja el resto intacto. `alias` vive dentro de un `select`, que obliga a listar lo que se conserva."
+    },
+    {
+      "id": "q-rename-typo",
+      "question": "Escribes `sales.withColumnRenamed(\"Item_Wieght\", \"Item_WT\")`, con una errata en el nombre original. ¿Qué pasa?",
+      "options": [
+        "Error: la columna no existe.",
+        "Devuelve el DataFrame sin cambios y sin aviso.",
+        "Crea una columna `Item_WT` vacía.",
+        "Renombra la columna más parecida."
+      ],
+      "answer": 1,
+      "explanation": "`withColumnRenamed` no comprueba que el nombre exista. Conviene mirar `df.columns` después de renombrar."
+    },
+    {
+      "id": "q-regexp",
+      "question": "¿Qué devuelve `F.regexp_replace(F.lit(\"1.5\"), \".\", \",\")`?",
+      "options": ["`1,5`", "`,,,`", "`1.5`", "Un error: el patrón está vacío."],
+      "answer": 1,
+      "explanation": "El patrón es una expresión regular y `.` encaja con cualquier carácter, así que los tres se sustituyen. Para un punto literal hay que escaparlo: `\"\\\\.\"`."
+    },
+    {
+      "id": "q-cast-trunc",
+      "question": "`Item_MRP` vale `249.8092`. ¿Qué devuelve `F.col(\"Item_MRP\").cast(\"int\")`?",
+      "options": ["`250`", "`249`", "`NULL`", "Un error: no se puede pasar de `double` a `int`."],
+      "answer": 1,
+      "explanation": "De `double` a `int`, `cast` trunca los decimales. Para redondear antes se usa `F.round`."
+    },
+    {
+      "id": "q-try-cast",
+      "question": "Tienes una columna de texto con algunos valores que no son números y quieres convertirla a `int` dejando `NULL` donde no se pueda. ¿Qué usas en Spark 4?",
+      "options": [
+        "`cast(\"int\")`: ya devuelve `NULL` en los valores malos.",
+        "`try_cast(\"int\")`.",
+        "`regexp_replace` para borrar las letras y luego `cast`.",
+        "No se puede: hay que filtrar antes las filas malas."
+      ],
+      "answer": 1,
+      "explanation": "Con el modo ANSI activado por defecto, `cast` falla al ejecutar si encuentra un valor que no puede convertir. `try_cast` convierte lo que puede y deja `NULL` en el resto."
+    },
+    {
+      "id": "q-gap",
+      "question": "`Item_Weight` tiene 43 filas con valor exactamente 10 y 1463 nulos. Creas `size` con `when(< 10, \"light\").when(> 10, \"heavy\")` sin `otherwise`. ¿Cuántas filas quedan con `size` en `NULL`?",
+      "options": ["0", "43", "1463", "1506"],
+      "answer": 3,
+      "explanation": "Las 43 filas con peso exactamente 10 no cumplen ninguna condición, y las 1463 con peso nulo tampoco, porque comparar con nulo no es ni verdadero ni falso. 43 + 1463 = 1506."
+    }
+  ]
 }

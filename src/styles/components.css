@@ -63,6 +63,19 @@
   color: var(--muted);
   white-space: nowrap;
 }
+.badge--transformation {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.badge--action {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.sheet-entry__badges {
+  display: inline-flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
 .chip {
   display: inline-block;
   padding: 0.2em 0.75em;

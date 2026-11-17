@@ -1,0 +1,92 @@
+[
+  {
+    "name": "task 1: wrong column order",
+    "old": "item_basics = sales.select(\"Item_Identifier\", \"Item_Weight\", \"Item_Fat_Content\")",
+    "new": "item_basics = sales.select(\"Item_Identifier\", \"Item_Fat_Content\", \"Item_Weight\")",
+    "expect": "Tarea 1 · tres columnas"
+  },
+  {
+    "name": "task 1: filtered rows by mistake",
+    "old": "item_basics = sales.select(\"Item_Identifier\", \"Item_Weight\", \"Item_Fat_Content\")",
+    "new": "item_basics = sales.filter(F.col(\"Item_Weight\") < 10).select(\"Item_Identifier\", \"Item_Weight\", \"Item_Fat_Content\")",
+    "expect": "Tarea 1 · siguen las 8523"
+  },
+  {
+    "name": "task 2: alias not applied",
+    "old": "prices = sales.select(F.col(\"Item_Identifier\").alias(\"Item_ID\"), F.col(\"Item_MRP\").alias(\"Price\"))",
+    "new": "prices = sales.select(\"Item_Identifier\", \"Item_MRP\")",
+    "expect": "Tarea 2 · columnas"
+  },
+  {
+    "name": "task 2: Price taken from the wrong column",
+    "old": "F.col(\"Item_MRP\").alias(\"Price\")",
+    "new": "F.col(\"Item_Weight\").alias(\"Price\")",
+    "expect": "Tarea 2 · Price contiene"
+  },
+  {
+    "name": "task 3: lowercase value",
+    "old": "regular = sales.filter(F.col(\"Item_Fat_Content\") == \"Regular\")",
+    "new": "regular = sales.filter(F.col(\"Item_Fat_Content\") == \"regular\")",
+    "expect": "Tarea 3 · 2889"
+  },
+  {
+    "name": "task 3: wrong operator",
+    "old": "regular = sales.filter(F.col(\"Item_Fat_Content\") == \"Regular\")",
+    "new": "regular = sales.filter(F.col(\"Item_Fat_Content\") != \"Regular\")",
+    "expect": "Tarea 3 · 2889"
+  },
+  {
+    "name": "task 3: select instead of filter",
+    "old": "regular = sales.filter(F.col(\"Item_Fat_Content\") == \"Regular\")",
+    "new": "regular = sales.filter(F.col(\"Item_Fat_Content\") == \"Regular\").select(\"Item_Fat_Content\")",
+    "expect": "Tarea 3 · conserva"
+  },
+  {
+    "name": "task 4: | instead of &",
+    "old": "(F.col(\"Item_Type\") == \"Soft Drinks\") & (F.col(\"Item_Weight\") < 10))",
+    "new": "(F.col(\"Item_Type\") == \"Soft Drinks\") | (F.col(\"Item_Weight\") < 10))",
+    "expect": "Tarea 4 · 166"
+  },
+  {
+    "name": "task 4: only one condition",
+    "old": "(F.col(\"Item_Type\") == \"Soft Drinks\") & (F.col(\"Item_Weight\") < 10))",
+    "new": "(F.col(\"Item_Type\") == \"Soft Drinks\"))",
+    "expect": "Tarea 4 · 166"
+  },
+  {
+    "name": "task 5: == None instead of isNull",
+    "old": "unknown_size = sales.filter(F.col(\"Outlet_Size\").isNull() & F.col(\"Outlet_Location_Type\").isin(\"Tier 1\", \"Tier 2\"))",
+    "new": "unknown_size = sales.filter((F.col(\"Outlet_Size\") == None) & F.col(\"Outlet_Location_Type\").isin(\"Tier 1\", \"Tier 2\"))",
+    "expect": "Tarea 5 · 1855"
+  },
+  {
+    "name": "task 5: Tier 3 included",
+    "old": "isin(\"Tier 1\", \"Tier 2\"))",
+    "new": "isin(\"Tier 1\", \"Tier 2\", \"Tier 3\"))",
+    "expect": "Tarea 5 · 1855"
+  },
+  {
+    "name": "task 5: isNotNull",
+    "old": "unknown_size = sales.filter(F.col(\"Outlet_Size\").isNull() &",
+    "new": "unknown_size = sales.filter(F.col(\"Outlet_Size\").isNotNull() &",
+    "expect": "Tarea 5 · 1855"
+  },
+  {
+    "name": "task 6: & instead of |",
+    "old": "((F.col(\"Item_Type\") == \"Dairy\") | (F.col(\"Item_Type\") == \"Meat\"))",
+    "new": "((F.col(\"Item_Type\") == \"Dairy\") & (F.col(\"Item_Type\") == \"Meat\"))",
+    "expect": "Tarea 6 · 667"
+  },
+  {
+    "name": "task 6: negation forgotten",
+    "old": "& ~(F.col(\"Outlet_Location_Type\") == \"Tier 3\")",
+    "new": "& (F.col(\"Outlet_Location_Type\") == \"Tier 3\")",
+    "expect": "Tarea 6 · 667"
+  },
+  {
+    "name": "task 6: OR without parentheses around it",
+    "old": "((F.col(\"Item_Type\") == \"Dairy\") | (F.col(\"Item_Type\") == \"Meat\"))\n    & ~(F.col(\"Outlet_Location_Type\") == \"Tier 3\")",
+    "new": "(F.col(\"Item_Type\") == \"Dairy\") | (F.col(\"Item_Type\") == \"Meat\")\n    & ~(F.col(\"Outlet_Location_Type\") == \"Tier 3\")",
+    "expect": "Tarea 6 · 667"
+  }
+]

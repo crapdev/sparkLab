@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
@@ -62,6 +62,11 @@ describe.each(modules.filter(isPublished).map((module) => [module.id, module]))(
       }
     });
 
+    it('never uses display(), which only exists in Databricks', () => {
+      const source = readFileSync(repoPath(`${module.lab.path}/source.py`), 'utf8');
+      expect(source).not.toMatch(/\bdisplay\(/);
+    });
+
     it('only uses datasets that exist in public/data', () => {
       for (const dataset of module.lab.datasets ?? []) {
         expect(existsSync(repoPath(`public/data/${dataset}`)), dataset).toBe(true);
@@ -84,5 +89,13 @@ describe('cheatsheet', () => {
       expect(entry[field].trim(), field).not.toBe('');
     }
     expect(moduleIds).toContain(entry.module);
+    if (entry.kind !== undefined) expect(['transformación', 'acción']).toContain(entry.kind);
+  });
+
+  it('tags every transformation and action', () => {
+    const tagged = entries.filter((entry) =>
+      ['Transformaciones', 'Acciones'].includes(entry.category),
+    );
+    for (const entry of tagged) expect(entry.kind, entry.name).toBeDefined();
   });
 });

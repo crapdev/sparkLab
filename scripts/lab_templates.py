@@ -122,6 +122,48 @@ if java_major_version() < MIN_JAVA_VERSION:
 print(f"PySpark {{PYSPARK_VERSION}} y Java {{java_major_version()}} listos.")'''
 
 
+SESSION_MARKDOWN = """## Sesión de Spark
+
+Esta celda crea la `SparkSession` del laboratorio e importa las funciones como `F`."""
+
+
+def session_cell(lab_dir):
+    return f'''from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+spark = SparkSession.builder.master("local[*]").appName("lab-{lab_dir}").getOrCreate()
+spark.sparkContext.setLogLevel("ERROR")
+print(f"Spark {{spark.version}} listo.")'''
+
+
+MEASURE_CELL = '''import time
+
+
+def measure(action):
+    """Run `action` and report the jobs, stages and tasks Spark launched for it."""
+    tracker = spark.sparkContext.statusTracker()
+    jobs_before = set(tracker.getJobIdsForGroup())
+    result = action()
+    time.sleep(0.3)  # Give Spark's listener a moment to register finished jobs.
+    job_ids = sorted(set(tracker.getJobIdsForGroup()) - jobs_before)
+    stage_ids = [stage for job in job_ids for stage in tracker.getJobInfo(job).stageIds]
+    stages = [tracker.getStageInfo(stage) for stage in stage_ids]
+    return {
+        "result": result,
+        "jobs": len(job_ids),
+        "stages": len(stage_ids),
+        "tasks": sum(stage.numTasks for stage in stages if stage is not None),
+    }
+
+
+def report(label, measurement):
+    """Print one measurement in a single readable line."""
+    print(
+        f"{label:<28} jobs={measurement['jobs']}  "
+        f"stages={measurement['stages']}  tasks={measurement['tasks']}"
+    )'''
+
+
 HELPERS_MARKDOWN = """La siguiente celda define `check`, la función que usan los tests. No hace falta que la
 modifiques: ejecútala y sigue."""
 

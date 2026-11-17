@@ -1,0 +1,92 @@
+[
+  {
+    "name": "task 1: column overwrites an existing one",
+    "old": "flagged = sales.withColumn(\"flag\", F.lit(\"new\"))",
+    "new": "flagged = sales.withColumn(\"Item_Type\", F.lit(\"new\"))",
+    "expect": "Tarea 1 · existe la columna flag"
+  },
+  {
+    "name": "task 1: wrong literal value",
+    "old": "flagged = sales.withColumn(\"flag\", F.lit(\"new\"))",
+    "new": "flagged = sales.withColumn(\"flag\", F.lit(\"old\"))",
+    "expect": "Tarea 1 · todas las filas valen new"
+  },
+  {
+    "name": "task 2: sum instead of product",
+    "old": "priced = sales.withColumn(\"weight_price\", F.col(\"Item_Weight\") * F.col(\"Item_MRP\"))",
+    "new": "priced = sales.withColumn(\"weight_price\", F.col(\"Item_Weight\") + F.col(\"Item_MRP\"))",
+    "expect": "Tarea 2 · el primer producto"
+  },
+  {
+    "name": "task 2: wrong column",
+    "old": "priced = sales.withColumn(\"weight_price\", F.col(\"Item_Weight\") * F.col(\"Item_MRP\"))",
+    "new": "priced = sales.withColumn(\"weight_price\", F.col(\"Item_Visibility\") * F.col(\"Item_MRP\"))",
+    "expect": "Tarea 2 · el primer producto"
+  },
+  {
+    "name": "task 2: nulls filtered out",
+    "old": "priced = sales.withColumn(\"weight_price\", F.col(\"Item_Weight\") * F.col(\"Item_MRP\"))",
+    "new": "priced = sales.filter(F.col(\"Item_Weight\").isNotNull()).withColumn(\"weight_price\", F.col(\"Item_Weight\") * F.col(\"Item_MRP\"))",
+    "expect": "Tarea 2 · hay 1463"
+  },
+  {
+    "name": "task 3: select with alias instead",
+    "old": "renamed = sales.withColumnRenamed(\"Item_Weight\", \"Item_WT\")",
+    "new": "renamed = sales.select(\"Item_Identifier\", F.col(\"Item_Weight\").alias(\"Item_WT\"))",
+    "expect": "Tarea 3 · las otras 11"
+  },
+  {
+    "name": "task 3: arguments swapped",
+    "old": "renamed = sales.withColumnRenamed(\"Item_Weight\", \"Item_WT\")",
+    "new": "renamed = sales.withColumnRenamed(\"Item_WT\", \"Item_Weight\")",
+    "expect": "Tarea 3 · Item_WT sustituye"
+  },
+  {
+    "name": "task 4: otherwise forgotten",
+    "old": "    .otherwise(F.col(\"Item_Fat_Content\")),\n)",
+    "new": ",\n)",
+    "expect": "Tarea 4 · solo quedan"
+  },
+  {
+    "name": "task 4: low fat variant forgotten",
+    "old": "clean = sales.withColumn(\n    \"Item_Fat_Content\",\n    F.when(F.col(\"Item_Fat_Content\").isin(\"LF\", \"low fat\"), \"Low Fat\")",
+    "new": "clean = sales.withColumn(\n    \"Item_Fat_Content\",\n    F.when(F.col(\"Item_Fat_Content\").isin(\"LF\"), \"Low Fat\")",
+    "expect": "Tarea 4 · solo quedan"
+  },
+  {
+    "name": "task 4: values swapped",
+    "old": "    .when(F.col(\"Item_Fat_Content\") == \"reg\", \"Regular\")",
+    "new": "    .when(F.col(\"Item_Fat_Content\") == \"reg\", \"Low Fat\")",
+    "expect": "Tarea 4 · 5517"
+  },
+  {
+    "name": "task 4: new column instead of overwrite",
+    "old": "clean = sales.withColumn(\n    \"Item_Fat_Content\",",
+    "new": "clean = sales.withColumn(\n    \"Item_Fat_Content_Clean\",",
+    "expect": "Tarea 4"
+  },
+  {
+    "name": "task 5: year not cast",
+    "old": "typed = sales.withColumn(\"Outlet_Establishment_Year\", F.col(\"Outlet_Establishment_Year\").cast(\"string\")).withColumn(",
+    "new": "typed = sales.withColumn(",
+    "expect": "Tarea 5 · el año"
+  },
+  {
+    "name": "task 5: mrp rounded instead of cast",
+    "old": "    \"mrp_int\", F.col(\"Item_MRP\").cast(\"int\")\n)",
+    "new": "    \"mrp_int\", F.round(F.col(\"Item_MRP\"))\n)",
+    "expect": "Tarea 5 · mrp_int"
+  },
+  {
+    "name": "task 6: conditions in the wrong order",
+    "old": "F.when(F.col(\"Item_MRP\") < 100, \"cheap\").when(F.col(\"Item_MRP\") < 200, \"mid\")",
+    "new": "F.when(F.col(\"Item_MRP\") < 200, \"mid\").when(F.col(\"Item_MRP\") < 100, \"cheap\")",
+    "expect": "Tarea 6 · 2439"
+  },
+  {
+    "name": "task 6: otherwise forgotten",
+    "old": ".when(F.col(\"Item_MRP\") < 200, \"mid\").otherwise(\"expensive\")",
+    "new": ".when(F.col(\"Item_MRP\") < 200, \"mid\")",
+    "expect": "Tarea 6"
+  }
+]

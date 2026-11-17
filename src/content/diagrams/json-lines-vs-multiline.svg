@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 290">
+  <!-- JSON Lines -->
+  <text class="d-title" x="16" y="24">JSON Lines</text>
+  <text class="d-muted" x="16" y="44">un registro completo en cada línea</text>
+
+  <rect class="d-box" x="16" y="58" width="330" height="170" rx="8" />
+  <text class="d-code-small" x="30" y="92">{"driverRef": "hamilton", "number": 44}</text>
+  <text class="d-code-small" x="30" y="122">{"driverRef": "alonso", "number": 14}</text>
+  <text class="d-code-small" x="30" y="152">{"driverRef": "sainz", "number": 55}</text>
+  <text class="d-muted" x="30" y="206">3 líneas → 3 filas</text>
+
+  <rect class="d-box-success" x="16" y="242" width="330" height="34" rx="6" />
+  <text class="d-text" x="181" y="264" text-anchor="middle">Se lee sin opciones: es lo que Spark espera</text>
+
+  <!-- Multiline -->
+  <text class="d-title" x="374" y="24">JSON multilínea</text>
+  <text class="d-muted" x="374" y="44">un array con sangría; cada registro ocupa varias líneas</text>
+
+  <rect class="d-box" x="374" y="58" width="330" height="170" rx="8" />
+  <text class="d-code-small" x="388" y="84">[</text>
+  <text class="d-code-small" x="402" y="104">{</text>
+  <text class="d-code-small" x="416" y="124">"driverRef": "hamilton",</text>
+  <text class="d-code-small" x="416" y="144">"number": 44</text>
+  <text class="d-code-small" x="402" y="164">},</text>
+  <text class="d-code-small" x="402" y="184">…</text>
+  <text class="d-code-small" x="388" y="204">]</text>
+
+  <rect class="d-box-accent" x="374" y="242" width="330" height="34" rx="6" />
+  <text class="d-text" x="539" y="264" text-anchor="middle">Necesita .option("multiLine", True)</text>
+</svg>

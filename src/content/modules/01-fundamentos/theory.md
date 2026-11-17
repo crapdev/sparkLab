@@ -27,11 +27,11 @@ Una idea para no olvidar: **los datos grandes nunca deberían pasar por el drive
 
 Los DataFrames de Spark son **inmutables**: ninguna operación cambia un DataFrame, siempre devuelve uno nuevo. Las operaciones son de dos tipos.
 
-|                  | Transformación                                         | Acción                                                        |
-| ---------------- | ------------------------------------------------------ | ------------------------------------------------------------- |
-| **Qué devuelve** | Otro DataFrame                                         | Un resultado en Python, o algo en pantalla                    |
-| **Ejecuta algo** | No                                                     | Sí                                                            |
-| **Ejemplos**     | `select`, `filter`, `withColumn`, `groupBy`, `orderBy` | `show`, `count`, `collect`, `take`, `first`, escribir a disco |
+|                  | Transformación                                                  | Acción                                                           |
+| ---------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **Qué devuelve** | Otro DataFrame                                                  | Un resultado en Python, o algo en pantalla                       |
+| **Ejecuta algo** | No                                                              | Sí                                                               |
+| **Ejemplos**     | `select`, `filter`, `withColumn`, `groupBy`, `orderBy`, `limit` | `show`, `count`, `collect`, `take`, `first`, `toPandas`, `write` |
 
 ```python
 from pyspark.sql import functions as F
@@ -76,6 +76,46 @@ squared.explain()
 ```
 
 Se lee de abajo arriba: genera el rango, filtra, y calcula la columna nueva. El `splits=8` es el número de particiones, que en modo local depende de los núcleos de tu máquina.
+
+## Las acciones que vas a usar
+
+Una acción es el momento en que Spark deja de apuntar y se pone a calcular. Estas son las que aparecen una y otra vez. Los jobs están medidos sobre el pipeline anterior, de 142 filas en 8 particiones:
+
+| Acción                | Qué devuelve                                   | Para qué                                      | Jobs · tasks |
+| --------------------- | ---------------------------------------------- | --------------------------------------------- | ------------ |
+| `show(n)`             | Nada: imprime una tabla                        | Mirar unas filas                              | 1 · 1        |
+| `count()`             | Un `int`                                       | Saber cuántas filas hay                       | 1 · 9        |
+| `take(n)` y `head(n)` | Una lista de `n` objetos `Row`                 | Traer unas pocas filas a Python               | 1 · 1        |
+| `first()` y `head()`  | Un `Row`, o `None` si está vacío               | Sacar un valor, por ejemplo de una agregación | 1 · 1        |
+| `collect()`           | Una lista con **todas** las filas              | Traer un resultado pequeño entero a Python    | 1 · 8        |
+| `toPandas()`          | Un DataFrame de **pandas** con todas las filas | Seguir en pandas o dibujar un gráfico         | 1 · 8        |
+| `write.…`             | Nada: crea archivos                            | Guardar el resultado en disco                 | 1 · 8        |
+
+Las que traen pocas filas (`take`, `first`, `show`) leen solo la partición que necesitan: 1 task. Las que traen todo (`collect`, `toPandas`, `write`) tocan las 8 particiones.
+
+```python
+squared.take(2)
+```
+
+```output
+[Row(id=7, squared=49), Row(id=14, squared=196)]
+```
+
+Un `Row` se usa como un diccionario: `squared.first()["squared"]` devuelve `49`. Es la forma habitual de sacar el número de una agregación: `df.agg(F.max("squared")).first()[0]`.
+
+### limit() no es take()
+
+Se parecen, pero están en bandos distintos:
+
+- `df.limit(5)` es una **transformación**: devuelve otro DataFrame de como mucho 5 filas y no lanza ningún job. Sirve para recortar un DataFrame y seguir trabajando con él en Spark.
+- `df.take(5)` es una **acción**: devuelve una lista de Python con 5 `Row` y lanza un job.
+
+Por eso `df.limit(5).show()` lanza 1 job: el de `show`, no el de `limit`.
+
+> [!WARNING]
+> **`collect()` y `toPandas()` traen todo al driver.** El driver es un solo proceso con una memoria limitada. Con 142 filas, o con las 8523 de BigMart, no pasa nada. Con una tabla de 500 millones de filas, el driver se queda sin memoria y la sesión muere. Antes de llamar a cualquiera de las dos, reduce: filtra, agrega o usa `limit`. Y si solo quieres mirar, `show()` o `take(n)` bastan.
+
+Escribir también es una acción, aunque no devuelva nada a Python: `df.write.mode("overwrite").csv("salida/multiples")` lanza un job y deja un archivo por partición, 8 en este caso. Lo verás a fondo en el módulo 12.
 
 ## Job, Stage y Task
 
@@ -144,5 +184,6 @@ Si sigues un tutorial que usa `import *`, donde escriba `col(...)` tú escribes 
 
 - **Esperar que una transformación haga algo.** Si no ves resultados, probablemente falta la acción.
 - **Olvidar que los DataFrames son inmutables.** `df.filter(...)` solo, sin asignarlo, no cambia `df`. Hay que guardar el resultado: `df = df.filter(...)`.
-- **Usar `collect()` con datos grandes.** Trae todas las filas al driver y puede dejarlo sin memoria. Para mirar, usa `show()` o `take(n)`.
+- **Usar `collect()` o `toPandas()` con datos grandes.** Traen todas las filas al driver y pueden dejarlo sin memoria. Para mirar, usa `show()` o `take(n)`; para traer, reduce antes.
+- **Creer que `limit(5)` trae filas a Python.** Devuelve otro DataFrame. Para una lista, `take(5)`.
 - **Escribir `true` en vez de `True`.** En Python los booleanos van con mayúscula; `true` da `NameError`.

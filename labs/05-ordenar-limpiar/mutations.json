@@ -1,0 +1,80 @@
+[
+  {
+    "name": "task 1: ascending instead of descending",
+    "old": "heaviest = sales.sort(F.col(\"Item_Weight\").desc())",
+    "new": "heaviest = sales.sort(F.col(\"Item_Weight\").asc())",
+    "expect": "Tarea 1 · heaviest empieza"
+  },
+  {
+    "name": "task 1: second key descending",
+    "old": "by_two = sales.sort(F.col(\"Item_Weight\").desc(), F.col(\"Item_Visibility\").asc())",
+    "new": "by_two = sales.sort(F.col(\"Item_Weight\").desc(), F.col(\"Item_Visibility\").desc())",
+    "expect": "Tarea 1 · by_two"
+  },
+  {
+    "name": "task 1: keys swapped",
+    "old": "by_two = sales.sort(F.col(\"Item_Weight\").desc(), F.col(\"Item_Visibility\").asc())",
+    "new": "by_two = sales.sort(F.col(\"Item_Visibility\").asc(), F.col(\"Item_Weight\").desc())",
+    "expect": "Tarea 1 · by_two"
+  },
+  {
+    "name": "task 2: limit without sort",
+    "old": "top_prices = sales.sort(F.col(\"Item_MRP\").desc()).limit(3)",
+    "new": "top_prices = sales.limit(3)",
+    "expect": "Tarea 2 · son los precios"
+  },
+  {
+    "name": "task 2: ascending sort",
+    "old": "top_prices = sales.sort(F.col(\"Item_MRP\").desc()).limit(3)",
+    "new": "top_prices = sales.sort(F.col(\"Item_MRP\")).limit(3)",
+    "expect": "Tarea 2 · son los precios"
+  },
+  {
+    "name": "task 3: only one column dropped",
+    "old": "slim = sales.drop(\"Item_Visibility\", \"Item_Type\")",
+    "new": "slim = sales.drop(\"Item_Visibility\")",
+    "expect": "Tarea 3 · quedan 10"
+  },
+  {
+    "name": "task 4: subset used for unique_orders",
+    "old": "unique_orders = orders.dropDuplicates()",
+    "new": "unique_orders = orders.dropDuplicates([\"customer\"])",
+    "expect": "Tarea 4 · unique_orders"
+  },
+  {
+    "name": "task 4: one_per_customer without subset",
+    "old": "one_per_customer = orders.dropDuplicates([\"customer\"])",
+    "new": "one_per_customer = orders.dropDuplicates()",
+    "expect": "Tarea 4 · one_per_customer"
+  },
+  {
+    "name": "task 4: distinct over the whole table",
+    "old": "item_types = sales.select(\"Item_Type\").distinct()",
+    "new": "item_types = sales.distinct().select(\"Item_Type\")",
+    "expect": "Tarea 4 · item_types"
+  },
+  {
+    "name": "task 5: subset forgotten",
+    "old": "with_size = sales.dropna(subset=[\"Outlet_Size\"])",
+    "new": "with_size = sales.dropna()",
+    "expect": "Tarea 5 · with_size tiene 6113"
+  },
+  {
+    "name": "task 5: how=all",
+    "old": "complete = sales.dropna(how=\"any\")",
+    "new": "complete = sales.dropna(how=\"all\")",
+    "expect": "Tarea 5 · complete"
+  },
+  {
+    "name": "task 6: single text value",
+    "old": "filled = sales.fillna({\"Outlet_Size\": \"Unknown\", \"Item_Weight\": 12.86})",
+    "new": "filled = sales.fillna(\"Unknown\")",
+    "expect": "Tarea 6 · no quedan nulos"
+  },
+  {
+    "name": "task 6: wrong label",
+    "old": "filled = sales.fillna({\"Outlet_Size\": \"Unknown\", \"Item_Weight\": 12.86})",
+    "new": "filled = sales.fillna({\"Outlet_Size\": \"unknown\", \"Item_Weight\": 12.86})",
+    "expect": "Tarea 6 · 2410"
+  }
+]

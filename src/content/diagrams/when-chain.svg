@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330">
+  <defs>
+    <marker id="wc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0L10 5L0 10z" />
+    </marker>
+    <marker id="wc-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <text class="d-title" x="16" y="24">Una fila entra con Item_MRP = 141.618</text>
+  <text class="d-muted" x="16" y="42">Las condiciones se prueban en orden; la primera que se cumple decide el valor.</text>
+
+  <!-- Entry arrow -->
+  <path class="d-line-accent" d="M110 54V70" marker-end="url(#wc-arrow-accent)" />
+
+  <!-- Condition 1 -->
+  <rect class="d-box" x="16" y="74" width="190" height="52" rx="8" />
+  <text class="d-code-small" x="111" y="96" text-anchor="middle">.when(MRP &lt; 100,</text>
+  <text class="d-code-small" x="111" y="114" text-anchor="middle">"cheap")</text>
+  <text class="d-muted" x="222" y="92">¿141.618 &lt; 100?</text>
+  <text class="d-accent-text" x="222" y="110">no → sigue</text>
+  <path class="d-line-accent" d="M110 126V146" marker-end="url(#wc-arrow-accent)" />
+
+  <!-- Condition 2 -->
+  <rect class="d-box-success" x="16" y="150" width="190" height="52" rx="8" />
+  <text class="d-code-small" x="111" y="172" text-anchor="middle">.when(MRP &lt; 200,</text>
+  <text class="d-code-small" x="111" y="190" text-anchor="middle">"mid")</text>
+  <text class="d-muted" x="222" y="168">¿141.618 &lt; 200?</text>
+  <text class="d-accent-text" x="222" y="186">sí → devuelve "mid" y para</text>
+  <path class="d-line-accent" d="M206 198H436" marker-end="url(#wc-arrow-accent)" />
+  <path class="d-line-dashed" d="M110 202V222" marker-end="url(#wc-arrow)" />
+
+  <!-- Otherwise -->
+  <rect class="d-box-ghost" x="16" y="226" width="190" height="52" rx="8" />
+  <text class="d-code-small" x="111" y="248" text-anchor="middle">.otherwise(</text>
+  <text class="d-code-small" x="111" y="266" text-anchor="middle">"expensive")</text>
+  <text class="d-muted" x="222" y="244">solo si ninguna condición</text>
+  <text class="d-muted" x="222" y="262">se cumplió; sin él: NULL</text>
+
+  <!-- Result -->
+  <rect class="d-box-accent" x="440" y="172" width="264" height="52" rx="8" />
+  <text class="d-title" x="572" y="194" text-anchor="middle">price_band = "mid"</text>
+  <text class="d-muted" x="572" y="212" text-anchor="middle">no hace falta decir "≥ 100": ya se descartó</text>
+
+  <text class="d-muted" x="16" y="312">Con el CSV de BigMart: cheap 2439 · mid 4644 · expensive 1440 filas.</text>
+</svg>

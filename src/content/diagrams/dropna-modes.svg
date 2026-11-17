@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 770 330">
+  <!-- Source table -->
+  <text class="d-title" x="16" y="24">Cuatro filas, dos con huecos</text>
+
+  <rect class="d-box" x="16" y="40" width="60" height="26" rx="3" />
+  <rect class="d-box" x="76" y="40" width="70" height="26" rx="3" />
+  <rect class="d-box" x="146" y="40" width="70" height="26" rx="3" />
+  <text class="d-muted" x="46" y="58" text-anchor="middle">fila</text>
+  <text class="d-muted" x="111" y="58" text-anchor="middle">Weight</text>
+  <text class="d-muted" x="181" y="58" text-anchor="middle">Size</text>
+
+  <rect class="d-box" x="16" y="66" width="60" height="26" />
+  <rect class="d-box" x="76" y="66" width="70" height="26" />
+  <rect class="d-box" x="146" y="66" width="70" height="26" />
+  <text class="d-text" x="46" y="84" text-anchor="middle">1</text>
+  <text class="d-text" x="111" y="84" text-anchor="middle">9.3</text>
+  <text class="d-text" x="181" y="84" text-anchor="middle">Medium</text>
+
+  <rect class="d-box" x="16" y="92" width="60" height="26" />
+  <rect class="d-box-accent" x="76" y="92" width="70" height="26" />
+  <rect class="d-box" x="146" y="92" width="70" height="26" />
+  <text class="d-text" x="46" y="110" text-anchor="middle">2</text>
+  <text class="d-accent-text" x="111" y="110" text-anchor="middle">NULL</text>
+  <text class="d-text" x="181" y="110" text-anchor="middle">Small</text>
+
+  <rect class="d-box" x="16" y="118" width="60" height="26" />
+  <rect class="d-box" x="76" y="118" width="70" height="26" />
+  <rect class="d-box-accent" x="146" y="118" width="70" height="26" />
+  <text class="d-text" x="46" y="136" text-anchor="middle">3</text>
+  <text class="d-text" x="111" y="136" text-anchor="middle">17.5</text>
+  <text class="d-accent-text" x="181" y="136" text-anchor="middle">NULL</text>
+
+  <rect class="d-box" x="16" y="144" width="60" height="26" />
+  <rect class="d-box-accent" x="76" y="144" width="70" height="26" />
+  <rect class="d-box-accent" x="146" y="144" width="70" height="26" />
+  <text class="d-text" x="46" y="162" text-anchor="middle">4</text>
+  <text class="d-accent-text" x="111" y="162" text-anchor="middle">NULL</text>
+  <text class="d-accent-text" x="181" y="162" text-anchor="middle">NULL</text>
+
+  <!-- Three results -->
+  <text class="d-code-small" x="260" y="24">dropna(how="any")</text>
+  <text class="d-muted" x="260" y="42">fuera si falta algo</text>
+  <rect class="d-box-success" x="260" y="52" width="130" height="26" rx="3" />
+  <text class="d-text" x="325" y="70" text-anchor="middle">1 · 9.3 · Medium</text>
+  <rect class="d-box-ghost" x="260" y="84" width="130" height="86" rx="4" />
+  <text class="d-muted" x="325" y="123" text-anchor="middle">2, 3 y 4</text>
+  <text class="d-muted" x="325" y="140" text-anchor="middle">eliminadas</text>
+
+  <text class="d-code-small" x="420" y="24">dropna(how="all")</text>
+  <text class="d-muted" x="420" y="42">fuera solo si falta todo</text>
+  <rect class="d-box-success" x="420" y="52" width="130" height="26" rx="3" />
+  <text class="d-text" x="485" y="70" text-anchor="middle">1 · 9.3 · Medium</text>
+  <rect class="d-box-success" x="420" y="78" width="130" height="26" />
+  <text class="d-text" x="485" y="96" text-anchor="middle">2 · NULL · Small</text>
+  <rect class="d-box-success" x="420" y="104" width="130" height="26" />
+  <text class="d-text" x="485" y="122" text-anchor="middle">3 · 17.5 · NULL</text>
+  <rect class="d-box-ghost" x="420" y="136" width="130" height="34" rx="4" />
+  <text class="d-muted" x="485" y="157" text-anchor="middle">4 eliminada</text>
+
+  <text class="d-code-small" x="580" y="24">dropna(subset=["Size"])</text>
+  <text class="d-muted" x="580" y="42">solo se mira Size</text>
+  <rect class="d-box-success" x="580" y="52" width="130" height="26" rx="3" />
+  <text class="d-text" x="645" y="70" text-anchor="middle">1 · 9.3 · Medium</text>
+  <rect class="d-box-success" x="580" y="78" width="130" height="26" />
+  <text class="d-text" x="645" y="96" text-anchor="middle">2 · NULL · Small</text>
+  <rect class="d-box-ghost" x="580" y="110" width="130" height="60" rx="4" />
+  <text class="d-muted" x="645" y="136" text-anchor="middle">3 y 4</text>
+  <text class="d-muted" x="645" y="153" text-anchor="middle">eliminadas</text>
+
+  <!-- BigMart numbers -->
+  <rect class="d-box-info" x="16" y="200" width="740" height="104" rx="8" />
+  <text class="d-title" x="32" y="226">En BigMart: 8523 filas, 1463 sin Weight, 2410 sin Size, ninguna sin las dos</text>
+  <text class="d-code-small" x="32" y="254">dropna(how="any")                 → 4650 filas</text>
+  <text class="d-code-small" x="32" y="274">dropna(how="all")                 → 8523 filas, no quita ninguna</text>
+  <text class="d-code-small" x="32" y="294">dropna(subset=["Outlet_Size"])    → 6113 filas</text>
+</svg>

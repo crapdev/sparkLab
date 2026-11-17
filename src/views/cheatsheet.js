@@ -5,6 +5,10 @@ import { normalizeText } from '../services/checkers.js';
 
 const ALL = 'Todas';
 
+// T = transformación (perezosa, devuelve un DataFrame); A = acción (ejecuta el plan).
+const KIND_LABEL = { transformación: 'T', acción: 'A' };
+const KIND_CLASS = { transformación: 'transformation', acción: 'action' };
+
 function matches(entry, query) {
   if (!query) return true;
   const haystack = normalizeText(
@@ -13,6 +17,7 @@ function matches(entry, query) {
       entry.signature,
       entry.description,
       entry.category,
+      entry.kind ?? '',
       ...(entry.keywords ?? []),
     ].join(' '),
   );
@@ -28,7 +33,17 @@ function entryCard(entry) {
       'header',
       { class: 'sheet-entry__header' },
       h('h2', { class: 'sheet-entry__name' }, entry.name),
-      h('span', { class: 'badge' }, entry.category),
+      h(
+        'span',
+        { class: 'sheet-entry__badges' },
+        entry.kind &&
+          h(
+            'span',
+            { class: `badge badge--${KIND_CLASS[entry.kind]}`, title: entry.kind },
+            KIND_LABEL[entry.kind],
+          ),
+        h('span', { class: 'badge' }, entry.category),
+      ),
     ),
     h('code', { class: 'sheet-entry__signature' }, entry.signature),
     h('p', { class: 'sheet-entry__description', html: renderInline(entry.description) }),
@@ -107,7 +122,11 @@ export function cheatsheetView() {
     h(
       'p',
       { class: 'page__lead' },
-      'Referencia rápida de las funciones que aparecen en los módulos. Crece con cada módulo nuevo.',
+      'Referencia rápida de las funciones que aparecen en los módulos. Crece con cada módulo nuevo. ',
+      h('strong', {}, 'T'),
+      ' marca una transformación, que solo añade pasos al plan, y ',
+      h('strong', {}, 'A'),
+      ' una acción, que pone a Spark a ejecutar. Las expresiones de columna, como F.col o when, no llevan etiqueta: se usan dentro de una transformación.',
     ),
     search,
     filters,

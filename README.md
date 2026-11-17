@@ -5,10 +5,14 @@ interactivos en el navegador y laboratorios en Google Colab con tests automátic
 
 ## Estado
 
-| Módulo                  | Estado         |
-| ----------------------- | -------------- |
-| 1. Fundamentos de Spark | Publicado      |
-| 2 a 15                  | En preparación |
+| Módulo                         | Estado         |
+| ------------------------------ | -------------- |
+| 1. Fundamentos de Spark        | Publicado      |
+| 2. Lectura de datos y esquemas | Publicado      |
+| 3. Seleccionar y filtrar       | Publicado      |
+| 4. Crear y modificar columnas  | Publicado      |
+| 5. Ordenar y limpiar           | Publicado      |
+| 6 a 15                         | En preparación |
 
 El plan completo está en [docs/plan](docs/plan/README.md).
 
@@ -22,10 +26,10 @@ El plan completo está en [docs/plan](docs/plan/README.md).
 
 ## Requisitos
 
-| Para               | Necesitas                                   |
-| ------------------ | ------------------------------------------- |
-| El sitio           | Node.js 20 o superior                       |
-| Verificar los labs | Python 3.11 o superior y Java 17 o superior |
+| Para               | Necesitas                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| El sitio           | Node.js 20 o superior                                                               |
+| Verificar los labs | Python 3.11 o superior, Java 17 o superior y `pip install -r requirements-labs.txt` |
 
 Si te falta Java en Ubuntu o Debian:
 
@@ -129,6 +133,10 @@ de `scripts/build-labs.py`.
 2. la solución se ejecuta entera y pasa todos los tests;
 3. el laboratorio sin resolver **falla** en un test, lo que demuestra que los tests
    comprueban algo.
+
+Además, cada laboratorio puede traer un `mutations.json` con soluciones equivocadas a
+propósito. `.venv/bin/python scripts/mutate-lab.py <módulo>` las prueba una a una y
+comprueba que el test esperado las detecta.
 
 Los notebooks descargan los datos del sitio publicado y, si no está disponible, del
 repositorio de GitHub.

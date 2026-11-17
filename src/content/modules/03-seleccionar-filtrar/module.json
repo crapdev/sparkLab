@@ -2,8 +2,229 @@
   "id": "03-seleccionar-filtrar",
   "order": 3,
   "block": "transformaciones",
-  "status": "planned",
+  "status": "published",
   "title": "Seleccionar y filtrar",
   "summary": "Quedarte con las columnas y las filas que te interesan: select, col, alias y filter.",
-  "estimatedMinutes": 40
+  "estimatedMinutes": 60,
+  "objectives": [
+    "Distinguir `select`, que recorta columnas, de `filter`, que recorta filas.",
+    "Usar `F.col()` para obtener una columna como objeto y renombrarla con `alias`.",
+    "Escribir condiciones de filtro y combinarlas con `&`, `|` y `~`, con sus paréntesis.",
+    "Filtrar por nulos con `isNull()` y por listas de valores con `isin()`.",
+    "Explicar por qué una comparación con un nulo no es ni verdadera ni falsa."
+  ],
+  "lab": {
+    "path": "labs/03-seleccionar-filtrar",
+    "minutes": 35,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Recortas el CSV de BigMart por columnas y por filas, provocas a propósito los errores típicos de `&` y de los paréntesis, y compruebas qué pasa con los nulos al comparar.",
+    "tasks": [
+      "Seleccionar tres columnas por nombre.",
+      "Renombrar columnas con `F.col()` y `alias`.",
+      "Filtrar por un valor de texto.",
+      "Combinar dos condiciones con `&`.",
+      "Filtrar nulos con `isNull()` y listas con `isin()`.",
+      "Combinar `|` y `~` en una misma condición."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-select-alias",
+      "type": "fill-code",
+      "prompt": "Selecciona el identificador y el precio, renombrando el precio a `Price`.",
+      "code": "sales.select(\"Item_Identifier\", F.___(\"Item_MRP\").___(\"Price\"))",
+      "blanks": [
+        {
+          "answers": ["col", "column"],
+          "hint": "La función que devuelve una columna como objeto."
+        },
+        {
+          "answers": ["alias"],
+          "hint": "El método que cambia el nombre de una columna."
+        }
+      ],
+      "explanation": "`F.col(\"Item_MRP\")` convierte el nombre en un objeto columna, y `.alias(\"Price\")` le pone el nombre nuevo. Dentro de un `select` se pueden mezclar strings y objetos columna."
+    },
+    {
+      "id": "ex-alias-after",
+      "type": "predict-output",
+      "prompt": "¿Qué imprime este código?",
+      "code": "prices = sales.select(F.col(\"Item_MRP\").alias(\"Price\"))\nprint(prices.columns)",
+      "optionsFormat": "code",
+      "options": ["['Item_MRP']", "['Price']", "['Item_MRP', 'Price']", "['Price AS Item_MRP']"],
+      "answer": 1,
+      "hint": "`alias` renombra; no duplica.",
+      "explanation": "El DataFrame resultado tiene una sola columna, y se llama `Price`. El nombre `Item_MRP` solo existe en `sales`."
+    },
+    {
+      "id": "ex-and",
+      "type": "fill-code",
+      "prompt": "Filtra las bebidas (`Soft Drinks`) que pesan menos de 10. Completa el operador que une las dos condiciones.",
+      "code": "sales.filter((F.col(\"Item_Type\") == \"Soft Drinks\") ___ (F.col(\"Item_Weight\") < 10))",
+      "blanks": [
+        {
+          "answers": ["&"],
+          "hint": "El operador \"y\" para columnas de Spark no es `and`."
+        }
+      ],
+      "explanation": "El \"y\" se escribe `&`, y cada condición va entre paréntesis porque `&` se evalúa antes que `==` y `<`."
+    },
+    {
+      "id": "ex-python-and",
+      "type": "choice",
+      "prompt": "Ejecutas `sales.filter((F.col(\"Item_Type\") == \"Dairy\") and (F.col(\"Item_MRP\") > 100))`. ¿Qué pasa?",
+      "options": [
+        "Funciona igual que con `&`.",
+        "Devuelve 0 filas sin error.",
+        "Error `CANNOT_CONVERT_COLUMN_INTO_BOOL`: Python no puede convertir una columna en `True` o `False`.",
+        "`SyntaxError`: `and` no existe en PySpark."
+      ],
+      "answer": 2,
+      "hint": "`and` es un operador de Python, no de Spark, y necesita saber si la primera condición es verdadera.",
+      "explanation": "`and` obliga a Python a evaluar la primera condición como `True` o `False`, y una columna de Spark no es ninguna de las dos cosas. El propio mensaje pide usar `&`, `|` y `~`."
+    },
+    {
+      "id": "ex-typo",
+      "type": "predict-output",
+      "prompt": "Los valores de `Item_Fat_Content` son `Low Fat`, `Regular`, `LF`, `reg` y `low fat`. ¿Qué imprime?",
+      "code": "print(sales.filter(F.col(\"Item_Fat_Content\") == \"regular\").count())",
+      "answers": ["0", "cero"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Spark distingue mayúsculas de minúsculas.",
+      "explanation": "Imprime 0. No hay ninguna fila con `regular` en minúscula, y Spark no avisa de que el valor no existe: simplemente no encuentra nada."
+    },
+    {
+      "id": "ex-isnull",
+      "type": "fill-code",
+      "prompt": "Filtra las tiendas sin tamaño conocido que están en `Tier 1` o `Tier 2`.",
+      "code": "sales.filter(F.col(\"Outlet_Size\").___() & F.col(\"Outlet_Location_Type\").___(\"Tier 1\", \"Tier 2\"))",
+      "blanks": [
+        {
+          "answers": ["isNull"],
+          "hint": "El método que detecta valores que faltan. No es `== None`."
+        },
+        {
+          "answers": ["isin"],
+          "hint": "El método que comprueba si el valor está en una lista."
+        }
+      ],
+      "explanation": "`isNull()` detecta los nulos e `isin()` acepta varios valores. Como son métodos que ya devuelven una condición completa, no necesitan paréntesis extra alrededor."
+    },
+    {
+      "id": "ex-null-compare",
+      "type": "predict-output",
+      "prompt": "El DataFrame `small` tiene tres filas: `a` con peso 5, `b` con peso nulo y `c` con peso 12. ¿Qué imprime?",
+      "code": "print(small.filter(F.col(\"weight\") != 5).count())",
+      "answers": ["1", "uno", "una"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "¿Un nulo es distinto de 5? Ni sí ni no.",
+      "explanation": "Imprime 1: solo `c`. Comparar un nulo con 5 no da verdadero ni falso, sino desconocido, y `filter` descarta esa fila. Para quedarte con `b` tendrías que añadir `| F.col(\"weight\").isNull()`."
+    },
+    {
+      "id": "ex-not-isin",
+      "type": "predict-output",
+      "prompt": "`Outlet_Location_Type` vale `Tier 1` en 2388 filas, `Tier 2` en 2785 y `Tier 3` en 3350, sin nulos. ¿Qué imprime?",
+      "code": "print(sales.filter(~F.col(\"Outlet_Location_Type\").isin(\"Tier 3\")).count())",
+      "answers": ["5173"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "`~` niega la condición: las filas que no son Tier 3.",
+      "explanation": "Imprime 5173, la suma de Tier 1 y Tier 2. `~F.col(...).isin(...)` no necesita paréntesis extra porque `isin()` ya es una condición completa; `~(F.col(...) == \"Tier 3\")` sí los necesita."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-select-filter",
+      "question": "¿Cuál es la diferencia entre `select` y `filter`?",
+      "options": [
+        "`select` recorta columnas y `filter` recorta filas.",
+        "`select` recorta filas y `filter` recorta columnas.",
+        "Son sinónimos, como `filter` y `where`.",
+        "`select` es una acción y `filter` una transformación."
+      ],
+      "answer": 0,
+      "explanation": "`select` elige columnas y conserva todas las filas; `filter` elige filas y conserva todas las columnas. Las dos son transformaciones."
+    },
+    {
+      "id": "q-string-alias",
+      "question": "¿Por qué `sales.select(\"Item_MRP\".alias(\"Price\"))` falla?",
+      "options": [
+        "Porque `alias` solo funciona en `filter`.",
+        "Porque `\"Item_MRP\"` es un string de Python y los strings no tienen `alias`; hace falta `F.col(\"Item_MRP\")`.",
+        "Porque `Price` ya existe en el DataFrame.",
+        "No falla: es la forma correcta de renombrar."
+      ],
+      "answer": 1,
+      "explanation": "Un string solo nombra la columna. Para renombrarla, compararla u operar con ella hace falta el objeto columna que devuelve `F.col()`."
+    },
+    {
+      "id": "q-where",
+      "question": "¿Qué relación hay entre `filter` y `where`?",
+      "options": [
+        "`where` solo acepta strings de SQL.",
+        "`filter` es más rápido porque evita el optimizador.",
+        "Son exactamente lo mismo: `where` es un alias de `filter`.",
+        "`where` solo funciona después de un `select`."
+      ],
+      "answer": 2,
+      "explanation": "`where` existe para que la sintaxis se parezca a SQL. Hace lo mismo que `filter` y acepta lo mismo."
+    },
+    {
+      "id": "q-operators",
+      "question": "¿Cómo se escribe \"tipo Dairy **o** tipo Meat\" en una condición de PySpark?",
+      "options": [
+        "`(F.col(\"Item_Type\") == \"Dairy\") or (F.col(\"Item_Type\") == \"Meat\")`",
+        "`(F.col(\"Item_Type\") == \"Dairy\") || (F.col(\"Item_Type\") == \"Meat\")`",
+        "`(F.col(\"Item_Type\") == \"Dairy\") | (F.col(\"Item_Type\") == \"Meat\")`",
+        "`F.col(\"Item_Type\") == \"Dairy\" | \"Meat\"`"
+      ],
+      "answer": 2,
+      "explanation": "El \"o\" para columnas es `|`, con cada condición entre paréntesis. `or` da el error de conversión a booleano y `||` no existe en Python."
+    },
+    {
+      "id": "q-parens",
+      "question": "¿Por qué `F.col(\"a\") == 1 & F.col(\"b\") == 2` falla sin paréntesis?",
+      "options": [
+        "Porque Spark no permite dos condiciones en un mismo `filter`.",
+        "Porque `&` se evalúa antes que `==`, así que Python intenta calcular `1 & F.col(\"b\")` primero.",
+        "Porque `==` no funciona con números.",
+        "No falla: los paréntesis son solo por estilo."
+      ],
+      "answer": 1,
+      "explanation": "En Python `&` tiene más prioridad que las comparaciones. Sin paréntesis la expresión se agrupa mal y termina en `CANNOT_CONVERT_COLUMN_INTO_BOOL`."
+    },
+    {
+      "id": "q-none",
+      "question": "`Outlet_Size` tiene 2410 nulos. ¿Qué devuelve `sales.filter(F.col(\"Outlet_Size\") == None).count()`?",
+      "options": ["2410", "0", "6113", "Un error de tipo."],
+      "answer": 1,
+      "explanation": "Nada es igual a nulo, ni siquiera otro nulo, así que la comparación no es verdadera para ninguna fila. Para detectar nulos se usa `isNull()`."
+    },
+    {
+      "id": "q-null-sum",
+      "question": "`Item_Weight` tiene nulos. `filter(F.col(\"Item_Weight\") < 10)` da 2377 filas y `filter(~(F.col(\"Item_Weight\") < 10))` da 4683. El DataFrame tiene 8523. ¿Dónde están las 1463 que faltan?",
+      "options": [
+        "Son filas duplicadas que Spark elimina al filtrar.",
+        "Son las filas con `Item_Weight` nulo: la comparación no es verdadera ni falsa y los dos filtros las descartan.",
+        "Es un error de redondeo de `count()`.",
+        "Están en el segundo filtro, pero `count()` no las cuenta."
+      ],
+      "answer": 1,
+      "explanation": "Comparar con nulo da desconocido, y `filter` solo conserva lo verdadero. Ni la condición ni su negación rescatan esas filas; hay que añadir `| isNull()` a propósito."
+    },
+    {
+      "id": "q-isin",
+      "question": "¿Cuál de estas condiciones equivale a `F.col(\"Outlet_Location_Type\").isin(\"Tier 1\", \"Tier 2\")`?",
+      "options": [
+        "`F.col(\"Outlet_Location_Type\") == [\"Tier 1\", \"Tier 2\"]`",
+        "`(F.col(\"Outlet_Location_Type\") == \"Tier 1\") & (F.col(\"Outlet_Location_Type\") == \"Tier 2\")`",
+        "`(F.col(\"Outlet_Location_Type\") == \"Tier 1\") | (F.col(\"Outlet_Location_Type\") == \"Tier 2\")`",
+        "`F.col(\"Outlet_Location_Type\").between(\"Tier 1\", \"Tier 2\")`"
+      ],
+      "answer": 2,
+      "explanation": "`isin` es un \"o\" entre varios `==`. Con `&` ninguna fila cumpliría las dos a la vez, y comparar con una lista usando `==` no es válido."
+    }
+  ]
 }

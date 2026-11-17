@@ -2,8 +2,224 @@
   "id": "02-lectura-esquemas",
   "order": 2,
   "block": "fundamentos",
-  "status": "planned",
+  "status": "published",
   "title": "Lectura de datos y esquemas",
   "summary": "Leer CSV y JSON controlando los tipos: inferSchema, DDL y StructType.",
-  "estimatedMinutes": 45
+  "estimatedMinutes": 70,
+  "objectives": [
+    "Leer archivos CSV y JSON con `spark.read`.",
+    "Explicar qué hacen `header` e `inferSchema` y cuánto cuesta inferir.",
+    "Escribir un esquema como string DDL y como `StructType`.",
+    "Detectar un esquema mal aplicado: columnas cambiadas o llenas de nulos.",
+    "Leer JSON multilínea y acceder a campos anidados."
+  ],
+  "lab": {
+    "path": "labs/02-lectura-esquemas",
+    "minutes": 35,
+    "datasets": ["bigmart_sales.csv", "drivers.json", "drivers_multiline.json"],
+    "summary": "Lees el CSV de BigMart y los pilotos de Fórmula 1 de todas las formas posibles, y mides cuántos jobs cuesta cada una.",
+    "tasks": [
+      "Leer el CSV dejando que Spark deduzca el esquema.",
+      "Escribir el esquema de las 12 columnas como string DDL.",
+      "Leer un JSON con un registro por línea.",
+      "Sacar los campos anidados `forename` y `surname`.",
+      "Leer un JSON multilínea con la opción `multiLine`.",
+      "Construir un esquema con `StructType`, con una fecha y un struct anidado."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-csv-options",
+      "type": "fill-code",
+      "prompt": "Lee el CSV usando la primera fila como nombres de columna y dejando que Spark deduzca los tipos.",
+      "code": "sales = (\n    spark.read.format(\"csv\")\n    .option(\"___\", True)\n    .option(\"___\", True)\n    .load(\"data/bigmart_sales.csv\")\n)",
+      "blanks": [
+        { "answers": ["header"], "hint": "La opción que trata la primera fila como nombres." },
+        {
+          "answers": ["inferSchema"],
+          "hint": "La opción que deduce los tipos. Lleva una mayúscula en medio."
+        }
+      ],
+      "explanation": "`header` usa la primera fila como nombres de columna e `inferSchema` deduce los tipos. El orden de las dos opciones da igual."
+    },
+    {
+      "id": "ex-header-only",
+      "type": "predict-output",
+      "prompt": "El CSV se lee solo con `header`. ¿Qué imprime `printSchema()`?",
+      "code": "df = spark.read.format(\"csv\").option(\"header\", True).load(\"data/bigmart_sales.csv\")\ndf.select(\"Item_Identifier\", \"Item_Weight\", \"Outlet_Establishment_Year\").printSchema()",
+      "optionsFormat": "code",
+      "options": [
+        "root\n |-- Item_Identifier: string (nullable = true)\n |-- Item_Weight: double (nullable = true)\n |-- Outlet_Establishment_Year: integer (nullable = true)",
+        "root\n |-- _c0: string (nullable = true)\n |-- _c1: string (nullable = true)\n |-- _c7: string (nullable = true)",
+        "root\n |-- Item_Identifier: string (nullable = true)\n |-- Item_Weight: string (nullable = true)\n |-- Outlet_Establishment_Year: string (nullable = true)"
+      ],
+      "answer": 2,
+      "hint": "`header` solo se ocupa de los nombres.",
+      "explanation": "`header` da los nombres, pero sin `inferSchema` ni un esquema propio todas las columnas de un CSV son `string`."
+    },
+    {
+      "id": "ex-ddl",
+      "type": "fill-code",
+      "prompt": "Completa el esquema DDL: un identificador de texto, un peso con decimales y un año entero.",
+      "code": "schema = \"Item_Identifier ___, Item_Weight ___, Outlet_Establishment_Year ___\"",
+      "blanks": [
+        { "answers": ["STRING", "string"], "hint": "El tipo para texto." },
+        { "answers": ["DOUBLE", "double"], "hint": "El tipo para números con decimales." },
+        { "answers": ["INT", "INTEGER", "int", "integer"], "hint": "El tipo para números enteros." }
+      ],
+      "explanation": "En DDL cada columna es `nombre TIPO`. `STRING` para texto, `DOUBLE` para decimales e `INT` para enteros."
+    },
+    {
+      "id": "ex-swapped",
+      "type": "choice",
+      "prompt": "El archivo empieza por las columnas `Item_Identifier` (`FDA15`) e `Item_Weight` (`9.3`). Lo lees con `header` y el esquema `\"Item_Weight STRING, Item_Identifier STRING\"`. ¿Qué hay en la columna `Item_Weight` de la primera fila?",
+      "options": [
+        "`9.3`",
+        "`FDA15`",
+        "`NULL`",
+        "Nada: Spark lanza un error porque los nombres no coinciden."
+      ],
+      "answer": 1,
+      "hint": "En CSV, ¿el esquema se empareja por nombre o por posición?",
+      "explanation": "En CSV el esquema se aplica por posición. La primera columna del esquema recibe la primera del archivo, se llame como se llame, y Spark no avisa."
+    },
+    {
+      "id": "ex-structfield",
+      "type": "fill-code",
+      "prompt": "Completa el esquema con objetos: `dob` tiene que leerse como fecha.",
+      "code": "schema = StructType(\n    [\n        ___(\"driverRef\", StringType()),\n        StructField(\"dob\", ___()),\n    ]\n)",
+      "blanks": [
+        { "answers": ["StructField"], "hint": "El objeto que describe una columna." },
+        { "answers": ["DateType"], "hint": "El tipo para fechas sin hora." }
+      ],
+      "explanation": "Cada columna es un `StructField(nombre, tipo)`. Los tipos son clases y llevan paréntesis: `DateType()`."
+    },
+    {
+      "id": "ex-corrupt",
+      "type": "choice",
+      "prompt": "Lees un JSON sin opciones y `df.columns` devuelve `['_corrupt_record']`. ¿Cuál es la causa más probable?",
+      "options": [
+        "El archivo está vacío.",
+        "Falta la opción `header`.",
+        "Cada registro ocupa varias líneas y falta `multiLine`.",
+        "El archivo tiene demasiadas columnas."
+      ],
+      "answer": 2,
+      "explanation": "Spark espera un registro por línea. Si el JSON es un array con sangría, ninguna línea es un registro válido y todo acaba en `_corrupt_record`. Se arregla con `.option(\"multiLine\", True)`."
+    },
+    {
+      "id": "ex-multiline-wrong",
+      "type": "predict-output",
+      "prompt": "`drivers.json` tiene 885 pilotos, uno por línea. Se lee con `multiLine` activado por error. ¿Qué imprime?",
+      "code": "drivers = spark.read.format(\"json\").option(\"multiLine\", True).load(\"data/drivers.json\")\nprint(drivers.count())",
+      "answers": ["1", "uno", "una"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Con `multiLine`, Spark busca un único documento JSON en el archivo.",
+      "explanation": "Imprime 1. Con `multiLine`, Spark lee el primer registro como si fuera el documento completo y se detiene, sin dar ningún error."
+    },
+    {
+      "id": "ex-nested",
+      "type": "fill-code",
+      "prompt": "`name` es un struct con los campos `forename` y `surname`. Selecciona el nombre de pila.",
+      "code": "drivers.select(\"driverRef\", \"___\")",
+      "blanks": [
+        { "answers": ["name.forename"], "hint": "Se llega a un campo anidado con un punto." }
+      ],
+      "explanation": "Con `\"name.forename\"` se accede al campo dentro del struct. La columna resultante se llama `forename`."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-no-options",
+      "question": "Lees el CSV de BigMart (8523 filas de datos) sin ninguna opción. ¿Qué obtienes?",
+      "options": [
+        "8523 filas con los nombres y los tipos correctos.",
+        "8524 filas, columnas `_c0`, `_c1`… y todo como `string`.",
+        "Un error: `header` es obligatoria.",
+        "8523 filas con los nombres correctos y todo como `string`."
+      ],
+      "answer": 1,
+      "explanation": "Sin `header`, la cabecera se lee como una fila más y las columnas reciben nombres genéricos. Sin `inferSchema`, todo es texto."
+    },
+    {
+      "id": "q-infer-cost",
+      "question": "¿Qué coste tiene `inferSchema`?",
+      "options": [
+        "Ninguno: solo mira la primera fila.",
+        "Duplica el tamaño del archivo en disco.",
+        "Spark recorre el archivo entero para deducir los tipos antes de cualquier acción.",
+        "Convierte todas las columnas en `string`."
+      ],
+      "answer": 2,
+      "explanation": "Para deducir los tipos, Spark tiene que leer todos los datos una vez más. Con archivos grandes, esa pasada cuesta."
+    },
+    {
+      "id": "q-schema-jobs",
+      "question": "Lees un CSV dando tú el esquema y no llamas a ninguna acción. ¿Cuántos jobs se lanzan?",
+      "options": ["0", "1", "2", "Depende del número de columnas."],
+      "answer": 0,
+      "explanation": "Con el esquema dado, Spark no necesita abrir el archivo. No lo toca hasta que una acción pide datos."
+    },
+    {
+      "id": "q-nullable",
+      "question": "En `StructField(\"dob\", DateType(), True)`, ¿qué indica `True`?",
+      "options": [
+        "Que la columna es la clave primaria.",
+        "Que la columna admite valores nulos.",
+        "Que el tipo se debe deducir.",
+        "Que la columna es obligatoria."
+      ],
+      "answer": 1,
+      "explanation": "El tercer argumento es `nullable`. Es opcional y por defecto vale `True`."
+    },
+    {
+      "id": "q-position",
+      "question": "¿Cómo empareja Spark un esquema con las columnas de un CSV?",
+      "options": [
+        "Por nombre, usando la cabecera.",
+        "Por posición: la primera del esquema con la primera del archivo.",
+        "Por tipo de dato.",
+        "Por orden alfabético."
+      ],
+      "answer": 1,
+      "explanation": "En CSV el esquema es posicional. En JSON, en cambio, se empareja por nombre de campo."
+    },
+    {
+      "id": "q-wrong-type",
+      "question": "Declaras `Item_Identifier INT`, pero los valores son como `FDA15`. Con la configuración por defecto, ¿qué pasa?",
+      "options": [
+        "Spark lanza un error al leer.",
+        "Spark cambia el tipo a `string` automáticamente.",
+        "La columna se llena de `NULL`.",
+        "Se descartan las filas afectadas."
+      ],
+      "answer": 2,
+      "explanation": "En el modo por defecto, `PERMISSIVE`, lo que no se puede convertir queda en `NULL` y no hay error."
+    },
+    {
+      "id": "q-multiline",
+      "question": "Tienes un JSON que es un array con sangría, donde cada registro ocupa varias líneas. ¿Cómo lo lees?",
+      "options": [
+        "Con `.option(\"header\", True)`.",
+        "Con `.option(\"multiLine\", True)`.",
+        "Con `.option(\"inferSchema\", True)`.",
+        "No se puede: hay que convertirlo antes."
+      ],
+      "answer": 1,
+      "explanation": "`multiLine` le dice a Spark que un registro puede ocupar varias líneas."
+    },
+    {
+      "id": "q-json-order",
+      "question": "Lees un JSON sin esquema. ¿En qué orden quedan las columnas?",
+      "options": [
+        "En el orden en que aparecen en el archivo.",
+        "En orden alfabético.",
+        "Primero las numéricas.",
+        "En un orden aleatorio que cambia en cada lectura."
+      ],
+      "answer": 1,
+      "explanation": "Al deducir el esquema de un JSON, Spark ordena los campos alfabéticamente. Con un esquema propio eliges tú el orden."
+    }
+  ]
 }

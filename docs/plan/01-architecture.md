@@ -230,6 +230,7 @@ no parpadee al cargar. Los diagramas SVG usan las mismas variables.
 {
   "name": "dropDuplicates",
   "category": "Limpieza",
+  "kind": "transformación",
   "signature": "df.dropDuplicates(subset=None)",
   "description": "Quita filas repetidas; con subset compara solo esas columnas.",
   "example": "df.dropDuplicates(subset=[\"Item_Type\"])",
@@ -239,6 +240,8 @@ no parpadee al cargar. Los diagramas SVG usan las mismas variables.
 }
 ```
 
+`kind` es opcional y vale `transformación` o `acción`; la chuleta lo muestra como una
+etiqueta **T** o **A**, y es obligatorio en las categorías Transformaciones y Acciones.
 El buscador filtra en el cliente por nombre, descripción y palabras clave (en
 español e inglés), con filtro por categoría y enlace al módulo donde se explica.
 Unas 120 entradas al terminar.

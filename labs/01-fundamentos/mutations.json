@@ -1,0 +1,38 @@
+[
+  {
+    "name": "task 5: take instead of limit",
+    "old": "top_five = pipeline.limit(5)",
+    "new": "top_five = pipeline.take(5)",
+    "expect": "Tarea 5 · top_five sigue siendo"
+  },
+  {
+    "name": "task 5: limit instead of head",
+    "old": "five_rows = pipeline.head(5)",
+    "new": "five_rows = pipeline.limit(5)",
+    "expect": "Tarea 5 · five_rows"
+  },
+  {
+    "name": "task 5: collect instead of toPandas",
+    "old": "as_pandas = pipeline.toPandas()",
+    "new": "as_pandas = pipeline.collect()",
+    "expect": "Tarea 5 · as_pandas"
+  },
+  {
+    "name": "task 5: toPandas after a limit",
+    "old": "as_pandas = pipeline.toPandas()",
+    "new": "as_pandas = pipeline.limit(10).toPandas()",
+    "expect": "Tarea 5 · as_pandas"
+  },
+  {
+    "name": "task 4: first instead of count",
+    "old": "total = pipeline.count()",
+    "new": "total = pipeline.first()",
+    "expect": "Tarea 4 · total"
+  },
+  {
+    "name": "task 2: action inside the pipeline",
+    "old": "    return numbers.filter(F.col(\"id\") % 7 == 0).withColumn(\"squared\", F.col(\"id\") * F.col(\"id\"))",
+    "new": "    result = numbers.filter(F.col(\"id\") % 7 == 0).withColumn(\"squared\", F.col(\"id\") * F.col(\"id\"))\n    result.count()\n    return result",
+    "expect": "Tarea 2 · no dispara"
+  }
+]

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250">
+  <!-- StructField row -->
+  <text class="d-muted" x="16" y="24">Con objetos</text>
+  <text class="d-code" x="16" y="66">StructField(</text>
+
+  <rect class="d-box-accent" x="136" y="42" width="160" height="38" rx="6" />
+  <text class="d-code" x="216" y="66" text-anchor="middle">"Item_Weight"</text>
+  <text class="d-code" x="301" y="66">,</text>
+
+  <rect class="d-box-info" x="318" y="42" width="150" height="38" rx="6" />
+  <text class="d-code" x="393" y="66" text-anchor="middle">DoubleType()</text>
+  <text class="d-code" x="473" y="66">,</text>
+
+  <rect class="d-box-success" x="490" y="42" width="76" height="38" rx="6" />
+  <text class="d-code" x="528" y="66" text-anchor="middle">True</text>
+  <text class="d-code" x="572" y="66">)</text>
+
+  <!-- Labels -->
+  <path class="d-line" d="M216 80V104" />
+  <text class="d-title" x="216" y="122" text-anchor="middle">nombre</text>
+  <text class="d-muted" x="216" y="140" text-anchor="middle">de la columna</text>
+
+  <path class="d-line" d="M393 80V104" />
+  <text class="d-title" x="393" y="122" text-anchor="middle">tipo</text>
+  <text class="d-muted" x="393" y="140" text-anchor="middle">de dato</text>
+
+  <path class="d-line" d="M528 80V104" />
+  <text class="d-title" x="528" y="122" text-anchor="middle">¿admite nulos?</text>
+  <text class="d-muted" x="528" y="140" text-anchor="middle">opcional; por defecto True</text>
+
+  <!-- DDL row -->
+  <text class="d-muted" x="16" y="182">Lo mismo en texto DDL</text>
+
+  <rect class="d-box-accent" x="136" y="196" width="160" height="38" rx="6" />
+  <text class="d-code" x="216" y="220" text-anchor="middle">Item_Weight</text>
+
+  <rect class="d-box-info" x="318" y="196" width="150" height="38" rx="6" />
+  <text class="d-code" x="393" y="220" text-anchor="middle">DOUBLE</text>
+
+  <text class="d-muted" x="490" y="220">sin comillas ni paréntesis</text>
+</svg>

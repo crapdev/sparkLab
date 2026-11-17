@@ -2,8 +2,212 @@
   "id": "05-ordenar-limpiar",
   "order": 5,
   "block": "transformaciones",
-  "status": "planned",
+  "status": "published",
   "title": "Ordenar y limpiar",
   "summary": "sort, limit, drop, duplicados y valores nulos con dropna y fillna.",
-  "estimatedMinutes": 50
+  "estimatedMinutes": 70,
+  "objectives": [
+    "Ordenar por una o varias columnas, en el sentido que toque, y saber dónde quedan los nulos.",
+    "Obtener los N mayores o menores combinando `sort` y `limit`.",
+    "Quitar columnas con `drop` y filas repetidas con `dropDuplicates` y `distinct`.",
+    "Elegir entre `how` y `subset` en `dropna` y predecir cuántas filas quedan.",
+    "Rellenar nulos con `fillna` sabiendo que solo toca las columnas del tipo del valor."
+  ],
+  "lab": {
+    "path": "labs/05-ordenar-limpiar",
+    "minutes": 40,
+    "datasets": ["bigmart_sales.csv"],
+    "summary": "Ordenas BigMart por una y por dos columnas, sacas los 3 productos más caros, quitas columnas, deduplicas un DataFrame de pedidos con repetidos reales y tratas los nulos de dos formas.",
+    "tasks": [
+      "Ordenar por una columna y por dos con sentidos distintos.",
+      "Sacar los 3 productos más caros con `sort` y `limit`.",
+      "Quitar dos columnas con `drop`.",
+      "Deduplicar con `dropDuplicates`, con y sin subset, y con `distinct`.",
+      "Quitar filas con nulos usando `subset` y `how`.",
+      "Rellenar nulos de dos columnas con un diccionario en `fillna`."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "ex-sort-desc",
+      "type": "fill-code",
+      "prompt": "Ordena los productos del más caro al más barato.",
+      "code": "sales.sort(F.col(\"Item_MRP\").___())",
+      "blanks": [{ "answers": ["desc"], "hint": "Lo contrario de ascendente." }],
+      "explanation": "`.desc()` ordena de mayor a menor. Sin nada, o con `.asc()`, el orden es ascendente. `orderBy` haría lo mismo."
+    },
+    {
+      "id": "ex-nulls-first",
+      "type": "predict-output",
+      "prompt": "`Item_Weight` tiene 1463 nulos. ¿Qué muestra esta celda en la columna `Item_Weight`?",
+      "code": "sales.sort(\"Item_Weight\").select(\"Item_Weight\").show(2)",
+      "optionsFormat": "code",
+      "options": [
+        "+-----------+\n|Item_Weight|\n+-----------+\n|      4.555|\n|      4.555|\n+-----------+",
+        "+-----------+\n|Item_Weight|\n+-----------+\n|       NULL|\n|       NULL|\n+-----------+",
+        "+-----------+\n|Item_Weight|\n+-----------+\n|      21.35|\n|      21.35|\n+-----------+"
+      ],
+      "answer": 1,
+      "hint": "¿Dónde pone Spark los nulos al ordenar de forma ascendente?",
+      "explanation": "En orden ascendente los nulos salen primero, así que las dos primeras filas no tienen peso. Para verlos al final: `F.col(\"Item_Weight\").asc_nulls_last()`."
+    },
+    {
+      "id": "ex-top-n",
+      "type": "fill-code",
+      "prompt": "Quédate con los 5 productos más pesados.",
+      "code": "sales.___(F.col(\"Item_Weight\").desc()).___(5)",
+      "blanks": [
+        { "answers": ["sort", "orderBy"], "hint": "Primero hay que ordenar." },
+        { "answers": ["limit"], "hint": "Recorta a 5 filas y sigue siendo un DataFrame." }
+      ],
+      "explanation": "`sort` (o `orderBy`) descendente y después `limit(5)`. Al revés, `limit` tomaría 5 filas cualesquiera y luego las ordenaría."
+    },
+    {
+      "id": "ex-drop-typo",
+      "type": "predict-output",
+      "prompt": "`sales` tiene 12 columnas. El nombre de la columna está mal escrito. ¿Qué imprime?",
+      "code": "print(len(sales.drop(\"Item_Visibilty\").columns))",
+      "answers": ["12", "doce"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "¿`drop` comprueba que la columna exista?",
+      "explanation": "Imprime 12. `drop` ignora en silencio las columnas que no existen, igual que `withColumnRenamed`. Conviene mirar `df.columns` después."
+    },
+    {
+      "id": "ex-dedup-subset",
+      "type": "predict-output",
+      "prompt": "`orders` tiene 8 filas: 3 clientes distintos (`ana`, `luis`, `marta`) y 3 filas que son copias exactas de otras. ¿Qué imprime?",
+      "code": "print(orders.dropDuplicates([\"customer\"]).count())",
+      "answers": ["3", "tres"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Con subset se compara solo esa columna.",
+      "explanation": "Imprime 3: una fila por cliente. Sin el subset, `dropDuplicates()` compararía las cuatro columnas y dejaría 5 filas."
+    },
+    {
+      "id": "ex-dropna-any",
+      "type": "predict-output",
+      "prompt": "De 8523 filas, 1463 no tienen `Item_Weight`, 2410 no tienen `Outlet_Size` y ninguna fila tiene los dos nulos. ¿Qué imprime?",
+      "code": "print(sales.dropna().count())",
+      "answers": ["4650"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "Sin argumentos es `how=\"any\"` sobre todas las columnas.",
+      "explanation": "Imprime 4650. `dropna()` quita cualquier fila con algún nulo: 8523 − 1463 − 2410. Con `how=\"all\"` quedarían las 8523, porque ninguna fila está vacía del todo."
+    },
+    {
+      "id": "ex-dropna-subset",
+      "type": "fill-code",
+      "prompt": "Quita solo las filas a las que les falta el tamaño de la tienda.",
+      "code": "sales.dropna(___=[\"Outlet_Size\"])",
+      "blanks": [
+        { "answers": ["subset"], "hint": "El argumento que limita qué columnas se miran." }
+      ],
+      "explanation": "`subset` restringe la comprobación a esas columnas. Quedan 6113 filas, y los pesos nulos siguen ahí."
+    },
+    {
+      "id": "ex-fillna-type",
+      "type": "predict-output",
+      "prompt": "`Item_Weight` es `double` y tiene 1463 nulos. ¿Qué imprime?",
+      "code": "filled = sales.fillna(\"Not Available\")\nprint(filled.filter(F.col(\"Item_Weight\").isNull()).count())",
+      "answers": ["1463"],
+      "inputLabel": "Número que imprime",
+      "inputMode": "numeric",
+      "hint": "`fillna` solo toca las columnas del mismo tipo que el valor.",
+      "explanation": "Imprime 1463. Un texto solo rellena columnas de texto; `Item_Weight` es numérica y se queda igual, sin aviso. Para las dos a la vez: `fillna({\"Outlet_Size\": \"Not Available\", \"Item_Weight\": 0})`."
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-sort-orderby",
+      "question": "¿Qué diferencia hay entre `sort` y `orderBy`?",
+      "options": [
+        "`sort` ordena dentro de cada partición y `orderBy` globalmente.",
+        "Ninguna: son dos nombres de la misma función.",
+        "`orderBy` solo acepta una columna.",
+        "`sort` es una acción y `orderBy` una transformación."
+      ],
+      "answer": 1,
+      "explanation": "Son alias. Las dos ordenan el DataFrame completo y las dos son transformaciones wide, con shuffle."
+    },
+    {
+      "id": "q-multi-sort",
+      "question": "En `sales.sort(F.col(\"Item_Weight\").desc(), F.col(\"Item_Visibility\").asc())`, ¿cuándo interviene `Item_Visibility`?",
+      "options": [
+        "Siempre: se ordena primero por visibilidad.",
+        "Solo cuando dos filas empatan en `Item_Weight`.",
+        "Nunca: solo cuenta la primera columna.",
+        "Cuando `Item_Weight` es nulo."
+      ],
+      "answer": 1,
+      "explanation": "La segunda clave solo desempata la primera. Y cada clave lleva su propio sentido: aquí peso descendente y visibilidad ascendente."
+    },
+    {
+      "id": "q-limit-no-sort",
+      "question": "`sales.limit(10)` sin ningún `sort` antes. ¿Qué filas devuelve?",
+      "options": [
+        "Las 10 de menor `Item_Identifier`.",
+        "Las 10 primeras del archivo, garantizado.",
+        "10 filas cualesquiera, las primeras que Spark encuentre; pueden variar.",
+        "Una muestra aleatoria uniforme."
+      ],
+      "answer": 2,
+      "explanation": "Sin orden no hay \"primeras\". `limit` corta por donde Spark llega antes, y eso depende de las particiones. Para un top N, ordena primero."
+    },
+    {
+      "id": "q-distinct",
+      "question": "¿Qué devuelve `sales.dropDuplicates().count()` si BigMart no tiene ninguna fila totalmente repetida?",
+      "options": ["0", "16", "8523, igual que antes", "Un error: no hay duplicados que quitar."],
+      "answer": 2,
+      "explanation": "Sin argumentos compara todas las columnas, y no hay dos filas iguales en todo. Para deduplicar por una clave hay que pasar `subset`."
+    },
+    {
+      "id": "q-dedup-survivor",
+      "question": "Usas `dropDuplicates([\"customer\"])` y cada cliente tiene varios pedidos. ¿Cuál se conserva?",
+      "options": [
+        "El de menor `order_id`.",
+        "El último del archivo.",
+        "El de mayor `amount`.",
+        "Uno cualquiera: Spark no garantiza cuál."
+      ],
+      "answer": 3,
+      "explanation": "Spark se queda con una fila por combinación, sin orden garantizado. Para elegir la más reciente o la más cara hacen falta window functions."
+    },
+    {
+      "id": "q-dropna-all",
+      "question": "¿Cuándo elimina una fila `dropna(how=\"all\")`?",
+      "options": [
+        "Cuando alguna columna es nula.",
+        "Cuando todas las columnas miradas son nulas.",
+        "Cuando más de la mitad son nulas.",
+        "Nunca: `how=\"all\"` conserva todo."
+      ],
+      "answer": 1,
+      "explanation": "`\"all\"` solo quita filas completamente vacías. En BigMart no hay ninguna, así que deja las 8523."
+    },
+    {
+      "id": "q-fillna-dict",
+      "question": "Quieres rellenar `Outlet_Size` (texto) con `\"Unknown\"` e `Item_Weight` (número) con `0` en una sola llamada. ¿Cómo?",
+      "options": [
+        "`sales.fillna(\"Unknown\", 0)`",
+        "`sales.fillna({\"Outlet_Size\": \"Unknown\", \"Item_Weight\": 0})`",
+        "`sales.fillna(\"Unknown\").fillna(\"0\")`",
+        "`sales.fillna(\"Unknown\", subset=[\"Outlet_Size\", \"Item_Weight\"])`"
+      ],
+      "answer": 1,
+      "explanation": "El diccionario da a cada columna un valor de su tipo. Un texto solo rellenaría las columnas de texto, aunque lo pidas con `subset`."
+    },
+    {
+      "id": "q-immutable",
+      "question": "Ejecutas `sales.dropna(subset=[\"Outlet_Size\"])` en una celda y en la siguiente `sales.count()` sigue dando 8523. ¿Por qué?",
+      "options": [
+        "Porque `dropna` es perezoso y aún no se ha ejecutado.",
+        "Porque `count()` no cuenta los nulos.",
+        "Porque `dropna` devuelve un DataFrame nuevo y no lo guardaste: `sales` no cambia.",
+        "Porque `subset` solo marca las filas, no las quita."
+      ],
+      "answer": 2,
+      "explanation": "Los DataFrames son inmutables. Hay que asignar el resultado: `sales = sales.dropna(subset=[\"Outlet_Size\"])`."
+    }
+  ]
 }

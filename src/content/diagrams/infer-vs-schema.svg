@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280">
+  <defs>
+    <marker id="infer-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <!-- Row 1: inferSchema -->
+  <text class="d-title" x="16" y="24">Con inferSchema</text>
+  <text class="d-muted" x="150" y="24">Spark abre el archivo dos veces antes de que pidas nada</text>
+
+  <rect class="d-box" x="16" y="38" width="150" height="64" rx="8" />
+  <text class="d-text" x="91" y="64" text-anchor="middle">Abre el archivo</text>
+  <text class="d-muted" x="91" y="84" text-anchor="middle">lee los nombres · job 1</text>
+  <path class="d-line" d="M166 70H188" marker-end="url(#infer-arrow)" />
+
+  <rect class="d-box" x="192" y="38" width="150" height="64" rx="8" />
+  <text class="d-text" x="267" y="64" text-anchor="middle">Lo recorre entero</text>
+  <text class="d-muted" x="267" y="84" text-anchor="middle">deduce los tipos · job 2</text>
+  <path class="d-line" d="M342 70H364" marker-end="url(#infer-arrow)" />
+
+  <rect class="d-box-success" x="368" y="38" width="150" height="64" rx="8" />
+  <text class="d-title" x="443" y="64" text-anchor="middle">DataFrame</text>
+  <text class="d-muted" x="443" y="84" text-anchor="middle">ya tiene esquema</text>
+  <path class="d-line" d="M518 70H540" marker-end="url(#infer-arrow)" />
+
+  <rect class="d-box-accent" x="544" y="38" width="160" height="64" rx="8" />
+  <text class="d-title" x="624" y="64" text-anchor="middle">Acción</text>
+  <text class="d-muted" x="624" y="84" text-anchor="middle">lee los datos otra vez</text>
+
+  <!-- Row 2: explicit schema -->
+  <text class="d-title" x="16" y="154">Con tu esquema</text>
+  <text class="d-muted" x="146" y="154">Spark no toca el archivo hasta que hay una acción</text>
+
+  <rect class="d-box-info" x="16" y="168" width="326" height="64" rx="8" />
+  <text class="d-text" x="179" y="194" text-anchor="middle">Tú le das nombres y tipos</text>
+  <text class="d-muted" x="179" y="214" text-anchor="middle">0 jobs</text>
+  <path class="d-line" d="M342 200H364" marker-end="url(#infer-arrow)" />
+
+  <rect class="d-box-success" x="368" y="168" width="150" height="64" rx="8" />
+  <text class="d-title" x="443" y="194" text-anchor="middle">DataFrame</text>
+  <text class="d-muted" x="443" y="214" text-anchor="middle">ya tiene esquema</text>
+  <path class="d-line" d="M518 200H540" marker-end="url(#infer-arrow)" />
+
+  <rect class="d-box-accent" x="544" y="168" width="160" height="64" rx="8" />
+  <text class="d-title" x="624" y="194" text-anchor="middle">Acción</text>
+  <text class="d-muted" x="624" y="214" text-anchor="middle">lee los datos una vez</text>
+
+  <text class="d-muted" x="16" y="264">Medido en el laboratorio con el CSV de BigMart: 2 jobs frente a 0 al leer.</text>
+</svg>

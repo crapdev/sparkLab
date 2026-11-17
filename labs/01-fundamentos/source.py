@@ -2,7 +2,7 @@
 # id: 01-fundamentos
 # title: Fundamentos de Spark
 # objective: Crear una SparkSession y comprobar con mediciones reales cómo funcionan la evaluación perezosa, los jobs, los stages y las tasks.
-# minutes: 30
+# minutes: 35
 # ---
 
 # %% [install]
@@ -53,46 +53,20 @@ check(
 # %% [markdown]
 # ### Una herramienta para mirar dentro de Spark
 #
-# La siguiente celda ya está escrita. Hace dos cosas:
+# Las dos celdas siguientes ya están escritas:
 #
-# 1. Ajusta la sesión para este laboratorio. Desactiva temporalmente **AQE** (Adaptive Query
+# 1. La primera ajusta la sesión para este laboratorio. Desactiva temporalmente **AQE** (Adaptive Query
 #    Execution), una optimización que puede repartir una acción en varios jobs. Al final del
 #    laboratorio la vuelves a activar para ver la diferencia.
-# 2. Define `measure(action)`, que ejecuta una función y te dice cuántos **jobs**, **stages**
+# 2. La segunda define `measure(action)`, que ejecuta una función y te dice cuántos **jobs**, **stages**
 #    y **tasks** lanzó Spark. Es el equivalente a mirar la pestaña "Spark Jobs" de Databricks.
 
 # %%
-import time
-
 spark.sparkContext.setLogLevel("ERROR")
 spark.conf.set("spark.sql.adaptive.enabled", "false")
 spark.conf.set("spark.sql.shuffle.partitions", "4")
 
-
-def measure(action):
-    """Run `action` and report the jobs, stages and tasks Spark launched for it."""
-    tracker = spark.sparkContext.statusTracker()
-    jobs_before = set(tracker.getJobIdsForGroup())
-    result = action()
-    time.sleep(0.3)  # Give Spark's listener a moment to register finished jobs.
-    job_ids = sorted(set(tracker.getJobIdsForGroup()) - jobs_before)
-    stage_ids = [stage for job in job_ids for stage in tracker.getJobInfo(job).stageIds]
-    stages = [tracker.getStageInfo(stage) for stage in stage_ids]
-    return {
-        "result": result,
-        "jobs": len(job_ids),
-        "stages": len(stage_ids),
-        "tasks": sum(stage.numTasks for stage in stages if stage is not None),
-    }
-
-
-def report(label, measurement):
-    """Print one measurement in a single readable line."""
-    print(
-        f"{label:<28} jobs={measurement['jobs']}  "
-        f"stages={measurement['stages']}  tasks={measurement['tasks']}"
-    )
-
+# %% [measure]
 
 # %% [markdown]
 # ## Tarea 2 · Un pipeline perezoso
@@ -250,7 +224,90 @@ check(
 )
 
 # %% [markdown]
-# ## Tarea 5 · Narrow, wide, stages y tasks
+# ## Tarea 5 · `limit` no es `take`, y otras formas de traer filas
+#
+# Hay varias acciones para sacar filas de Spark, y una transformación que se les parece:
+#
+# - `limit(n)` es una **transformación**: devuelve otro DataFrame de como mucho `n` filas.
+# - `head(n)` es una **acción**: devuelve una lista de `n` filas, igual que `take(n)`.
+# - `toPandas()` es una **acción**: devuelve un DataFrame de **pandas** con todas las filas.
+#
+# Sobre `pipeline`, crea:
+#
+# - `top_five`: un DataFrame de Spark con las 5 primeras filas, usando `limit`
+# - `five_rows`: una lista de Python con 5 filas, usando `head`
+# - `as_pandas`: el pipeline completo convertido a pandas
+
+# %%
+### BEGIN SOLUTION
+top_five = pipeline.limit(5)
+five_rows = pipeline.head(5)
+as_pandas = pipeline.toPandas()
+### END SOLUTION
+### BEGIN STARTER
+top_five = ...
+five_rows = ...
+as_pandas = ...
+### END STARTER
+
+# %% [test]
+check(
+    "Tarea 5 · top_five sigue siendo un DataFrame de Spark",
+    lambda: isinstance(top_five, DataFrame) and top_five.count() == 5,
+    "Usa pipeline.limit(5): devuelve un DataFrame, no una lista.",
+)
+check(
+    "Tarea 5 · limit no lanza ningún job",
+    lambda: measure(lambda: pipeline.limit(5))["jobs"] == 0,
+    "limit es una transformación. Si mides jobs, es que has usado una acción.",
+)
+check(
+    "Tarea 5 · five_rows es una lista de 5 Row",
+    lambda: isinstance(five_rows, list) and len(five_rows) == 5 and five_rows[0]["id"] == 7,
+    "Usa pipeline.head(5). Devuelve una lista de Python, como take(5).",
+)
+check(
+    "Tarea 5 · as_pandas tiene 142 filas y 2 columnas",
+    lambda: type(as_pandas).__module__.startswith("pandas") and as_pandas.shape == (142, 2),
+    "Usa pipeline.toPandas(), sin filtrar ni limitar antes.",
+)
+
+# %% [markdown]
+# Mide la diferencia. `limit(5)` no lanza nada; `limit(5).show()` lanza el job de `show`.
+# Y fíjate en las tasks: las acciones que traen pocas filas leen una sola partición,
+# mientras que `collect()` y `toPandas()` tienen que tocar las 8.
+
+# %%
+report("limit(5)", measure(lambda: pipeline.limit(5)))
+report("limit(5).show()", measure(lambda: pipeline.limit(5).show()))
+report("take(5)", measure(lambda: pipeline.take(5)))
+report("head(5)", measure(lambda: pipeline.head(5)))
+report("collect()", measure(pipeline.collect))
+report("toPandas()", measure(pipeline.toPandas))
+
+# %% [markdown]
+# `collect()` y `toPandas()` traen **todas** las filas al driver, que es un solo proceso con
+# una memoria limitada. Con 142 filas da igual; con cientos de millones, el driver se queda
+# sin memoria y la sesión muere. Antes de llamarlas, reduce con `filter`, una agregación o
+# `limit`. Para mirar, `show()` o `take(n)` bastan.
+#
+# Escribir en disco también es una acción, aunque no devuelva nada a Python. Esta celda
+# guarda el pipeline como CSV en una carpeta temporal y mide lo que cuesta:
+
+# %%
+import os
+import tempfile
+
+output_dir = os.path.join(tempfile.mkdtemp(), "multiples")
+report("write.csv()", measure(lambda: pipeline.write.mode("overwrite").csv(output_dir)))
+print("Archivos escritos:", len([name for name in os.listdir(output_dir) if name.startswith("part-")]))
+
+# %% [markdown]
+# Un archivo por partición: 8. Spark escribe en paralelo, igual que lee. Lo verás a fondo
+# en el módulo de escritura y formatos.
+
+# %% [markdown]
+# ## Tarea 6 · Narrow, wide, stages y tasks
 #
 # - Una transformación **narrow** (`filter`, `withColumn`, `select`) procesa cada partición
 #   por separado. No hay que mover datos entre particiones.
@@ -278,27 +335,27 @@ wide_df = ...
 
 # %% [test]
 check(
-    "Tarea 5 · narrow_df tiene id e is_even",
+    "Tarea 6 · narrow_df tiene id e is_even",
     lambda: narrow_df.columns == ["id", "is_even"],
     'Usa .withColumn("is_even", F.col("id") % 2 == 0).',
 )
 check(
-    "Tarea 5 · narrow_df se resuelve en 1 stage",
+    "Tarea 6 · narrow_df se resuelve en 1 stage",
     lambda: measure(narrow_df.collect)["stages"] == 1,
     "narrow_df solo debe usar transformaciones narrow; nada de groupBy u orderBy.",
 )
 check(
-    "Tarea 5 · una task por partición",
+    "Tarea 6 · una task por partición",
     lambda: measure(narrow_df.collect)["tasks"] == 4,
     "Parte de `numbers` sin cambiar su número de particiones.",
 )
 check(
-    "Tarea 5 · wide_df cuenta pares e impares",
+    "Tarea 6 · wide_df cuenta pares e impares",
     lambda: {row["is_even"]: row["count"] for row in wide_df.collect()} == {True: 500, False: 500},
     'Agrupa con .groupBy("is_even") y cuenta con .count().',
 )
 check(
-    "Tarea 5 · el shuffle añade un stage",
+    "Tarea 6 · el shuffle añade un stage",
     lambda: measure(wide_df.collect)["stages"] == 2,
     "wide_df necesita un groupBy: es lo que provoca el shuffle y el segundo stage.",
 )
@@ -315,7 +372,7 @@ report("wide_df.collect()", measure(wide_df.collect))
 # %% [data] bigmart_sales.csv
 
 # %% [markdown]
-# ## Tarea 6 · Leer un archivo también lanza jobs
+# ## Tarea 7 · Leer un archivo también lanza jobs
 #
 # Justo después de `spark.read...load()` suele aparecer un job aunque no hayas llamado
 # a ninguna acción. No es una contradicción: para conocer los **nombres** de las columnas
@@ -340,17 +397,17 @@ sales = ...
 
 # %% [test]
 check(
-    "Tarea 6 · 8523 filas",
+    "Tarea 7 · 8523 filas",
     lambda: sales.count() == 8523,
     'Si te sale 8524, falta .option("header", True): la cabecera se contó como dato.',
 )
 check(
-    "Tarea 6 · 12 columnas con su nombre",
+    "Tarea 7 · 12 columnas con su nombre",
     lambda: len(sales.columns) == 12 and sales.columns[0] == "Item_Identifier",
     'Sin .option("header", True) las columnas se llaman _c0, _c1...',
 )
 check(
-    "Tarea 6 · Item_Weight es numérica",
+    "Tarea 7 · Item_Weight es numérica",
     lambda: dict(sales.dtypes)["Item_Weight"] == "double",
     'Sin .option("inferSchema", True) todas las columnas son string.',
 )

@@ -5,17 +5,18 @@
   "status": "published",
   "title": "Fundamentos de Spark",
   "summary": "Cómo trabaja Spark por dentro: clúster, evaluación perezosa y la jerarquía Job, Stage y Task.",
-  "estimatedMinutes": 75,
+  "estimatedMinutes": 85,
   "objectives": [
     "Explicar qué hacen el driver, los executors y el cluster manager.",
     "Distinguir una transformación de una acción.",
+    "Nombrar las acciones principales, qué devuelve cada una y por qué `limit()` no es una de ellas.",
     "Predecir cuándo Spark ejecuta de verdad y cuándo solo apunta pasos.",
     "Relacionar particiones, tasks, stages y jobs.",
     "Crear una SparkSession y medir los jobs que lanza tu código."
   ],
   "lab": {
     "path": "labs/01-fundamentos",
-    "minutes": 30,
+    "minutes": 35,
     "datasets": ["bigmart_sales.csv"],
     "summary": "Creas tu primera `SparkSession` y compruebas con mediciones reales todo lo que dice la teoría: cuántos jobs, stages y tasks lanza cada operación.",
     "tasks": [
@@ -23,6 +24,7 @@
       "Construir un pipeline de transformaciones que no dispare ningún job.",
       "Clasificar operaciones en transformaciones y acciones, y medirlo.",
       "Obtener resultados con `count`, `take` y una agregación.",
+      "Comparar `limit` con `take`, y traer filas con `head` y `toPandas`.",
       "Comparar una transformación narrow con una wide contando stages y tasks.",
       "Leer el CSV de BigMart y ver por qué leer también lanza jobs."
     ]
@@ -56,6 +58,21 @@
       "explanation": "Cero. Las tres líneas son transformaciones: Spark apunta los pasos en un plan y no calcula nada hasta que llegue una acción."
     },
     {
+      "id": "ex-which-line",
+      "type": "predict-output",
+      "prompt": "¿En qué línea empieza Spark a procesar datos de verdad?",
+      "code": "sales = spark.read.format(\"csv\").option(\"header\", True).schema(SALES_DDL).load(path)   # línea 1\nregular = sales.filter(F.col(\"Item_Fat_Content\") == \"Regular\")                     # línea 2\ncheap = regular.filter(F.col(\"Item_MRP\") < 100).select(\"Item_Identifier\", \"Item_MRP\")  # línea 3\ntop = cheap.limit(10)                                                                # línea 4\nrows = top.collect()                                                                 # línea 5",
+      "options": [
+        "Línea 1, al leer el archivo.",
+        "Línea 2, en el primer `filter`.",
+        "Línea 4, en el `limit`.",
+        "Línea 5, en el `collect`."
+      ],
+      "answer": 3,
+      "hint": "Busca la única acción. Con el esquema dado, leer no abre el archivo.",
+      "explanation": "Las líneas 1 a 4 son transformaciones: con el esquema escrito, ni siquiera la lectura lanza un job. `collect()` es la única acción, y ahí Spark lee, filtra, selecciona, recorta y trae las 10 filas a Python."
+    },
+    {
       "id": "ex-show-output",
       "type": "predict-output",
       "prompt": "Partiendo del DataFrame `squared` del ejercicio anterior, ¿qué imprime esta línea?",
@@ -68,6 +85,20 @@
       ],
       "answer": 1,
       "explanation": "El filtro deja solo los múltiplos de 7 y `withColumn` añade la columna `squared`. `show(3)` imprime las 3 primeras filas del resultado, no de los datos originales."
+    },
+    {
+      "id": "ex-limit-take",
+      "type": "choice",
+      "prompt": "¿Cuál es la diferencia entre `df.limit(5)` y `df.take(5)`?",
+      "options": [
+        "Ninguna: las dos devuelven 5 filas.",
+        "`limit(5)` es una transformación que devuelve un DataFrame; `take(5)` es una acción que devuelve una lista de `Row`.",
+        "`limit(5)` es más rápida porque no pasa por el optimizador.",
+        "`take(5)` devuelve un DataFrame y `limit(5)` una lista."
+      ],
+      "answer": 1,
+      "hint": "Fíjate en lo que devuelve cada una.",
+      "explanation": "`limit` recorta el DataFrame y sigue en Spark, sin lanzar jobs. `take` lanza un job y trae las filas a Python como lista. Por eso `df.limit(5).show()` lanza un solo job: el de `show`."
     },
     {
       "id": "ex-session",
@@ -195,6 +226,30 @@
       ],
       "answer": 2,
       "explanation": "Los jobs los disparan las acciones. Una celda sin acciones no dispara ninguno, y una acción puede repartirse en varios jobs."
+    },
+    {
+      "id": "q-collect-risk",
+      "question": "Tienes un DataFrame de 500 millones de filas y ejecutas `df.toPandas()`. ¿Qué es lo más probable?",
+      "options": [
+        "Funciona igual que con pocas filas: pandas también es distribuido.",
+        "Spark devuelve solo una muestra para proteger la memoria.",
+        "El driver se queda sin memoria, porque `toPandas()` trae todas las filas a un único proceso.",
+        "Falla con un error de sintaxis: `toPandas` no existe en PySpark."
+      ],
+      "answer": 2,
+      "explanation": "`toPandas()` y `collect()` concentran todos los datos en el driver, que es un solo proceso. Antes de usarlos hay que reducir con filtros, agregaciones o `limit`."
+    },
+    {
+      "id": "q-first-row",
+      "question": "`df.agg(F.max(\"squared\"))` devuelve un DataFrame de una fila y una columna. ¿Cómo sacas el número a Python?",
+      "options": [
+        "`df.agg(F.max(\"squared\")).limit(1)`",
+        "`df.agg(F.max(\"squared\")).first()[0]`",
+        "`df.agg(F.max(\"squared\")).show()`",
+        "`int(df.agg(F.max(\"squared\")))`"
+      ],
+      "answer": 1,
+      "explanation": "`first()` es una acción que devuelve un `Row`; con `[0]` se saca su primer valor. `limit(1)` sigue siendo un DataFrame y `show()` solo imprime."
     },
     {
       "id": "q-tasks",

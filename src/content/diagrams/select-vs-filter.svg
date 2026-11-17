@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 770 300">
+  <defs>
+    <marker id="sf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L10 5L0 10z" />
+    </marker>
+  </defs>
+
+  <!-- Source table -->
+  <text class="d-title" x="16" y="24">DataFrame original</text>
+  <text class="d-muted" x="16" y="42">8523 filas × 12 columnas</text>
+
+  <rect class="d-box" x="16" y="56" width="50" height="26" rx="3" />
+  <rect class="d-box" x="66" y="56" width="50" height="26" rx="3" />
+  <rect class="d-box" x="116" y="56" width="50" height="26" rx="3" />
+  <rect class="d-box" x="166" y="56" width="50" height="26" rx="3" />
+  <text class="d-muted" x="41" y="74" text-anchor="middle">Id</text>
+  <text class="d-muted" x="91" y="74" text-anchor="middle">Weight</text>
+  <text class="d-muted" x="141" y="74" text-anchor="middle">Type</text>
+  <text class="d-muted" x="191" y="74" text-anchor="middle">MRP</text>
+
+  <rect class="d-box" x="16" y="82" width="200" height="26" />
+  <rect class="d-box" x="16" y="108" width="200" height="26" />
+  <rect class="d-box" x="16" y="134" width="200" height="26" />
+  <rect class="d-box" x="16" y="160" width="200" height="26" />
+  <text class="d-muted" x="116" y="178" text-anchor="middle">…</text>
+
+  <!-- Arrows and the code that produces each result -->
+  <path class="d-line-accent" d="M226 96 C 300 96, 340 72, 462 72" marker-end="url(#sf-arrow)" />
+  <text class="d-code-small" x="240" y="62">.select("Id", "MRP")</text>
+
+  <path class="d-line-accent" d="M226 146 C 300 146, 340 216, 462 216" marker-end="url(#sf-arrow)" />
+  <text class="d-code-small" x="240" y="252">.filter(F.col("Weight") &lt; 10)</text>
+
+  <!-- select result: fewer columns, same rows -->
+  <text class="d-title" x="470" y="24">select · recorta columnas</text>
+  <text class="d-muted" x="470" y="42">8523 filas × 2 columnas</text>
+  <rect class="d-box-accent" x="470" y="56" width="56" height="26" rx="3" />
+  <rect class="d-box-accent" x="526" y="56" width="56" height="26" rx="3" />
+  <text class="d-muted" x="498" y="74" text-anchor="middle">Id</text>
+  <text class="d-muted" x="554" y="74" text-anchor="middle">MRP</text>
+  <rect class="d-box-accent" x="470" y="82" width="56" height="26" />
+  <rect class="d-box-accent" x="526" y="82" width="56" height="26" />
+  <rect class="d-box-accent" x="470" y="108" width="56" height="26" />
+  <rect class="d-box-accent" x="526" y="108" width="56" height="26" />
+  <rect class="d-box-accent" x="470" y="134" width="56" height="26" />
+  <rect class="d-box-accent" x="526" y="134" width="56" height="26" />
+  <rect class="d-box-accent" x="470" y="160" width="56" height="26" />
+  <rect class="d-box-accent" x="526" y="160" width="56" height="26" />
+  <rect class="d-box-ghost" x="594" y="56" width="120" height="130" rx="4" />
+  <text class="d-muted" x="654" y="125" text-anchor="middle">columnas fuera</text>
+
+  <!-- filter result: same columns, fewer rows -->
+  <text class="d-title" x="470" y="208">filter · recorta filas</text>
+  <text class="d-muted" x="470" y="226">2377 filas × 12 columnas</text>
+  <rect class="d-box-success" x="470" y="240" width="56" height="26" rx="3" />
+  <rect class="d-box-success" x="526" y="240" width="56" height="26" rx="3" />
+  <rect class="d-box-success" x="582" y="240" width="56" height="26" rx="3" />
+  <rect class="d-box-success" x="638" y="240" width="56" height="26" rx="3" />
+  <text class="d-muted" x="498" y="258" text-anchor="middle">Id</text>
+  <text class="d-muted" x="554" y="258" text-anchor="middle">Weight</text>
+  <text class="d-muted" x="610" y="258" text-anchor="middle">Type</text>
+  <text class="d-muted" x="666" y="258" text-anchor="middle">MRP</text>
+  <rect class="d-box-success" x="470" y="266" width="224" height="26" />
+  <rect class="d-box-ghost" x="702" y="240" width="56" height="52" rx="4" />
+  <text class="d-muted" x="730" y="262" text-anchor="middle">filas</text>
+  <text class="d-muted" x="730" y="278" text-anchor="middle">fuera</text>
+</svg>

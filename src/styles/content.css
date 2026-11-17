@@ -278,3 +278,21 @@
 .d-arrowhead-accent {
   fill: var(--accent);
 }
+.d-code {
+  fill: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+.d-code-small {
+  fill: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  white-space: pre;
+}
+
+/* Inline code inside tables stays on one line; the table scrolls instead. */
+.prose td code,
+.prose th code {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}

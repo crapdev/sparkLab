@@ -30,6 +30,8 @@ Cell directives:
     # %% [test]           code cell tagged as a test
     # %% [install]        shared install cells
     # %% [helpers]        shared `check` helper
+    # %% [session]        shared cell that creates the SparkSession
+    # %% [measure]        shared `measure` and `report` helpers (jobs, stages, tasks)
     # %% [data] a.csv b   shared download cell for the listed datasets
     # %% [summary]        shared final summary
 
@@ -149,6 +151,11 @@ def build_cells(meta, body, config, lab_dir, variant):
         elif kind == "install":
             cells.append(("markdown", templates.INSTALL_MARKDOWN, []))
             cells.append(("code", templates.install_cell(config), ["setup"]))
+        elif kind == "session":
+            cells.append(("markdown", templates.SESSION_MARKDOWN, []))
+            cells.append(("code", templates.session_cell(lab_dir), ["setup"]))
+        elif kind == "measure":
+            cells.append(("code", templates.MEASURE_CELL, ["setup"]))
         elif kind == "helpers":
             cells.append(("markdown", templates.HELPERS_MARKDOWN, []))
             cells.append(("code", templates.HELPERS_CELL, ["setup"]))

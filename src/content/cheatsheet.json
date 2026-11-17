@@ -17,7 +17,8 @@
     "example": "numbers = spark.range(1, 1001)  # ids from 1 to 1000",
     "gotcha": "El final no se incluye: `spark.range(1, 1001)` llega hasta 1000.",
     "module": "01-fundamentos",
-    "keywords": ["rango", "numeros", "secuencia", "generar", "prueba"]
+    "keywords": ["rango", "numeros", "secuencia", "generar", "prueba"],
+    "kind": "transformación"
   },
   {
     "name": "spark.conf.set",
@@ -37,7 +38,8 @@
     "example": "evens = numbers.filter(F.col(\"id\") % 2 == 0)",
     "gotcha": "Es una transformación: no ejecuta nada hasta que haya una acción.",
     "module": "01-fundamentos",
-    "keywords": ["filtrar", "where", "condicion", "filas"]
+    "keywords": ["filtrar", "where", "condicion", "filas"],
+    "kind": "transformación"
   },
   {
     "name": "withColumn",
@@ -45,9 +47,10 @@
     "signature": "df.withColumn(name, column)",
     "description": "Añade una columna, o reemplaza la que ya tenga ese nombre.",
     "example": "squared = numbers.withColumn(\"squared\", F.col(\"id\") * F.col(\"id\"))",
-    "gotcha": "Devuelve un DataFrame nuevo; el original no cambia.",
+    "gotcha": "Devuelve un DataFrame nuevo; el original no cambia. El segundo argumento tiene que ser una columna: para una constante usa `F.lit()`.",
     "module": "01-fundamentos",
-    "keywords": ["columna", "nueva", "añadir", "agregar", "calcular"]
+    "keywords": ["columna", "nueva", "añadir", "agregar", "calcular"],
+    "kind": "transformación"
   },
   {
     "name": "show",
@@ -57,7 +60,8 @@
     "example": "df.show(5, truncate=False)",
     "gotcha": "`display(df)` solo existe en Databricks; `show()` funciona en cualquier entorno.",
     "module": "01-fundamentos",
-    "keywords": ["mostrar", "ver", "imprimir", "display", "tabla"]
+    "keywords": ["mostrar", "ver", "imprimir", "display", "tabla"],
+    "kind": "acción"
   },
   {
     "name": "count",
@@ -67,7 +71,8 @@
     "example": "total = df.count()",
     "gotcha": "Recorre todos los datos. En tablas grandes no lo llames solo por curiosidad.",
     "module": "01-fundamentos",
-    "keywords": ["contar", "filas", "numero", "total"]
+    "keywords": ["contar", "filas", "numero", "total"],
+    "kind": "acción"
   },
   {
     "name": "collect",
@@ -77,7 +82,8 @@
     "example": "rows = small_df.collect()\nfirst_id = rows[0][\"id\"]",
     "gotcha": "Con datos grandes puede dejar al driver sin memoria. Úsalo solo con resultados pequeños.",
     "module": "01-fundamentos",
-    "keywords": ["traer", "lista", "filas", "driver", "python"]
+    "keywords": ["traer", "lista", "filas", "driver", "python"],
+    "kind": "acción"
   },
   {
     "name": "take",
@@ -85,9 +91,10 @@
     "signature": "df.take(n)",
     "description": "Devuelve las primeras `n` filas como una lista de Python.",
     "example": "sample = df.take(3)",
-    "gotcha": "Sin un `orderBy` previo, no hay garantía de cuáles son las \"primeras\".",
+    "gotcha": "No confundir con `limit(n)`, que es una transformación y devuelve un DataFrame. Sin un `orderBy` previo, no hay garantía de cuáles son las \"primeras\".",
     "module": "01-fundamentos",
-    "keywords": ["primeras", "filas", "muestra", "head", "limit"]
+    "keywords": ["primeras", "filas", "muestra", "head", "limit"],
+    "kind": "acción"
   },
   {
     "name": "first",
@@ -97,7 +104,8 @@
     "example": "biggest = df.agg(F.max(\"squared\")).first()[0]",
     "gotcha": "Muy útil para sacar el valor de una agregación que devuelve una sola fila.",
     "module": "01-fundamentos",
-    "keywords": ["primera", "fila", "valor", "escalar"]
+    "keywords": ["primera", "fila", "valor", "escalar"],
+    "kind": "acción"
   },
   {
     "name": "explain",
@@ -143,8 +151,425 @@
     "signature": "spark.read.format(\"csv\").option(key, value).load(path)",
     "description": "Lee un archivo CSV. `header` usa la primera fila como nombres e `inferSchema` deduce los tipos.",
     "example": "sales = (\n    spark.read.format(\"csv\")\n    .option(\"header\", True)\n    .option(\"inferSchema\", True)\n    .load(\"data/bigmart_sales.csv\")\n)",
-    "gotcha": "`inferSchema` obliga a Spark a recorrer el archivo una vez más. Con archivos grandes es mejor dar el esquema.",
+    "gotcha": "`inferSchema` obliga a Spark a recorrer el archivo una vez más. Con archivos grandes es mejor dar el esquema. Leer es perezoso, pero `inferSchema` obliga a abrir el archivo: aparecen jobs aunque no haya acción.",
     "module": "01-fundamentos",
-    "keywords": ["leer", "csv", "cargar", "archivo", "header", "inferSchema", "load"]
+    "keywords": ["leer", "csv", "cargar", "archivo", "header", "inferSchema", "load"],
+    "kind": "transformación"
+  },
+  {
+    "name": "spark.read (JSON)",
+    "category": "Lectura",
+    "signature": "spark.read.format(\"json\").option(key, value).load(path)",
+    "description": "Lee un archivo JSON. Por defecto espera un registro por línea (JSON Lines) y siempre deduce los tipos.",
+    "example": "drivers = spark.read.format(\"json\").load(\"data/drivers.json\")",
+    "gotcha": "Sin esquema, las columnas quedan en orden alfabético y las fechas se leen como `string`.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["leer", "json", "cargar", "archivo", "jsonl", "lines"],
+    "kind": "transformación"
+  },
+  {
+    "name": "option(\"multiLine\")",
+    "category": "Lectura",
+    "signature": ".option(\"multiLine\", True)",
+    "description": "Permite leer un JSON en el que cada registro ocupa varias líneas, como un array con sangría.",
+    "example": "drivers = (\n    spark.read.format(\"json\")\n    .option(\"multiLine\", True)\n    .load(\"data/drivers_multiline.json\")\n)",
+    "gotcha": "Usada sobre un archivo JSON Lines, lee solo el primer registro y no da error.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["multilinea", "json", "corrupt", "_corrupt_record", "array", "varias lineas"]
+  },
+  {
+    "name": "schema (lector)",
+    "category": "Lectura",
+    "signature": "spark.read.schema(schema)",
+    "description": "Indica el esquema al leer, en lugar de dejar que Spark lo deduzca. Acepta un string DDL o un `StructType`.",
+    "example": "sales = (\n    spark.read.format(\"csv\")\n    .option(\"header\", True)\n    .schema(\"Item_Identifier STRING, Item_Weight DOUBLE\")\n    .load(\"data/bigmart_sales.csv\")\n)",
+    "gotcha": "En CSV se aplica por posición; en JSON, por nombre. Un valor que no encaja en el tipo queda en `NULL`.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["esquema", "tipos", "ddl", "structtype", "definir"]
+  },
+  {
+    "name": "option(\"mode\")",
+    "category": "Lectura",
+    "signature": ".option(\"mode\", \"PERMISSIVE\" | \"FAILFAST\")",
+    "description": "Decide qué pasa con los valores que no encajan en el esquema. `PERMISSIVE`, el modo por defecto, los deja en `NULL`; `FAILFAST` lanza un error.",
+    "example": "strict = (\n    spark.read.format(\"csv\")\n    .option(\"header\", True)\n    .option(\"mode\", \"FAILFAST\")\n    .schema(schema)\n    .load(path)\n)",
+    "gotcha": "Con `FAILFAST` el error salta cuando una acción convierte la columna; un `count()` puede no detectarlo.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["errores", "malformado", "permissive", "failfast", "nulos", "validar"]
+  },
+  {
+    "name": "Esquema DDL",
+    "category": "Esquemas",
+    "signature": "\"columna TIPO, columna TIPO, ...\"",
+    "description": "Esquema escrito como texto, igual que en un `CREATE TABLE`. Tipos habituales: `STRING`, `INT`, `BIGINT`, `DOUBLE`, `BOOLEAN`, `DATE`, `TIMESTAMP`.",
+    "example": "schema = \"driverRef STRING, dob DATE, name STRUCT<forename: STRING, surname: STRING>\"",
+    "gotcha": "Los structs anidados se escriben con `STRUCT<campo: TIPO, ...>`.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["esquema", "ddl", "string", "tipos", "sql", "create table"]
+  },
+  {
+    "name": "StructType",
+    "category": "Esquemas",
+    "signature": "StructType([StructField(...), ...])",
+    "description": "Esquema construido con objetos: una lista de `StructField`. También sirve como tipo de una columna anidada.",
+    "example": "from pyspark.sql.types import DateType, StringType, StructField, StructType\n\nschema = StructType(\n    [\n        StructField(\"driverRef\", StringType()),\n        StructField(\"dob\", DateType()),\n    ]\n)",
+    "gotcha": "Los tipos son clases: `StringType()`, con paréntesis.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["esquema", "tipos", "objetos", "struct", "anidado"]
+  },
+  {
+    "name": "StructField",
+    "category": "Esquemas",
+    "signature": "StructField(name, dataType, nullable=True)",
+    "description": "Describe una columna: su nombre, su tipo y si admite nulos.",
+    "example": "StructField(\"Item_Weight\", DoubleType())",
+    "gotcha": "Al leer archivos, Spark deja siempre `nullable = true`, aunque indiques `False`.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["columna", "campo", "tipo", "nullable", "nulos"]
+  },
+  {
+    "name": "printSchema",
+    "category": "Inspección",
+    "signature": "df.printSchema()",
+    "description": "Imprime el esquema en forma de árbol: columnas, tipos y campos anidados. No ejecuta nada.",
+    "example": "df.printSchema()",
+    "module": "02-lectura-esquemas",
+    "keywords": ["esquema", "tipos", "columnas", "ver", "arbol"]
+  },
+  {
+    "name": "schema (DataFrame)",
+    "category": "Inspección",
+    "signature": "df.schema",
+    "description": "El esquema de un DataFrame como `StructType`. Se puede reutilizar para leer otro archivo con la misma estructura.",
+    "example": "same_shape = spark.read.format(\"csv\").option(\"header\", True).schema(sales.schema).load(other_path)",
+    "module": "02-lectura-esquemas",
+    "keywords": ["esquema", "structtype", "reutilizar", "tipos"]
+  },
+  {
+    "name": "Campo anidado",
+    "category": "Transformaciones",
+    "signature": "df.select(\"struct.campo\")",
+    "description": "Accede a un campo dentro de una columna de tipo struct usando un punto. Con `\"struct.*\"` salen todos los campos.",
+    "example": "drivers.select(\"driverRef\", \"name.forename\", \"name.surname\")",
+    "gotcha": "La columna resultante toma el nombre del campo, sin el prefijo.",
+    "module": "02-lectura-esquemas",
+    "keywords": ["anidado", "struct", "nested", "punto", "json", "aplanar"],
+    "kind": "transformación"
+  },
+  {
+    "name": "select",
+    "category": "Transformaciones",
+    "signature": "df.select(*cols)",
+    "description": "Devuelve un DataFrame con solo las columnas indicadas, en ese orden. Acepta nombres como strings, objetos columna o una mezcla.",
+    "example": "sales.select(\"Item_Identifier\", F.col(\"Item_MRP\").alias(\"Price\"))",
+    "gotcha": "Recorta columnas, no filas. Una columna que no existe lanza `AnalysisException` con sugerencias de nombres parecidos.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["seleccionar", "columnas", "proyeccion", "elegir", "quedarse"],
+    "kind": "transformación"
+  },
+  {
+    "name": "F.col",
+    "category": "Columnas",
+    "signature": "F.col(name)",
+    "description": "Convierte el nombre de una columna en un objeto columna, sobre el que se puede comparar, operar o llamar a `alias`.",
+    "example": "from pyspark.sql import functions as F\n\nsales.filter(F.col(\"Item_Weight\") < 10)",
+    "gotcha": "Un string a secas solo nombra la columna: `\"Item_MRP\".alias(\"Price\")` da `AttributeError`. `df.Item_MRP` y `df[\"Item_MRP\"]` son equivalentes, pero atados a un DataFrame.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["col", "columna", "objeto", "column", "expresion"]
+  },
+  {
+    "name": "alias",
+    "category": "Columnas",
+    "signature": "F.col(name).alias(new_name)",
+    "description": "Cambia el nombre de una columna o de una expresión dentro de un `select`.",
+    "example": "sales.select(F.col(\"Item_MRP\").alias(\"Price\"), (F.col(\"Item_MRP\") * 2).alias(\"Double_Price\"))",
+    "gotcha": "El nombre nuevo solo existe en el DataFrame resultado. Una expresión sin alias se llama como su fórmula: `(Item_MRP * 2)`.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["renombrar", "nombre", "as", "rename"]
+  },
+  {
+    "name": "where",
+    "category": "Transformaciones",
+    "signature": "df.where(condition)",
+    "description": "Alias exacto de `filter`. La condición puede ser una expresión de columnas o un string con sintaxis SQL.",
+    "example": "sales.where(F.col(\"Item_Fat_Content\") == \"Regular\")\nsales.where(\"Item_Fat_Content = 'Regular'\")",
+    "gotcha": "Un valor mal escrito no da error: devuelve cero filas. Mira antes los valores reales con `distinct()`.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["filtrar", "filter", "condicion", "sql", "filas"],
+    "kind": "transformación"
+  },
+  {
+    "name": "& | ~",
+    "category": "Columnas",
+    "signature": "(cond1) & (cond2)   (cond1) | (cond2)   ~(cond)",
+    "description": "Combinan condiciones sobre columnas: `&` es \"y\", `|` es \"o\" y `~` es \"no\". Cada condición va entre paréntesis.",
+    "example": "sales.filter((F.col(\"Item_Type\") == \"Soft Drinks\") & (F.col(\"Item_Weight\") < 10))\nsales.filter(~(F.col(\"Outlet_Location_Type\") == \"Tier 3\"))",
+    "gotcha": "`and`, `or` y `not` dan `CANNOT_CONVERT_COLUMN_INTO_BOOL`; olvidar los paréntesis da el mismo error, porque `&` se evalúa antes que `==`.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": [
+      "and",
+      "or",
+      "not",
+      "y",
+      "o",
+      "no",
+      "operadores",
+      "parentesis",
+      "booleano",
+      "combinar"
+    ]
+  },
+  {
+    "name": "isNull / isNotNull",
+    "category": "Columnas",
+    "signature": "F.col(name).isNull()   F.col(name).isNotNull()",
+    "description": "Condición verdadera cuando el valor falta, o cuando está presente.",
+    "example": "sales.filter(F.col(\"Outlet_Size\").isNull())",
+    "gotcha": "`== None` no detecta nulos: siempre devuelve cero filas. Y una comparación con un nulo no es ni verdadera ni falsa: `x < 10` y `~(x < 10)` descartan las dos las filas con `x` nulo.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["nulo", "null", "none", "vacio", "falta", "missing"]
+  },
+  {
+    "name": "isin",
+    "category": "Columnas",
+    "signature": "F.col(name).isin(*values)",
+    "description": "Condición verdadera cuando el valor es uno de los indicados. Equivale a varios `==` unidos con `|`.",
+    "example": "sales.filter(F.col(\"Outlet_Location_Type\").isin(\"Tier 1\", \"Tier 2\"))",
+    "gotcha": "Acepta los valores sueltos o en una lista de Python. Se niega con `~F.col(...).isin(...)`.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["lista", "varios", "valores", "in", "pertenece", "conjunto"]
+  },
+  {
+    "name": "between / like / contains",
+    "category": "Columnas",
+    "signature": "F.col(name).between(low, high)   .like(pattern)   .contains(text)   .startswith(text)   .endswith(text)",
+    "description": "Más condiciones sobre una columna: rango con los extremos incluidos, patrón SQL con `%` y `_`, y búsquedas dentro de un texto.",
+    "example": "sales.filter(F.col(\"Item_Weight\").between(10, 20))\nsales.filter(F.col(\"Item_Identifier\").like(\"FD%\"))\nsales.filter(F.col(\"Item_Type\").contains(\"Drinks\"))",
+    "gotcha": "Todas distinguen mayúsculas de minúsculas: `.like(\"low%\")` no encuentra `Low Fat`.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": [
+      "rango",
+      "entre",
+      "patron",
+      "texto",
+      "contiene",
+      "empieza",
+      "termina",
+      "startswith",
+      "endswith"
+    ]
+  },
+  {
+    "name": "selectExpr",
+    "category": "Transformaciones",
+    "signature": "df.selectExpr(*sql_expressions)",
+    "description": "Un `select` que acepta expresiones SQL como strings. Sirve para renombrar y calcular sin `F.col`.",
+    "example": "sales.selectExpr(\"Item_Identifier AS Item_ID\", \"Item_MRP > 200 AS expensive\")",
+    "gotcha": "Dentro va sintaxis SQL, no Python: `AS` para renombrar y `=` para comparar.",
+    "module": "03-seleccionar-filtrar",
+    "keywords": ["sql", "expresion", "select", "as", "calcular"],
+    "kind": "transformación"
+  },
+  {
+    "name": "distinct",
+    "category": "Transformaciones",
+    "signature": "df.distinct()",
+    "description": "Elimina las filas repetidas. Sobre una sola columna, muestra los valores que existen de verdad.",
+    "example": "sales.select(\"Item_Fat_Content\").distinct().show()",
+    "gotcha": "Equivale a `dropDuplicates()` sin argumentos. Para los valores distintos de una columna, selecciona primero: `select(col).distinct()`. BigMart no tiene filas totalmente repetidas.",
+    "module": "05-ordenar-limpiar",
+    "keywords": ["distintos", "unicos", "valores", "repetidos", "duplicados"],
+    "kind": "transformación"
+  },
+  {
+    "name": "F.lit",
+    "category": "Columnas",
+    "signature": "F.lit(value)",
+    "description": "Convierte un valor de Python (texto, número, `None`) en una columna constante.",
+    "example": "sales.withColumn(\"flag\", F.lit(\"new\"))",
+    "gotcha": "`withColumn(\"flag\", \"new\")` falla con `NOT_EXPECTED_TYPE`. En una operación con otra columna (`F.col(\"x\") * 2`) el literal no necesita `lit`.",
+    "module": "04-columnas",
+    "keywords": ["literal", "constante", "valor", "fijo"]
+  },
+  {
+    "name": "Operaciones entre columnas",
+    "category": "Columnas",
+    "signature": "F.col(a) + F.col(b)   F.col(a) * 2   F.col(a) > 200",
+    "description": "Los operadores aritméticos y de comparación crean columnas nuevas. Una comparación da una columna `boolean`.",
+    "example": "sales.withColumn(\"weight_price\", F.col(\"Item_Weight\") * F.col(\"Item_MRP\"))\nsales.withColumn(\"expensive\", F.col(\"Item_MRP\") > 200)",
+    "gotcha": "Cualquier operación con un nulo da nulo: la columna calculada hereda los nulos de sus entradas.",
+    "module": "04-columnas",
+    "keywords": ["calcular", "suma", "producto", "aritmetica", "booleano", "nulos"]
+  },
+  {
+    "name": "withColumns",
+    "category": "Transformaciones",
+    "signature": "df.withColumns({name: column, ...})",
+    "description": "Añade o sustituye varias columnas de una vez a partir de un diccionario.",
+    "example": "sales.withColumns({\"flag\": F.lit(\"new\"), \"double_mrp\": F.col(\"Item_MRP\") * 2})",
+    "gotcha": "Equivale a encadenar varios `withColumn`, pero más corto de leer.",
+    "module": "04-columnas",
+    "keywords": ["varias", "columnas", "diccionario", "añadir"],
+    "kind": "transformación"
+  },
+  {
+    "name": "withColumnRenamed",
+    "category": "Transformaciones",
+    "signature": "df.withColumnRenamed(existing, new)",
+    "description": "Cambia el nombre de una columna y conserva todas las demás en su sitio.",
+    "example": "sales.withColumnRenamed(\"Item_Weight\", \"Item_WT\")",
+    "gotcha": "Si el nombre original no existe, no da error: devuelve el DataFrame sin cambios. Comprueba `df.columns`.",
+    "module": "04-columnas",
+    "keywords": ["renombrar", "nombre", "rename", "cambiar"],
+    "kind": "transformación"
+  },
+  {
+    "name": "regexp_replace",
+    "category": "Columnas",
+    "signature": "F.regexp_replace(column, pattern, replacement)",
+    "description": "Sustituye lo que encaja con una expresión regular. Con `withColumn` sobre el mismo nombre, limpia una columna en su sitio.",
+    "example": "sales.withColumn(\"Item_Fat_Content\", F.regexp_replace(F.col(\"Item_Fat_Content\"), \"^(LF|low fat)$\", \"Low Fat\"))",
+    "gotcha": "El patrón es una regex: `.` encaja con cualquier carácter. Usa `^` y `$` para exigir el valor completo y `\\\\.` para un punto literal.",
+    "module": "04-columnas",
+    "keywords": ["reemplazar", "sustituir", "regex", "texto", "limpiar", "replace"]
+  },
+  {
+    "name": "cast",
+    "category": "Columnas",
+    "signature": "F.col(name).cast(\"string\" | \"int\" | \"double\" | ...)",
+    "description": "Convierte una columna a otro tipo. Acepta el tipo como texto o como objeto (`StringType()`).",
+    "example": "sales.withColumn(\"Outlet_Establishment_Year\", F.col(\"Outlet_Establishment_Year\").cast(\"string\"))",
+    "gotcha": "De `double` a `int` trunca (249.8 → 249). En Spark 4, con el modo ANSI activado, un valor que no se puede convertir lanza `CAST_INVALID_INPUT` al ejecutar, no devuelve `NULL`.",
+    "module": "04-columnas",
+    "keywords": ["tipo", "convertir", "typecast", "string", "int", "double", "ansi"]
+  },
+  {
+    "name": "try_cast",
+    "category": "Columnas",
+    "signature": "F.col(name).try_cast(type)",
+    "description": "Como `cast`, pero devuelve `NULL` en los valores que no puede convertir en vez de fallar.",
+    "example": "sales.withColumn(\"id_num\", F.col(\"Item_Identifier\").try_cast(\"int\"))",
+    "gotcha": "Es la alternativa que sugiere el propio mensaje de error de `cast` en modo ANSI.",
+    "module": "04-columnas",
+    "keywords": ["convertir", "nulo", "seguro", "ansi", "error"]
+  },
+  {
+    "name": "when / otherwise",
+    "category": "Columnas",
+    "signature": "F.when(condition, value).when(...).otherwise(value)",
+    "description": "El `CASE WHEN` de PySpark: evalúa las condiciones en orden y devuelve el valor de la primera que se cumple; `otherwise` recoge el resto.",
+    "example": "sales.withColumn(\n    \"price_band\",\n    F.when(F.col(\"Item_MRP\") < 100, \"cheap\").when(F.col(\"Item_MRP\") < 200, \"mid\").otherwise(\"expensive\"),\n)",
+    "gotcha": "Sin `otherwise`, lo que no cumple ninguna condición queda en `NULL`. El orden importa: la condición estrecha va antes que la amplia. Los límites (`< 10` y `> 10`) y los nulos pueden quedar fuera de todas las ramas.",
+    "module": "04-columnas",
+    "keywords": ["condicional", "case", "if", "si", "rama", "clasificar", "etiqueta"]
+  },
+  {
+    "name": "F.round",
+    "category": "Columnas",
+    "signature": "F.round(column, scale=0)",
+    "description": "Redondea una columna numérica a los decimales indicados.",
+    "example": "sales.withColumn(\"mrp_round\", F.round(F.col(\"Item_MRP\"), 1))",
+    "gotcha": "`cast(\"int\")` trunca; `round` redondea. No son lo mismo con 249.8.",
+    "module": "04-columnas",
+    "keywords": ["redondear", "decimales", "numero"]
+  },
+  {
+    "name": "limit",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.limit(n)",
+    "description": "Devuelve un DataFrame con como mucho `n` filas. Sirve para recortar y seguir trabajando en Spark.",
+    "example": "top_five = pipeline.limit(5)\ntop_five.show()",
+    "gotcha": "Es una transformación: no lanza jobs ni trae nada a Python. Para una lista de filas usa `take(n)`.",
+    "module": "01-fundamentos",
+    "keywords": ["limitar", "primeras", "recortar", "filas", "top"]
+  },
+  {
+    "name": "head",
+    "category": "Acciones",
+    "kind": "acción",
+    "signature": "df.head(n=None)",
+    "description": "Sin argumento devuelve la primera fila como `Row`, igual que `first()`. Con `n`, una lista de `n` filas, igual que `take(n)`.",
+    "example": "first_row = df.head()\nfive_rows = df.head(5)",
+    "gotcha": "`head()` y `head(1)` no devuelven lo mismo: un `Row` frente a una lista con un `Row`.",
+    "module": "01-fundamentos",
+    "keywords": ["primera", "primeras", "filas", "lista", "take", "first"]
+  },
+  {
+    "name": "toPandas",
+    "category": "Acciones",
+    "kind": "acción",
+    "signature": "df.toPandas()",
+    "description": "Trae todas las filas al driver y las devuelve como un DataFrame de pandas. Útil para gráficos o para seguir en pandas con un resultado pequeño.",
+    "example": "summary = df.groupBy(\"Item_Type\").count().toPandas()",
+    "gotcha": "Como `collect()`, concentra todos los datos en el driver: con tablas grandes lo deja sin memoria. Reduce antes con filtros, agregaciones o `limit`.",
+    "module": "01-fundamentos",
+    "keywords": ["pandas", "driver", "memoria", "convertir", "grafico", "plot"]
+  },
+  {
+    "name": "write",
+    "category": "Acciones",
+    "kind": "acción",
+    "signature": "df.write.mode(mode).format(fmt).save(path)",
+    "description": "Guarda el DataFrame en disco. Es una acción: lanza un job y escribe un archivo por partición.",
+    "example": "df.write.mode(\"overwrite\").csv(\"salida/multiples\")",
+    "gotcha": "Sin `mode(\"overwrite\")`, falla si la carpeta ya existe. Los formatos y modos se ven en el módulo de escritura.",
+    "module": "01-fundamentos",
+    "keywords": ["guardar", "escribir", "disco", "csv", "parquet", "salida", "save"]
+  },
+  {
+    "name": "sort / orderBy",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.sort(*cols, ascending=True)",
+    "description": "Ordena las filas. `orderBy` es el mismo método. Cada columna puede llevar su sentido con `.asc()` o `.desc()`.",
+    "example": "sales.sort(F.col(\"Item_Weight\").desc(), F.col(\"Item_Visibility\").asc())",
+    "gotcha": "En ascendente los nulos salen primero y en descendente al final; `asc_nulls_last()` y `desc_nulls_first()` lo cambian. Es una transformación wide: provoca shuffle.",
+    "module": "05-ordenar-limpiar",
+    "keywords": ["ordenar", "orden", "asc", "desc", "descendente", "ascendente", "mayor", "menor"]
+  },
+  {
+    "name": "drop",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.drop(*cols)",
+    "description": "Quita una o varias columnas y conserva el resto en su orden. Es el contrario de `select`.",
+    "example": "sales.drop(\"Item_Visibility\", \"Item_Type\")",
+    "gotcha": "Si la columna no existe no da error: devuelve el DataFrame intacto. Comprueba `df.columns`.",
+    "module": "05-ordenar-limpiar",
+    "keywords": ["quitar", "eliminar", "columna", "borrar"]
+  },
+  {
+    "name": "dropDuplicates",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.dropDuplicates(subset=None)",
+    "description": "Quita filas repetidas. Sin argumentos compara todas las columnas; con una lista, solo esas, y deja una fila por combinación.",
+    "example": "orders.dropDuplicates()\norders.dropDuplicates([\"customer\"])",
+    "gotcha": "Con subset, no está garantizado cuál de las filas repetidas sobrevive. BigMart no tiene filas totalmente repetidas: sin subset no cambia nada.",
+    "module": "05-ordenar-limpiar",
+    "keywords": ["duplicados", "repetidos", "dedup", "unicos", "distinct", "drop_duplicates"]
+  },
+  {
+    "name": "dropna",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.dropna(how=\"any\", thresh=None, subset=None)",
+    "description": "Elimina filas con nulos. `how=\"any\"` si falta algo, `how=\"all\"` solo si falta todo; `subset` limita las columnas que se miran.",
+    "example": "sales.dropna(subset=[\"Outlet_Size\"])   # 6113 rows\nsales.dropna()                         # 4650 rows",
+    "gotcha": "Sin argumentos es `how=\"any\"` sobre todas las columnas y puede tirar casi la mitad de los datos. Casi siempre quieres `subset`. `df.na.drop` es lo mismo.",
+    "module": "05-ordenar-limpiar",
+    "keywords": ["nulos", "null", "quitar", "eliminar", "filas", "vacios", "na"]
+  },
+  {
+    "name": "fillna",
+    "category": "Transformaciones",
+    "kind": "transformación",
+    "signature": "df.fillna(value, subset=None)",
+    "description": "Sustituye los nulos por un valor. Con un diccionario, un valor distinto por columna.",
+    "example": "sales.fillna({\"Outlet_Size\": \"Unknown\", \"Item_Weight\": 12.86})",
+    "gotcha": "Solo rellena las columnas cuyo tipo encaja con el valor: un texto no toca las numéricas, ni aunque lo pidas con `subset`. `df.na.fill` es lo mismo.",
+    "module": "05-ordenar-limpiar",
+    "keywords": ["nulos", "rellenar", "sustituir", "null", "valor", "defecto", "na"]
   }
 ]
